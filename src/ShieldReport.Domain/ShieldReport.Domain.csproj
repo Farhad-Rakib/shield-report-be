@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ShieldReport.Domain</AssemblyName>
+    <RootNamespace>ShieldReport.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

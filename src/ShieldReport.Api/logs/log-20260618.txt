@@ -1,0 +1,1187 @@
+2026-06-18 19:21:36.813 +06:00 [DBG] Starting database bootstrapper...
+2026-06-18 19:21:36.856 +06:00 [DBG] Attempting database connection and migration...
+2026-06-18 19:21:37.195 +06:00 [DBG] Database migration applied successfully.
+2026-06-18 19:21:37.195 +06:00 [DBG] Seeding RBAC data...
+2026-06-18 19:23:10.085 +06:00 [DBG] Starting database bootstrapper...
+2026-06-18 19:23:10.131 +06:00 [DBG] Attempting database connection and migration...
+2026-06-18 19:23:10.463 +06:00 [DBG] Database migration applied successfully.
+2026-06-18 19:23:10.463 +06:00 [DBG] Seeding RBAC data...
+2026-06-18 19:23:10.709 +06:00 [INF] RBAC seed completed successfully.
+2026-06-18 19:23:10.709 +06:00 [DBG] RBAC seeding complete.
+2026-06-18 19:23:10.709 +06:00 [DBG] Seeding default user...
+2026-06-18 19:23:10.800 +06:00 [DBG] Default user seeding complete.
+2026-06-18 19:23:10.800 +06:00 [DBG] Seeding site settings...
+2026-06-18 19:23:10.841 +06:00 [DBG] Site settings seeding complete.
+2026-06-18 19:23:10.841 +06:00 [DBG] Seeding menu data...
+2026-06-18 19:23:10.901 +06:00 [DBG] Menu seeding complete.
+2026-06-18 19:23:10.901 +06:00 [DBG] Database bootstrapper finished.
+2026-06-18 19:23:10.960 +06:00 [DBG] Menu permission validation passed.
+2026-06-18 19:23:10.964 +06:00 [DBG] Permissions already in sync
+2026-06-18 19:23:10.965 +06:00 [DBG] App is running on: default Kestrel port
+2026-06-18 19:23:38.324 +06:00 [INF] HTTP GET /swagger/index.html responded 200 in 33.7303 ms
+2026-06-18 19:24:29.176 +06:00 [DBG] Starting database bootstrapper...
+2026-06-18 19:24:29.225 +06:00 [DBG] Attempting database connection and migration...
+2026-06-18 19:24:29.654 +06:00 [DBG] Database migration applied successfully.
+2026-06-18 19:24:29.654 +06:00 [DBG] Seeding RBAC data...
+2026-06-18 19:24:29.843 +06:00 [INF] RBAC seed completed successfully.
+2026-06-18 19:24:29.843 +06:00 [DBG] RBAC seeding complete.
+2026-06-18 19:24:29.843 +06:00 [DBG] Seeding default user...
+2026-06-18 19:24:29.851 +06:00 [DBG] Default user seeding complete.
+2026-06-18 19:24:29.851 +06:00 [DBG] Seeding site settings...
+2026-06-18 19:24:29.868 +06:00 [DBG] Site settings seeding complete.
+2026-06-18 19:24:29.868 +06:00 [DBG] Seeding menu data...
+2026-06-18 19:24:29.892 +06:00 [DBG] Menu seeding complete.
+2026-06-18 19:24:29.892 +06:00 [DBG] Database bootstrapper finished.
+2026-06-18 19:24:29.919 +06:00 [DBG] Menu permission validation passed.
+2026-06-18 19:24:29.923 +06:00 [DBG] Permissions already in sync
+2026-06-18 19:24:29.924 +06:00 [DBG] App is running on: default Kestrel port
+2026-06-18 19:24:42.970 +06:00 [INF] HTTP GET /swagger/index.html responded 200 in 43.8665 ms
+2026-06-18 19:25:17.378 +06:00 [INF] HTTP POST /api/v1/auth/login responded 200 in 199.3042 ms
+2026-06-18 19:34:00.606 +06:00 [INF] HTTP GET /api/v1/SiteSettings responded 401 in 14.3878 ms
+2026-06-18 19:34:15.749 +06:00 [INF] HTTP OPTIONS /api/v1/Auth/login responded 204 in 2.5515 ms
+2026-06-18 19:34:15.915 +06:00 [INF] HTTP POST /api/v1/Auth/login responded 200 in 133.6101 ms
+2026-06-18 19:34:15.924 +06:00 [INF] HTTP OPTIONS /api/v1/Menu responded 204 in 0.1635 ms
+2026-06-18 19:34:15.939 +06:00 [INF] HTTP GET /api/v1/Menu responded 404 in 14.1903 ms
+2026-06-18 19:34:15.942 +06:00 [INF] HTTP OPTIONS /api/v1/Menu/all responded 204 in 0.0390 ms
+2026-06-18 19:34:15.942 +06:00 [INF] HTTP OPTIONS /api/v1/Dashboard responded 204 in 0.1653 ms
+2026-06-18 19:34:15.942 +06:00 [INF] HTTP OPTIONS /api/v1/DashboardLayout responded 204 in 0.1584 ms
+2026-06-18 19:34:15.942 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 404 in 0.2102 ms
+2026-06-18 19:34:15.942 +06:00 [INF] HTTP OPTIONS /api/v1/Users/me responded 204 in 0.4505 ms
+2026-06-18 19:34:15.942 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings/palette/sidebar responded 204 in 0.4063 ms
+2026-06-18 19:34:15.964 +06:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-06-18 19:34:15.976 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 32.4390 ms
+2026-06-18 19:34:15.984 +06:00 [INF] HTTP GET /api/v1/DashboardLayout responded 200 in 41.7711 ms
+2026-06-18 19:34:16.008 +06:00 [INF] HTTP GET /api/v1/Users/me responded 200 in 65.0996 ms
+2026-06-18 19:34:16.004 +06:00 [ERR] HTTP GET /api/v1/Dashboard responded 500 in 61.3739 ms
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-06-18 19:34:16.010 +06:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:34:16.011 +06:00 [ERR] Unhandled exception occurred
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:34:16.951 +06:00 [INF] HTTP GET /api/v1/Menu responded 404 in 1.2951 ms
+2026-06-18 19:34:16.951 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 404 in 1.0540 ms
+2026-06-18 19:34:16.997 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 11.5460 ms
+2026-06-18 19:34:17.037 +06:00 [ERR] HTTP GET /api/v1/Dashboard responded 500 in 20.7182 ms
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-06-18 19:34:17.039 +06:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:34:17.040 +06:00 [ERR] Unhandled exception occurred
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:34:19.018 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 12.0494 ms
+2026-06-18 19:47:49.446 +06:00 [DBG] Starting database bootstrapper...
+2026-06-18 19:47:49.489 +06:00 [DBG] Attempting database connection and migration...
+2026-06-18 19:47:49.820 +06:00 [DBG] Database migration applied successfully.
+2026-06-18 19:47:49.820 +06:00 [DBG] Seeding RBAC data...
+2026-06-18 19:47:50.127 +06:00 [INF] RBAC seed completed successfully.
+2026-06-18 19:47:50.128 +06:00 [DBG] RBAC seeding complete.
+2026-06-18 19:47:50.128 +06:00 [DBG] Seeding default user...
+2026-06-18 19:47:50.195 +06:00 [DBG] Default user seeding complete.
+2026-06-18 19:47:50.195 +06:00 [DBG] Seeding site settings...
+2026-06-18 19:47:50.222 +06:00 [DBG] Site settings seeding complete.
+2026-06-18 19:47:50.222 +06:00 [DBG] Seeding menu data...
+2026-06-18 19:47:50.268 +06:00 [DBG] Menu seeding complete.
+2026-06-18 19:47:50.268 +06:00 [DBG] Database bootstrapper finished.
+2026-06-18 19:47:50.298 +06:00 [DBG] Menu permission validation passed.
+2026-06-18 19:47:50.301 +06:00 [DBG] Permissions already in sync
+2026-06-18 19:47:50.302 +06:00 [DBG] App is running on: default Kestrel port
+2026-06-18 19:48:18.567 +06:00 [INF] HTTP GET /swagger/index.html responded 200 in 41.6622 ms
+2026-06-18 19:50:14.579 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings/palette/sidebar responded 204 in 7.2121 ms
+2026-06-18 19:50:14.623 +06:00 [INF] HTTP OPTIONS /api/v1/Users/me responded 204 in 0.1804 ms
+2026-06-18 19:50:14.634 +06:00 [INF] HTTP OPTIONS /api/v1/Menu/all responded 204 in 0.0805 ms
+2026-06-18 19:50:14.635 +06:00 [INF] HTTP OPTIONS /api/v1/DashboardLayout responded 204 in 0.1337 ms
+2026-06-18 19:50:14.637 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 404 in 0.9560 ms
+2026-06-18 19:50:14.648 +06:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-06-18 19:50:14.658 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings responded 204 in 0.1272 ms
+2026-06-18 19:50:14.663 +06:00 [INF] HTTP GET /api/v1/DashboardLayout responded 200 in 26.9888 ms
+2026-06-18 19:50:14.663 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 82.2123 ms
+2026-06-18 19:50:14.670 +06:00 [INF] HTTP GET /api/v1/SiteSettings responded 200 in 12.0160 ms
+2026-06-18 19:50:14.680 +06:00 [INF] HTTP OPTIONS /api/v1/Dashboard responded 204 in 0.1549 ms
+2026-06-18 19:50:14.690 +06:00 [INF] HTTP GET /api/v1/Users/me responded 200 in 66.4141 ms
+2026-06-18 19:50:14.712 +06:00 [ERR] HTTP GET /api/v1/Dashboard responded 500 in 31.7415 ms
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-06-18 19:50:14.719 +06:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:14.720 +06:00 [ERR] Unhandled exception occurred
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:15.649 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 404 in 1.3855 ms
+2026-06-18 19:50:15.685 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 14.8234 ms
+2026-06-18 19:50:15.752 +06:00 [ERR] HTTP GET /api/v1/Dashboard responded 500 in 21.9838 ms
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-06-18 19:50:15.754 +06:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:15.755 +06:00 [ERR] Unhandled exception occurred
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:17.704 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 8.8648 ms
+2026-06-18 19:50:18.471 +06:00 [INF] HTTP GET /api/v1/SiteSettings responded 401 in 7.2495 ms
+2026-06-18 19:50:31.685 +06:00 [INF] HTTP OPTIONS /api/v1/Auth/login responded 204 in 0.7693 ms
+2026-06-18 19:50:31.864 +06:00 [INF] HTTP POST /api/v1/Auth/login responded 200 in 143.7821 ms
+2026-06-18 19:50:31.874 +06:00 [INF] HTTP OPTIONS /api/v1/Menu responded 204 in 0.0852 ms
+2026-06-18 19:50:31.875 +06:00 [INF] HTTP GET /api/v1/Menu responded 404 in 0.2161 ms
+2026-06-18 19:50:31.889 +06:00 [INF] HTTP OPTIONS /api/v1/Menu/all responded 204 in 0.0647 ms
+2026-06-18 19:50:31.890 +06:00 [INF] HTTP OPTIONS /api/v1/Dashboard responded 204 in 0.1125 ms
+2026-06-18 19:50:31.890 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings/palette/sidebar responded 204 in 0.1319 ms
+2026-06-18 19:50:31.890 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 404 in 0.2409 ms
+2026-06-18 19:50:31.890 +06:00 [INF] HTTP OPTIONS /api/v1/Users/me responded 204 in 0.0875 ms
+2026-06-18 19:50:31.890 +06:00 [INF] HTTP OPTIONS /api/v1/DashboardLayout responded 204 in 0.0596 ms
+2026-06-18 19:50:31.893 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 2.8849 ms
+2026-06-18 19:50:31.897 +06:00 [ERR] HTTP GET /api/v1/Dashboard responded 500 in 7.0039 ms
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-06-18 19:50:31.898 +06:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:31.899 +06:00 [ERR] Unhandled exception occurred
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:31.905 +06:00 [INF] HTTP GET /api/v1/DashboardLayout responded 200 in 14.2468 ms
+2026-06-18 19:50:31.905 +06:00 [INF] HTTP GET /api/v1/Users/me responded 200 in 14.4530 ms
+2026-06-18 19:50:32.912 +06:00 [INF] HTTP GET /api/v1/Menu responded 404 in 0.8894 ms
+2026-06-18 19:50:32.912 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 404 in 0.8711 ms
+2026-06-18 19:50:32.916 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 3.9851 ms
+2026-06-18 19:50:32.921 +06:00 [ERR] HTTP GET /api/v1/Dashboard responded 500 in 9.7307 ms
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-06-18 19:50:32.923 +06:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:32.923 +06:00 [ERR] Unhandled exception occurred
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:35.081 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 10.1050 ms
+2026-06-18 19:50:55.302 +06:00 [INF] HTTP OPTIONS /api/v1/Dashboard responded 204 in 0.0961 ms
+2026-06-18 19:50:55.303 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings responded 204 in 0.0573 ms
+2026-06-18 19:50:55.302 +06:00 [INF] HTTP OPTIONS /api/v1/Users/me responded 204 in 0.5762 ms
+2026-06-18 19:50:55.303 +06:00 [INF] HTTP OPTIONS /api/v1/DashboardLayout responded 204 in 0.0805 ms
+2026-06-18 19:50:55.302 +06:00 [INF] HTTP OPTIONS /api/v1/Menu/all responded 204 in 0.6263 ms
+2026-06-18 19:50:55.303 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings/palette/sidebar responded 204 in 0.1900 ms
+2026-06-18 19:50:55.317 +06:00 [ERR] HTTP GET /api/v1/Dashboard responded 500 in 14.0398 ms
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-06-18 19:50:55.318 +06:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:55.318 +06:00 [ERR] Unhandled exception occurred
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:55.326 +06:00 [INF] HTTP GET /api/v1/SiteSettings responded 200 in 5.1909 ms
+2026-06-18 19:50:55.329 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 404 in 0.0990 ms
+2026-06-18 19:50:55.332 +06:00 [INF] HTTP GET /api/v1/DashboardLayout responded 200 in 4.4802 ms
+2026-06-18 19:50:55.333 +06:00 [INF] HTTP GET /api/v1/Users/me responded 200 in 6.0037 ms
+2026-06-18 19:50:55.333 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 2.1030 ms
+2026-06-18 19:50:56.347 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 404 in 0.3864 ms
+2026-06-18 19:50:56.353 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 5.2123 ms
+2026-06-18 19:50:56.359 +06:00 [ERR] HTTP GET /api/v1/Dashboard responded 500 in 14.4507 ms
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-06-18 19:50:56.360 +06:00 [ERR] An unhandled exception has occurred while executing the request.
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:56.361 +06:00 [ERR] Unhandled exception occurred
+System.InvalidOperationException: The LINQ expression 'DbSet<Role>()
+    .OrderByDescending(r => new UsersByRolePoint(
+        r.Name, 
+        DbSet<UserRole>()
+            .Where(u => EF.Property<long?>(r, "Id") != null && object.Equals(
+                objA: (object)EF.Property<long?>(r, "Id"), 
+                objB: (object)EF.Property<long?>(u, "RoleId")))
+            .Count()
+    ).UserCount)' could not be translated. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.ExecuteAsync[TResult](Expression expression, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ShieldReport.Persistence.Repositories.DashboardRepository.GetUsersByRoleAsync(CancellationToken ct) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Persistence/Repositories/DashboardRepository.cs:line 28
+   at ShieldReport.Application.Dashboard.DashboardService.GetSummaryAsync(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Application/Dashboard/DashboardService.cs:line 20
+   at ShieldReport.Api.Controllers.DashboardController.GetSummary(CancellationToken cancellationToken) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Controllers/DashboardController.cs:line 25
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at ShieldReport.Api.Middleware.TokenValidationMiddleware.InvokeAsync(HttpContext context) in /Users/farhadrakib/Selise Projects/shield-report-be/src/ShieldReport.Api/Middleware/TokenValidationMiddleware.cs:line 43
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+2026-06-18 19:50:58.377 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 10.4056 ms
+2026-06-18 19:59:15.033 +06:00 [DBG] Starting database bootstrapper...
+2026-06-18 19:59:15.065 +06:00 [DBG] Attempting database connection and migration...
+2026-06-18 19:59:15.378 +06:00 [DBG] Database migration applied successfully.
+2026-06-18 19:59:15.378 +06:00 [DBG] Seeding RBAC data...
+2026-06-18 19:59:15.552 +06:00 [INF] RBAC seed completed successfully.
+2026-06-18 19:59:15.552 +06:00 [DBG] RBAC seeding complete.
+2026-06-18 19:59:15.552 +06:00 [DBG] Seeding default user...
+2026-06-18 19:59:15.559 +06:00 [DBG] Default user seeding complete.
+2026-06-18 19:59:15.559 +06:00 [DBG] Seeding site settings...
+2026-06-18 19:59:15.571 +06:00 [DBG] Site settings seeding complete.
+2026-06-18 19:59:15.571 +06:00 [DBG] Seeding menu data...
+2026-06-18 19:59:15.592 +06:00 [DBG] Menu seeding complete.
+2026-06-18 19:59:15.592 +06:00 [DBG] Database bootstrapper finished.
+2026-06-18 19:59:15.618 +06:00 [DBG] Menu permission validation passed.
+2026-06-18 19:59:15.620 +06:00 [DBG] Permissions already in sync
+2026-06-18 19:59:15.622 +06:00 [DBG] App is running on: default Kestrel port
+2026-06-18 19:59:39.253 +06:00 [INF] HTTP POST /api/v1/auth/login responded 200 in 178.8791 ms
+2026-06-18 19:59:39.324 +06:00 [DBG] Cache miss for key menus:tree
+2026-06-18 19:59:39.352 +06:00 [DBG] Cache set for key menus:tree (ttl "00:30:00")
+2026-06-18 19:59:39.354 +06:00 [INF] HTTP GET /api/v1/Menu responded 200 in 60.3251 ms
+2026-06-18 19:59:39.392 +06:00 [DBG] Cache miss for key menus:all
+2026-06-18 19:59:39.395 +06:00 [DBG] Cache set for key menus:all (ttl "00:30:00")
+2026-06-18 19:59:39.396 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 200 in 9.3074 ms
+2026-06-18 19:59:39.498 +06:00 [INF] HTTP GET /api/v1/Dashboard responded 200 in 73.9995 ms
+2026-06-18 20:01:55.417 +06:00 [INF] HTTP OPTIONS /api/v1/Dashboard responded 204 in 1.3180 ms
+2026-06-18 20:01:55.439 +06:00 [INF] HTTP GET /api/v1/Dashboard responded 200 in 20.4974 ms
+2026-06-18 20:01:55.479 +06:00 [INF] HTTP OPTIONS /api/v1/Menu/all responded 204 in 0.0962 ms
+2026-06-18 20:01:55.479 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings/palette/sidebar responded 204 in 0.0883 ms
+2026-06-18 20:01:55.479 +06:00 [INF] HTTP OPTIONS /api/v1/Users/me responded 204 in 0.1949 ms
+2026-06-18 20:01:55.479 +06:00 [INF] HTTP OPTIONS /api/v1/DashboardLayout responded 204 in 0.1511 ms
+2026-06-18 20:01:55.479 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings responded 204 in 0.1820 ms
+2026-06-18 20:01:55.482 +06:00 [DBG] Cache hit for key menus:all
+2026-06-18 20:01:55.484 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 200 in 3.9747 ms
+2026-06-18 20:01:55.490 +06:00 [INF] HTTP GET /api/v1/DashboardLayout responded 200 in 10.2286 ms
+2026-06-18 20:01:55.493 +06:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-06-18 20:01:55.509 +06:00 [INF] HTTP GET /api/v1/Users/me responded 200 in 28.6711 ms
+2026-06-18 20:01:55.524 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 44.5576 ms
+2026-06-18 20:01:55.525 +06:00 [INF] HTTP GET /api/v1/SiteSettings responded 200 in 44.7418 ms
+2026-06-18 20:01:56.540 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 7.2768 ms
+2026-06-18 20:01:58.561 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 8.2909 ms
+2026-06-18 20:07:22.854 +06:00 [INF] HTTP OPTIONS /api/v1/Menu/all responded 204 in 1.0681 ms
+2026-06-18 20:07:22.860 +06:00 [DBG] Cache hit for key menus:all
+2026-06-18 20:07:22.861 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 200 in 3.8049 ms
+2026-06-18 20:07:41.609 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings responded 204 in 1.1825 ms
+2026-06-18 20:07:41.609 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings/palette/sidebar responded 204 in 0.4428 ms
+2026-06-18 20:07:41.656 +06:00 [INF] HTTP GET /api/v1/SiteSettings responded 200 in 43.9812 ms
+2026-06-18 20:07:41.674 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 61.0408 ms
+2026-06-18 20:07:53.260 +06:00 [INF] HTTP OPTIONS /api/v1/Users/me responded 204 in 0.7774 ms
+2026-06-18 20:07:53.268 +06:00 [INF] HTTP GET /api/v1/Users/me responded 200 in 6.6846 ms
+2026-06-18 20:11:31.549 +06:00 [DBG] Starting database bootstrapper...
+2026-06-18 20:11:31.581 +06:00 [DBG] Attempting database connection and migration...
+2026-06-18 20:11:31.878 +06:00 [DBG] Database migration applied successfully.
+2026-06-18 20:11:31.878 +06:00 [DBG] Seeding RBAC data...
+2026-06-18 20:11:32.039 +06:00 [INF] RBAC seed completed successfully.
+2026-06-18 20:11:32.039 +06:00 [DBG] RBAC seeding complete.
+2026-06-18 20:11:32.039 +06:00 [DBG] Seeding default user...
+2026-06-18 20:11:32.046 +06:00 [DBG] Default user seeding complete.
+2026-06-18 20:11:32.046 +06:00 [DBG] Seeding site settings...
+2026-06-18 20:11:32.055 +06:00 [DBG] Site settings seeding complete.
+2026-06-18 20:11:32.055 +06:00 [DBG] Seeding menu data...
+2026-06-18 20:11:32.073 +06:00 [DBG] Menu seeding complete.
+2026-06-18 20:11:32.073 +06:00 [DBG] Database bootstrapper finished.
+2026-06-18 20:11:32.096 +06:00 [DBG] Menu permission validation passed.
+2026-06-18 20:11:32.099 +06:00 [DBG] Permissions already in sync
+2026-06-18 20:11:32.100 +06:00 [DBG] App is running on: default Kestrel port
+2026-06-18 20:11:44.291 +06:00 [INF] HTTP POST /api/v1/auth/login responded 200 in 169.8804 ms
+2026-06-18 20:11:44.343 +06:00 [INF] HTTP GET /api/v1/SiteSettings/palette/sidebar responded 404 in 12.8644 ms
+2026-06-18 20:11:44.401 +06:00 [INF] HTTP GET /api/v1/SiteSettings responded 200 in 28.4954 ms
+2026-06-18 20:16:27.514 +06:00 [INF] HTTP OPTIONS /api/v1/Menu/all responded 204 in 1.3740 ms
+2026-06-18 20:16:27.522 +06:00 [DBG] Cache miss for key menus:all
+2026-06-18 20:16:27.529 +06:00 [INF] HTTP OPTIONS /api/v1/SiteSettings responded 204 in 0.1651 ms
+2026-06-18 20:16:27.538 +06:00 [DBG] Cache set for key menus:all (ttl "00:30:00")
+2026-06-18 20:16:27.539 +06:00 [INF] HTTP GET /api/v1/Menu/all responded 200 in 23.1525 ms
+2026-06-18 20:16:27.541 +06:00 [INF] HTTP OPTIONS /api/v1/Users/me responded 204 in 0.1745 ms
+2026-06-18 20:16:27.551 +06:00 [INF] HTTP GET /api/v1/SiteSettings responded 200 in 21.4643 ms
+2026-06-18 20:16:27.557 +06:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2026-06-18 20:16:27.563 +06:00 [INF] HTTP GET /api/v1/Users/me responded 200 in 20.9470 ms
+2026-06-18 20:16:29.863 +06:00 [INF] HTTP OPTIONS /api/v1/Users responded 204 in 0.5060 ms
+2026-06-18 20:16:29.863 +06:00 [INF] HTTP OPTIONS /api/v1/roles responded 204 in 0.5057 ms
+2026-06-18 20:16:29.873 +06:00 [DBG] Cache miss for key roles:all
+2026-06-18 20:16:29.899 +06:00 [INF] HTTP GET /api/v1/Users responded 200 in 34.9992 ms
+2026-06-18 20:16:29.900 +06:00 [DBG] Cache set for key roles:all (ttl "00:30:00")
+2026-06-18 20:16:29.901 +06:00 [INF] HTTP GET /api/v1/roles responded 200 in 36.8530 ms
+2026-06-18 20:16:30.805 +06:00 [DBG] Cache hit for key roles:all
+2026-06-18 20:16:30.808 +06:00 [INF] HTTP GET /api/v1/roles responded 200 in 5.7825 ms
+2026-06-18 20:16:31.588 +06:00 [INF] HTTP OPTIONS /api/v1/permissions responded 204 in 0.3906 ms
+2026-06-18 20:16:31.597 +06:00 [DBG] Permission cache miss for key permissions:all
+2026-06-18 20:16:31.602 +06:00 [DBG] Permission cache set for key permissions:all (ttl "00:30:00")
+2026-06-18 20:16:31.603 +06:00 [INF] HTTP GET /api/v1/permissions responded 200 in 14.2787 ms

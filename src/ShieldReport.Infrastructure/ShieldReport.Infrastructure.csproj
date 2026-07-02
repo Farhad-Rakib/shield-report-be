@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ShieldReport.Infrastructure</AssemblyName>
+    <RootNamespace>ShieldReport.Infrastructure</RootNamespace>
+    <OlympusEnableSeq>False</OlympusEnableSeq>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OlympusEnableSeq)' == 'True'">
+    <OlympusEnableSeq>true</OlympusEnableSeq>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OlympusEnableSeq)' == 'true'">
+    <DefineConstants>$(DefineConstants);OLYMPUS_ENABLE_SEQ</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../ShieldReport.Application/ShieldReport.Application.csproj" />
+    <ProjectReference Include="../ShieldReport.Domain/ShieldReport.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="Otp.NET" Version="1.4.1" />
+    <PackageReference Include="Serilog" Version="4.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.4" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+  </ItemGroup>
+</Project>
