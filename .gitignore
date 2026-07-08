@@ -8,5 +8,8 @@ obj/
 *.nupkg
 TestResults/
 
+# Docker compose secrets (see .env.example for the template)
+.env
+
 # Prompt files
 INITIAL_TEMPLATE_PROMPT.md

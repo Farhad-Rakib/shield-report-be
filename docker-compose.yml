@@ -1,0 +1,97 @@
+# LAN demo stack: mssql + mailhog + api (this repo) + fe (shield-report-fe).
+#
+# Requires shield-report-fe to be cloned as a SIBLING directory next to this repo, e.g.:
+#   server/
+#     shield-report-be/   <- this repo (contains this file)
+#     shield-report-fe/
+#
+# Usage:
+#   cp .env.example .env   # then set SERVER_IP to this machine's LAN IP
+#   docker compose up -d --build
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: shieldreport-mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - shieldreport-net
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: shieldreport-mailhog
+    ports:
+      - "8025:8025" # web UI to view password-reset / notification emails sent during the demo
+    networks:
+      - shieldreport-net
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    container_name: shieldreport-api
+    depends_on:
+      mssql:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__SqlServerConnection: Server=mssql,1433;Database=ShieldReportDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;
+      Jwt__SecretKey: ${JWT_SECRET_KEY}
+      Jwt__Issuer: ShieldReport
+      Jwt__Audience: ShieldReport.Client
+      Cors__AllowedOrigins__0: http://${SERVER_IP}:${FE_PORT:-8080}
+      Smtp__Host: mailhog
+      Smtp__Port: 1025
+      Smtp__Username: demo
+      Smtp__Password: demo
+      Smtp__FromAddress: no-reply@shieldreport.local
+      Smtp__FromName: Shield Report
+      Smtp__UseSsl: "false" # MailHog doesn't speak TLS
+      # This demo serves everything over plain HTTP, and browsers refuse to store/send Secure
+      # cookies on a non-HTTPS, non-"localhost" origin — without this, refresh-token renewal
+      # silently breaks once the LAN IP is used. See RefreshTokenCookie.cs.
+      Cookies__RequireSecure: "false"
+      Serilog__MinimumLevel__Default: Information
+    ports:
+      - "${API_PORT:-5050}:8080"
+    networks:
+      - shieldreport-net
+    restart: unless-stopped
+
+  fe:
+    build:
+      context: ../shield-report-fe
+      dockerfile: Dockerfile
+    container_name: shieldreport-fe
+    depends_on:
+      - api
+    environment:
+      # Baked into a static file at container startup (see shield-report-fe/docker/entrypoint.sh),
+      # so this image never needs to be rebuilt just because SERVER_IP changes.
+      API_BASE_URL: http://${SERVER_IP}:${API_PORT:-5050}/api/v1
+      CSP_CONNECT_SRC: http://${SERVER_IP}:${API_PORT:-5050} ws://${SERVER_IP}:${API_PORT:-5050}
+    ports:
+      - "${FE_PORT:-8080}:80"
+    networks:
+      - shieldreport-net
+    restart: unless-stopped
+
+networks:
+  shieldreport-net:
+    driver: bridge
+
+volumes:
+  mssql_data:
