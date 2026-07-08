@@ -16,6 +16,7 @@ public sealed class MfaController : ControllerBase
 {
     private readonly IMfaService _mfaService;
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
     private readonly IValidator<MfaEnrollConfirmRequestDto> _enrollConfirmValidator;
     private readonly IValidator<MfaDisableRequestDto> _disableValidator;
     private readonly IValidator<MfaVerifyRequestDto> _verifyValidator;
@@ -23,12 +24,14 @@ public sealed class MfaController : ControllerBase
     public MfaController(
         IMfaService mfaService,
         IWebHostEnvironment environment,
+        IConfiguration configuration,
         IValidator<MfaEnrollConfirmRequestDto> enrollConfirmValidator,
         IValidator<MfaDisableRequestDto> disableValidator,
         IValidator<MfaVerifyRequestDto> verifyValidator)
     {
         _mfaService = mfaService;
         _environment = environment;
+        _configuration = configuration;
         _enrollConfirmValidator = enrollConfirmValidator;
         _disableValidator = disableValidator;
         _verifyValidator = verifyValidator;
@@ -67,7 +70,7 @@ public sealed class MfaController : ControllerBase
     {
         await _verifyValidator.ValidateAndThrowAsync(request, cancellationToken);
         var tokens = await _mfaService.VerifyLoginChallengeAsync(request, cancellationToken);
-        RefreshTokenCookie.Set(Response, _environment, tokens.RefreshToken, tokens.RefreshTokenExpiresAtUtc);
+        RefreshTokenCookie.Set(Response, _environment, _configuration, tokens.RefreshToken, tokens.RefreshTokenExpiresAtUtc);
 
         var response = new AuthTokenResponseDto(tokens.AccessToken, tokens.AccessTokenExpiresAtUtc);
         return Ok(ApiResponse<AuthTokenResponseDto>.SuccessResponse(response, "Login successful", StatusCodes.Status200OK));

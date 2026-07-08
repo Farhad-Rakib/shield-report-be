@@ -67,33 +67,23 @@ builder.Services.AddApiVersioning(options =>
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    if (builder.Environment.IsDevelopment())
+    // Cors:AllowedOrigins lets any environment (incl. LAN demo deployments) add extra
+    // allowed origins via config/env vars without losing the default dev origin.
+    var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+        ?? Array.Empty<string>();
+
+    var allowedOrigins = builder.Environment.IsDevelopment()
+        ? new[] { "http://localhost:5173" }.Union(configuredOrigins).ToArray()
+        : (configuredOrigins.Length > 0 ? configuredOrigins : new[] { "https://yourdomain.com" });
+
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        options.AddPolicy("AllowFrontend", policy =>
-        {
-            policy
-            .WithOrigins(
-                "http://localhost:5173"            )
+        policy
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
-        });
-    }
-    else
-    {
-        // Production: Restrict to specific origins
-        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins")?.Get<string[]>() 
-            ?? new[] { "https://yourdomain.com" };
-
-        options.AddPolicy("AllowFrontend", policy =>
-        {
-            policy
-                .WithOrigins(allowedOrigins)
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
-    }
+    });
 });
 
 builder.Services.AddSwaggerGen(options =>

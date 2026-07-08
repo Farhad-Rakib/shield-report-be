@@ -17,6 +17,7 @@ public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
     private readonly IValidator<LoginRequestDto> _loginValidator;
     private readonly IValidator<RegisterUserRequestDto> _registerValidator;
     private readonly IValidator<RefreshTokenRequestDto> _refreshTokenValidator;
@@ -28,6 +29,7 @@ public sealed class AuthController : ControllerBase
     public AuthController(
         IAuthService authService,
         IWebHostEnvironment environment,
+        IConfiguration configuration,
         IValidator<LoginRequestDto> loginValidator,
         IValidator<RegisterUserRequestDto> registerValidator,
         IValidator<RefreshTokenRequestDto> refreshTokenValidator,
@@ -38,6 +40,7 @@ public sealed class AuthController : ControllerBase
     {
         _authService = authService;
         _environment = environment;
+        _configuration = configuration;
         _loginValidator = loginValidator;
         _registerValidator = registerValidator;
         _refreshTokenValidator = refreshTokenValidator;
@@ -63,7 +66,7 @@ public sealed class AuthController : ControllerBase
         }
 
         var tokens = result.Tokens!;
-        RefreshTokenCookie.Set(Response, _environment, tokens.RefreshToken, tokens.RefreshTokenExpiresAtUtc);
+        RefreshTokenCookie.Set(Response, _environment, _configuration, tokens.RefreshToken, tokens.RefreshTokenExpiresAtUtc);
 
         var response = new AuthTokenResponseDto(tokens.AccessToken, tokens.AccessTokenExpiresAtUtc);
         return Ok(ApiResponse<AuthTokenResponseDto>.SuccessResponse(response, "Login successful", StatusCodes.Status200OK));
@@ -94,7 +97,7 @@ public sealed class AuthController : ControllerBase
         var request = new RefreshTokenRequestDto(refreshToken);
         await _refreshTokenValidator.ValidateAndThrowAsync(request, cancellationToken);
         var tokens = await _authService.RefreshTokenAsync(request, cancellationToken);
-        RefreshTokenCookie.Set(Response, _environment, tokens.RefreshToken, tokens.RefreshTokenExpiresAtUtc);
+        RefreshTokenCookie.Set(Response, _environment, _configuration, tokens.RefreshToken, tokens.RefreshTokenExpiresAtUtc);
 
         var response = new AuthTokenResponseDto(tokens.AccessToken, tokens.AccessTokenExpiresAtUtc);
         return Ok(ApiResponse<AuthTokenResponseDto>.SuccessResponse(response, "Token refreshed successfully", StatusCodes.Status200OK));
@@ -113,7 +116,7 @@ public sealed class AuthController : ControllerBase
             await _authService.RevokeRefreshTokenAsync(request, cancellationToken);
         }
 
-        RefreshTokenCookie.Delete(Response, _environment);
+        RefreshTokenCookie.Delete(Response, _environment, _configuration);
         return NoContent();
     }
 
