@@ -57,6 +57,7 @@ namespace ShieldReport.Application.Menu
                 .Where(item => string.IsNullOrEmpty(item.RequiredPermission) || userPermissions.Contains(item.RequiredPermission))
                 .Select(item => new MenuItemDto
                 {
+                    Id = item.Id,
                     Title = item.Title,
                     Url = item.Url,
                     Icon = item.Icon,
