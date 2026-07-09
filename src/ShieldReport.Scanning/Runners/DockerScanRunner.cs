@@ -48,6 +48,17 @@ public sealed partial class DockerScanRunner : IScanRunner
             startInfo.ArgumentList.Add("--user");
             startInfo.ArgumentList.Add("1000:1000");
         }
+        else
+        {
+            // six2dez/reconftw:latest only publishes a linux/arm64 manifest on Docker Hub (no
+            // linux/amd64 entry at all — confirmed via `docker manifest inspect`), so without
+            // this flag `docker run` fails outright on amd64 hosts with "no matching manifest
+            // for linux/amd64". Forcing arm64 runs natively on arm64 hosts and via QEMU
+            // emulation on amd64 hosts. Matches the platform pin on reconftw-image in
+            // docker-compose.yml.
+            startInfo.ArgumentList.Add("--platform");
+            startInfo.ArgumentList.Add("linux/arm64");
+        }
         startInfo.ArgumentList.Add("--security-opt");
         startInfo.ArgumentList.Add("no-new-privileges");
         // UID 1000 has no /etc/passwd entry in these images, so $HOME defaults to "/" and

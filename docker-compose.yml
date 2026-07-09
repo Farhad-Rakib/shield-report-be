@@ -68,14 +68,13 @@ services:
       # Docker-outside-of-Docker: lets DockerScanRunner (ShieldReport.Scanning) shell out to
       # `docker run` for Naabu/Nuclei/Reconftw against the HOST's Docker daemon. The api
       # container runs as root (no USER in src/Dockerfile), so it can access the socket
-      # regardless of its host-side group ownership. Depends on scanner-images below having
-      # already pulled the tool images so scans don't stall on a first-run pull.
+      # regardless of its host-side group ownership. Not a hard startup dependency on
+      # scanner-images below — a broken/unavailable third-party scan-tool image shouldn't
+      # block the app itself from coming up; the first scan with that tool just eats a pull.
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       mssql:
         condition: service_healthy
-      scanner-images:
-        condition: service_completed_successfully
     networks:
       - shieldreport-net
     restart: unless-stopped
@@ -87,9 +86,12 @@ services:
     image: alpine:latest
     container_name: shieldreport-scanner-images
     depends_on:
-      - naabu-image
-      - nuclei-image
-      - reconftw-image
+      naabu-image:
+        condition: service_completed_successfully
+      nuclei-image:
+        condition: service_completed_successfully
+      reconftw-image:
+        condition: service_completed_successfully
     command: ["true"]
     restart: "no"
     networks:
@@ -111,8 +113,15 @@ services:
     networks:
       - shieldreport-net
 
+  # six2dez/reconftw only publishes a linux/arm64 manifest on Docker Hub (verified via
+  # `docker manifest inspect six2dez/reconftw:latest` — no linux/amd64 entry exists at all).
+  # Pinning the platform here means this pulls natively on arm64 hosts and via QEMU emulation
+  # on amd64 hosts, instead of failing outright with "no matching manifest for linux/amd64".
+  # DockerScanRunner.cs must pass the same --platform linux/arm64 flag when it invokes this
+  # image at scan time, or the runtime `docker run` call hits the identical error.
   reconftw-image:
     image: six2dez/reconftw:latest
+    platform: linux/arm64
     container_name: shieldreport-reconftw-image
     entrypoint: ["true"]
     restart: "no"
