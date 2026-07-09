@@ -54,5 +54,12 @@ public sealed class ScanConfiguration : IEntityTypeConfiguration<Scan>
             .WithMany()
             .HasForeignKey(x => x.EngagementTaskId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Self-referencing chain pointer (Naabu -> Nuclei -> Reconftw) — Restrict, not Cascade,
+        // since SQL Server rejects cascade paths that could revisit the same table twice.
+        builder.HasOne(x => x.NextScan)
+            .WithMany()
+            .HasForeignKey(x => x.NextScanId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

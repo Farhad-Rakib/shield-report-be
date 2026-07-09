@@ -120,10 +120,15 @@ public sealed partial class DockerScanRunner : IScanRunner
         {
             // Naabu's -host wants a bare hostname/IP/CIDR — a WebUrl asset's full
             // "https://host/path" identifier makes it report "no valid ipv4 or ipv6 targets
-            // found" and exit immediately, confirmed against a live run.
-            ScanTool.Naabu => ("projectdiscovery/naabu:latest", new[] { "-host", ExtractHost(target), "-silent" }),
-            // Nuclei's -u accepts either a full URL or a bare host, so the raw identifier is fine as-is.
-            ScanTool.Nuclei => ("projectdiscovery/nuclei:latest", new[] { "-u", target, "-jsonl", "-silent" }),
+            // found" and exit immediately, confirmed against a live run. -json switches from the
+            // plain "host:port" text line to a structured record (host/ip/port/protocol/tls) so
+            // NaabuOutputParser can report more than just the bare port number.
+            ScanTool.Naabu => ("projectdiscovery/naabu:latest", new[] { "-host", ExtractHost(target), "-json", "-silent" }),
+            // Nuclei's -u accepts either a full URL or a bare host, so the raw identifier is fine
+            // as-is. -irr (include request/response) adds curl-command/request/response to each
+            // JSONL record so NucleiOutputParser can populate a real proof-of-concept instead of
+            // just a title.
+            ScanTool.Nuclei => ("projectdiscovery/nuclei:latest", new[] { "-u", target, "-jsonl", "-irr", "-silent" }),
             // Reconftw's -d wants a bare domain, same problem as Naabu.
             ScanTool.Reconftw => ("six2dez/reconftw:latest", new[] { "-d", ExtractHost(target), "--recon" }),
             _ => throw new ArgumentOutOfRangeException(nameof(tool), tool, "Unsupported scan tool.")

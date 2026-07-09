@@ -32,11 +32,19 @@ public sealed class Scan : BaseEntity
     public long? CancelledByUserId { get; private set; }
     public DateTime? CancelledAt { get; private set; }
 
+    // Auto-chaining: when a multi-tool scan is requested, ScanService creates one Scan row per
+    // tool up front (in Naabu -> Nuclei -> Reconftw order) but only enqueues the first — each
+    // links to the next via this self-FK, and ScanWorkerBackgroundService enqueues NextScanId
+    // once the current one reaches a terminal state (Completed or Failed), so the tools run one
+    // at a time instead of all in parallel.
+    public long? NextScanId { get; private set; }
+
     public ClientAsset ClientAsset { get; private set; } = null!;
     public ClientOrganization ClientOrganization { get; private set; } = null!;
     public ScanWorkerNode? WorkerNode { get; private set; }
     public Engagement? Engagement { get; private set; }
     public EngagementTask? EngagementTask { get; private set; }
+    public Scan? NextScan { get; private set; }
 
     private Scan()
     {
@@ -86,5 +94,10 @@ public sealed class Scan : BaseEntity
         CancelledByUserId = cancelledByUserId;
         CancelledAt = DateTime.UtcNow;
         CompletedAt = DateTime.UtcNow;
+    }
+
+    public void SetNextScan(long nextScanId)
+    {
+        NextScanId = nextScanId;
     }
 }

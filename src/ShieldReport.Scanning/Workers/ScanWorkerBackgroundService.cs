@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ShieldReport.Application.Common.Interfaces;
 using ShieldReport.Application.Common.Interfaces.Services;
+using ShieldReport.Application.Scans;
 using ShieldReport.Application.Scans.Parsing;
 using ShieldReport.Application.Vulnerabilities;
 using ShieldReport.Domain.Entities;
@@ -68,6 +69,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         var dedupService = scope.ServiceProvider.GetRequiredService<IVulnerabilityDedupService>();
         var findingRepository = scope.ServiceProvider.GetRequiredService<IScanFindingRawRepository>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var scanQueueService = scope.ServiceProvider.GetRequiredService<IScanQueueService>();
 
         var scan = await scanRepository.GetByIdWithDetailsAsync(scanId, cancellationToken);
         if (scan is null || scan.Status != ScanStatus.Queued)
@@ -81,6 +83,8 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
             scan.Fail("Client asset no longer exists.");
             scanRepository.Update(scan);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await PushStatusAsync(scan, cancellationToken);
+            await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
             return;
         }
 
@@ -99,6 +103,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
                 scanRepository.Update(scan);
                 await unitOfWork.SaveChangesAsync(cancellationToken);
                 await PushStatusAsync(scan, cancellationToken);
+                await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
                 return;
             }
 
@@ -128,6 +133,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
             scanRepository.Update(scan);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await PushStatusAsync(scan, cancellationToken);
+            await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -136,7 +142,26 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
             scanRepository.Update(scan);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await PushStatusAsync(scan, cancellationToken);
+            await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
         }
+    }
+
+    // A tool failing (e.g. Reconftw's known amd64 manifest gap) shouldn't strand the rest of
+    // the chain — Nuclei/Reconftw still get their turn even if Naabu errored out.
+    private static async Task EnqueueNextInChainAsync(Scan scan, IScanRepository scanRepository, IScanQueueService scanQueueService, CancellationToken cancellationToken)
+    {
+        if (!scan.NextScanId.HasValue)
+        {
+            return;
+        }
+
+        var nextScan = await scanRepository.GetByIdAsync(scan.NextScanId.Value, cancellationToken);
+        if (nextScan is null || nextScan.Status != ScanStatus.Queued)
+        {
+            return;
+        }
+
+        scanQueueService.Enqueue(nextScan.Id, nextScan.Tool);
     }
 
     private async Task PushOutputLineAsync(Scan scan, string line, CancellationToken cancellationToken)

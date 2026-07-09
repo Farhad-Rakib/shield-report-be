@@ -15,4 +15,5 @@ public sealed record ScanDto(
     DateTime? CompletedAt,
     long RequestedByUserId,
     string? ErrorMessage,
-    string? RawOutput);
+    string? RawOutput,
+    Guid? NextScanPublicId);

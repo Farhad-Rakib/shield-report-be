@@ -97,22 +97,33 @@ public sealed class ScanService : IScanService
                 409);
         }
 
+        // Auto-chain: run requested tools one at a time in a fixed Naabu -> Nuclei -> Reconftw
+        // order (matches ScanTool's declared enum order) instead of all in parallel — each Scan
+        // row links to the next via NextScanId, but only the first is enqueued now.
+        // ScanWorkerBackgroundService enqueues NextScanId once a scan reaches a terminal state.
+        var orderedTools = distinctTools.OrderBy(tool => (int)tool).ToArray();
+
         var scans = new List<Scan>();
-        foreach (var tool in distinctTools)
+        foreach (var tool in orderedTools)
         {
             var scan = new Scan(asset.ClientOrganizationId, clientAssetId, tool, requestedByUserId, request.EngagementId, engagementTaskId);
             await _scanRepository.AddAsync(scan, cancellationToken);
             scans.Add(scan);
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        foreach (var scan in scans)
+        for (var i = 0; i < scans.Count - 1; i++)
         {
-            _scanQueueService.Enqueue(scan.Id, scan.Tool);
+            scans[i].SetNextScan(scans[i + 1].Id);
+            _scanRepository.Update(scans[i]);
         }
 
-        return scans.Select(scan => ToDto(scan, asset)).ToList();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _scanQueueService.Enqueue(scans[0].Id, scans[0].Tool);
+
+        return scans
+            .Select((scan, i) => ToDto(scan, asset, i < scans.Count - 1 ? scans[i + 1].PublicId : null))
+            .ToList();
     }
 
     public async Task<ScanDto> CancelAsync(Guid publicId, long cancelledByUserId, CancellationToken cancellationToken = default)
@@ -122,6 +133,23 @@ public sealed class ScanService : IScanService
 
         scan.Cancel(cancelledByUserId);
         _scanRepository.Update(scan);
+
+        // Cancelling one tool mid-chain shouldn't leave the rest sitting Queued forever with
+        // nothing left to enqueue them — cancel the whole downstream chain along with it.
+        var nextScanId = scan.NextScanId;
+        while (nextScanId.HasValue)
+        {
+            var nextScan = await _scanRepository.GetByIdAsync(nextScanId.Value, cancellationToken);
+            if (nextScan is null || nextScan.Status != ScanStatus.Queued)
+            {
+                break;
+            }
+
+            nextScan.Cancel(cancelledByUserId);
+            _scanRepository.Update(nextScan);
+            nextScanId = nextScan.NextScanId;
+        }
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return ToDto(scan);
@@ -136,7 +164,7 @@ public sealed class ScanService : IScanService
         return findings.Select(f => new ScanFindingRawDto(f.Id, f.ScanId, f.RawOutputJson, f.ParsedTitle, f.ParsedEndpoint, f.ParsedSeverityRaw, f.ProcessedAt, f.ResultingVulnerabilityId)).ToList();
     }
 
-    private static ScanDto ToDto(Scan scan, ClientAsset? asset = null)
+    private static ScanDto ToDto(Scan scan, ClientAsset? asset = null, Guid? nextScanPublicIdOverride = null)
     {
         var clientAsset = asset ?? scan.ClientAsset;
         return new ScanDto(
@@ -154,6 +182,7 @@ public sealed class ScanService : IScanService
             scan.CompletedAt,
             scan.RequestedByUserId,
             scan.ErrorMessage,
-            scan.RawOutput);
+            scan.RawOutput,
+            nextScanPublicIdOverride ?? scan.NextScan?.PublicId);
     }
 }

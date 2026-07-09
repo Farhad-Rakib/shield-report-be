@@ -20,6 +20,7 @@ public sealed class ScanRepository : BaseRepository<Scan>, IScanRepository
         return await DbSet
             .Include(x => x.ClientAsset)
             .Include(x => x.WorkerNode)
+            .Include(x => x.NextScan)
             .FirstOrDefaultAsync(x => x.PublicId == publicId, cancellationToken);
     }
 
@@ -46,7 +47,7 @@ public sealed class ScanRepository : BaseRepository<Scan>, IScanRepository
         ScanStatus? status,
         CancellationToken cancellationToken = default)
     {
-        var query = DbSet.Include(x => x.ClientAsset).AsQueryable();
+        var query = DbSet.Include(x => x.ClientAsset).Include(x => x.NextScan).AsQueryable();
 
         if (clientOrganizationId.HasValue)
         {
