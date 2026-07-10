@@ -111,6 +111,12 @@ public sealed class ScanService : IScanService
             scans.Add(scan);
         }
 
+        // Insert all rows first so they get permanent Ids — SQL Server batches same-table
+        // inserts into a single MERGE statement and rejects a self-referencing FK pointing at
+        // a sibling row inserted in that same batch. Linking the chain via a second save (an
+        // UPDATE against already-committed rows) avoids that conflict.
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
         for (var i = 0; i < scans.Count - 1; i++)
         {
             scans[i].SetNextScan(scans[i + 1].Id);
