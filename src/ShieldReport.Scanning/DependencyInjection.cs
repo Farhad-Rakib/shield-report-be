@@ -14,6 +14,7 @@ public static class DependencyInjection
     public static IServiceCollection AddScanning(this IServiceCollection services)
     {
         services.AddSingleton<IScanWorkQueue, PerToolScanWorkQueue>();
+        services.AddSingleton<IScanCancellationRegistry, ScanCancellationRegistry>();
         services.AddScoped<IScanRunner, DockerScanRunner>();
         services.AddScoped<IScanDispatcher, HangfireScanDispatcher>();
         services.AddScoped<ScanDispatchJob>();

@@ -36,8 +36,15 @@ public sealed partial class DockerScanRunner : IScanRunner
             CreateNoWindow = true
         };
 
+        // Deterministic name so a cancellation can `docker stop` this exact container — killing
+        // the local `docker run` CLI process alone does NOT stop the container itself (it just
+        // detaches from it), so that's the only reliable way to actually interrupt the tool.
+        var containerName = $"shieldreport-scan-{scan.Id}";
+
         startInfo.ArgumentList.Add("run");
         startInfo.ArgumentList.Add("--rm");
+        startInfo.ArgumentList.Add("--name");
+        startInfo.ArgumentList.Add(containerName);
         // six2dez/reconftw:latest owns /reconftw as root and its script does git operations
         // there — running as UID 1000 trips git's "dubious ownership" check and then fails to
         // mkdir its own output dir (Permission denied), confirmed against the real image.
@@ -106,7 +113,31 @@ public sealed partial class DockerScanRunner : IScanRunner
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            await process.WaitForExitAsync(cancellationToken);
+
+            try
+            {
+                await process.WaitForExitAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                await StopContainerAsync(containerName);
+                // `docker stop` above should make the attached `docker run` CLI process exit on
+                // its own almost immediately; give it a moment before falling back to Kill so we
+                // don't leave a zombie process if the daemon-side stop is slow.
+                try
+                {
+                    await process.WaitForExitAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5));
+                }
+                catch
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                }
+
+                return new ScanRunResult(false, rawOutput.ToString(), "Cancelled by user.");
+            }
 
             if (process.ExitCode != 0)
             {
@@ -118,6 +149,35 @@ public sealed partial class DockerScanRunner : IScanRunner
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
             return new ScanRunResult(false, rawOutput.ToString(), $"Failed to invoke docker: {ex.Message}");
+        }
+    }
+
+    // Best-effort — if this fails for any reason (daemon hiccup, container already gone), the
+    // fallback Kill(entireProcessTree) in the caller still guarantees the local CLI process
+    // doesn't leak, even though the container itself might then linger until it finishes on its
+    // own. `docker stop` gives it a 10s grace period (SIGTERM) before SIGKILL, matching the
+    // Docker CLI default.
+    private static async Task StopContainerAsync(string containerName)
+    {
+        try
+        {
+            using var stopProcess = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "docker",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            };
+            stopProcess.StartInfo.ArgumentList.Add("stop");
+            stopProcess.StartInfo.ArgumentList.Add(containerName);
+            stopProcess.Start();
+            await stopProcess.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(15));
+        }
+        catch
+        {
+            // Swallowed intentionally — see method summary.
         }
     }
 

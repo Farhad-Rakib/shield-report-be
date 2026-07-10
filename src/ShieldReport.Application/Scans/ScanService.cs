@@ -1,5 +1,6 @@
 using ShieldReport.Application.Common.Exceptions;
 using ShieldReport.Application.Common.Interfaces;
+using ShieldReport.Application.Common.Interfaces.Services;
 using ShieldReport.Application.Common.Models;
 using ShieldReport.Application.Scans.Dtos;
 using ShieldReport.Domain.Entities;
@@ -14,6 +15,8 @@ public sealed class ScanService : IScanService
     private readonly IClientAssetRepository _clientAssetRepository;
     private readonly IEngagementRepository _engagementRepository;
     private readonly IScanQueueService _scanQueueService;
+    private readonly IScanCancellationRegistry _scanCancellationRegistry;
+    private readonly IScanRealtimeNotifier _realtimeNotifier;
     private readonly IUnitOfWork _unitOfWork;
 
     public ScanService(
@@ -22,6 +25,8 @@ public sealed class ScanService : IScanService
         IClientAssetRepository clientAssetRepository,
         IEngagementRepository engagementRepository,
         IScanQueueService scanQueueService,
+        IScanCancellationRegistry scanCancellationRegistry,
+        IScanRealtimeNotifier realtimeNotifier,
         IUnitOfWork unitOfWork)
     {
         _scanRepository = scanRepository;
@@ -29,6 +34,8 @@ public sealed class ScanService : IScanService
         _clientAssetRepository = clientAssetRepository;
         _engagementRepository = engagementRepository;
         _scanQueueService = scanQueueService;
+        _scanCancellationRegistry = scanCancellationRegistry;
+        _realtimeNotifier = realtimeNotifier;
         _unitOfWork = unitOfWork;
     }
 
@@ -137,11 +144,13 @@ public sealed class ScanService : IScanService
         var scan = await _scanRepository.GetByPublicIdAsync(publicId, cancellationToken)
             ?? throw new AppException("Scan not found.", 404);
 
+        var wasRunning = scan.Status == ScanStatus.Running;
         scan.Cancel(cancelledByUserId);
         _scanRepository.Update(scan);
 
         // Cancelling one tool mid-chain shouldn't leave the rest sitting Queued forever with
         // nothing left to enqueue them — cancel the whole downstream chain along with it.
+        var cancelledScanIds = new List<Guid> { scan.PublicId };
         var nextScanId = scan.NextScanId;
         while (nextScanId.HasValue)
         {
@@ -153,10 +162,28 @@ public sealed class ScanService : IScanService
 
             nextScan.Cancel(cancelledByUserId);
             _scanRepository.Update(nextScan);
+            cancelledScanIds.Add(nextScan.PublicId);
             nextScanId = nextScan.NextScanId;
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Flipping the DB row alone doesn't stop an in-flight `docker run` for this scan — signal
+        // whichever background task actually owns it (a no-op if it wasn't Running, e.g. still
+        // Queued) so the tool container is genuinely killed instead of running to completion
+        // unattended. See DockerScanRunner.RunAsync / ScanCancellationRegistry.
+        if (wasRunning)
+        {
+            _scanCancellationRegistry.TryCancel(scan.Id);
+        }
+
+        // The background worker only pushes ScanStatusChanged once it notices a run finished —
+        // for a scan that was still Queued (never started), nothing would otherwise tell
+        // connected clients it's done. Push it here so the console updates immediately either way.
+        foreach (var cancelledScanId in cancelledScanIds)
+        {
+            await _realtimeNotifier.PushScanStatusAsync(cancelledScanId, ScanStatus.Cancelled.ToString(), cancellationToken);
+        }
 
         return ToDto(scan);
     }

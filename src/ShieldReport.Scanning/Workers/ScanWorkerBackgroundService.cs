@@ -22,6 +22,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
     private readonly IScanWorkQueue _scanWorkQueue;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IScanRealtimeNotifier _realtimeNotifier;
+    private readonly IScanCancellationRegistry _cancellationRegistry;
     private readonly ILogger<ScanWorkerBackgroundService> _logger;
     private readonly Dictionary<ScanTool, SemaphoreSlim> _concurrencyGates =
         Enum.GetValues<ScanTool>().ToDictionary(tool => tool, _ => new SemaphoreSlim(1, 1));
@@ -30,11 +31,13 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         IScanWorkQueue scanWorkQueue,
         IServiceScopeFactory scopeFactory,
         IScanRealtimeNotifier realtimeNotifier,
+        IScanCancellationRegistry cancellationRegistry,
         ILogger<ScanWorkerBackgroundService> logger)
     {
         _scanWorkQueue = scanWorkQueue;
         _scopeFactory = scopeFactory;
         _realtimeNotifier = realtimeNotifier;
+        _cancellationRegistry = cancellationRegistry;
         _logger = logger;
     }
 
@@ -99,12 +102,25 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         var parser = parserFactory.GetParser(scan.Tool);
         await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, $"Starting {scan.Tool} scan against {asset.Identifier}...", cancellationToken);
 
+        // Registered so a Cancel API call (ScanService.CancelAsync, in a completely different DI
+        // scope/request) can reach this specific in-flight run and actually stop its `docker run`
+        // process — see ScanCancellationRegistry.
+        var runCts = _cancellationRegistry.Register(scan.Id, cancellationToken);
+
         try
         {
-            var result = await scanRunner.RunAsync(scan, asset, (line, stream) => PushOutputLineAsync(scan, line, stream, parser, cancellationToken), cancellationToken);
+            var result = await scanRunner.RunAsync(scan, asset, (line, stream) => PushOutputLineAsync(scan, line, stream, parser, cancellationToken), runCts.Token);
 
             if (!result.Success)
             {
+                if (runCts.IsCancellationRequested)
+                {
+                    // ScanService.CancelAsync already set this scan (and cascaded the rest of the
+                    // chain) to Cancelled and pushed the status update — nothing left to do here.
+                    _logger.LogInformation("Scan {ScanId} run was stopped by user request.", scanId);
+                    return;
+                }
+
                 scan.Fail(result.ErrorMessage ?? "Scan failed.", result.RawOutput);
                 scanRepository.Update(scan);
                 await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -154,6 +170,10 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
             await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, $"{scan.Tool} failed: {ex.Message}", cancellationToken);
             await PushStatusAsync(scan, cancellationToken);
             await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
+        }
+        finally
+        {
+            _cancellationRegistry.Unregister(scan.Id);
         }
     }
 
