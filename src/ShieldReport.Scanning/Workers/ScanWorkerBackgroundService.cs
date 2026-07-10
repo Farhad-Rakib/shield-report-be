@@ -93,21 +93,27 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await PushStatusAsync(scan, cancellationToken);
 
+        // Resolved up front (not just after the run, as before) so the live per-line finding
+        // parsing below can reuse it — and so the "starting" phase message can go out immediately,
+        // independent of whatever the tool itself does or doesn't print.
+        var parser = parserFactory.GetParser(scan.Tool);
+        await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, $"Starting {scan.Tool} scan against {asset.Identifier}...", cancellationToken);
+
         try
         {
-            var result = await scanRunner.RunAsync(scan, asset, line => PushOutputLineAsync(scan, line, cancellationToken), cancellationToken);
+            var result = await scanRunner.RunAsync(scan, asset, (line, stream) => PushOutputLineAsync(scan, line, stream, parser, cancellationToken), cancellationToken);
 
             if (!result.Success)
             {
                 scan.Fail(result.ErrorMessage ?? "Scan failed.", result.RawOutput);
                 scanRepository.Update(scan);
                 await unitOfWork.SaveChangesAsync(cancellationToken);
+                await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, $"{scan.Tool} failed: {scan.ErrorMessage}", cancellationToken);
                 await PushStatusAsync(scan, cancellationToken);
                 await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
                 return;
             }
 
-            var parser = parserFactory.GetParser(scan.Tool);
             var parsedFindings = parser.Parse(result.RawOutput);
 
             foreach (var finding in parsedFindings)
@@ -132,6 +138,10 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
             scan.Complete(rawLogBlobKey: null, rawOutput: result.RawOutput);
             scanRepository.Update(scan);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await _realtimeNotifier.PushScanPhaseAsync(
+                scan.PublicId,
+                parsedFindings.Count > 0 ? $"{scan.Tool} finished — {parsedFindings.Count} finding(s)." : $"{scan.Tool} finished — no findings.",
+                cancellationToken);
             await PushStatusAsync(scan, cancellationToken);
             await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
         }
@@ -141,6 +151,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
             scan.Fail($"Unexpected error: {ex.Message}");
             scanRepository.Update(scan);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, $"{scan.Tool} failed: {ex.Message}", cancellationToken);
             await PushStatusAsync(scan, cancellationToken);
             await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
         }
@@ -164,9 +175,31 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         scanQueueService.Enqueue(nextScan.Id, nextScan.Tool);
     }
 
-    private async Task PushOutputLineAsync(Scan scan, string line, CancellationToken cancellationToken)
+    private async Task PushOutputLineAsync(Scan scan, string line, string stream, IScanOutputParser parser, CancellationToken cancellationToken)
     {
-        await _realtimeNotifier.PushScanOutputAsync(scan.PublicId, line, cancellationToken);
+        await _realtimeNotifier.PushScanOutputAsync(scan.PublicId, line, stream, cancellationToken);
+
+        // Best-effort live finding parse — the parsers already split on '\n' and skip
+        // malformed/non-matching lines internally, so re-using them per single streamed line is
+        // just a normal call, not a special "line mode". Never let a parse hiccup break the
+        // stream; the authoritative parse of the full RawOutput still runs after the scan
+        // completes in ProcessScanAsync, so a live-parse miss here has no lasting effect.
+        if (stream != "stdout")
+        {
+            return;
+        }
+
+        try
+        {
+            foreach (var finding in parser.Parse(line))
+            {
+                await _realtimeNotifier.PushScanFindingAsync(scan.PublicId, finding.Title, finding.SeverityRaw, finding.Endpoint, cancellationToken);
+            }
+        }
+        catch
+        {
+            // Live-only convenience — swallow and let the post-scan parse be authoritative.
+        }
     }
 
     private async Task PushStatusAsync(Scan scan, CancellationToken cancellationToken)

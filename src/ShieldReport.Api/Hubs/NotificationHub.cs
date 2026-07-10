@@ -12,8 +12,9 @@ public class NotificationHub : Hub
         await Clients.User(userId).SendAsync("ReceiveNotification", notification);
     }
 
-    // Clients viewing a scan join its group to receive live console output
-    // (ScanOutput) and status changes (ScanStatusChanged) — see API-DESIGN-PentestOps.md §6.
+    // Clients viewing a scan join its group to receive live console output (ScanOutput),
+    // backend-narrated progress (ScanPhase), live parsed findings (ScanFinding), and status
+    // changes (ScanStatusChanged) — see API-DESIGN-PentestOps.md §6.
     public async Task JoinScanGroup(string scanPublicId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, ScanGroupName(scanPublicId));

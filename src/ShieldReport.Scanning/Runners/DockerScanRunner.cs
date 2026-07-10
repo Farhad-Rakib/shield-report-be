@@ -17,7 +17,7 @@ public sealed partial class DockerScanRunner : IScanRunner
 
     private static readonly char[] ShellMetacharacters = [';', '&', '|', '`', '$', '\n', '\r', '<', '>'];
 
-    public async Task<ScanRunResult> RunAsync(Scan scan, ClientAsset asset, Func<string, Task> onOutputLine, CancellationToken cancellationToken = default)
+    public async Task<ScanRunResult> RunAsync(Scan scan, ClientAsset asset, Func<string, string, Task> onOutputLine, CancellationToken cancellationToken = default)
     {
         var target = asset.Identifier;
         if (!TargetAllowlistRegex().IsMatch(target) || target.IndexOfAny(ShellMetacharacters) >= 0)
@@ -86,14 +86,21 @@ public sealed partial class DockerScanRunner : IScanRunner
                 }
 
                 rawOutput.AppendLine(e.Data);
-                await onOutputLine(e.Data);
+                await onOutputLine(e.Data, "stdout");
             };
-            process.ErrorDataReceived += (_, e) =>
+            process.ErrorDataReceived += async (_, e) =>
             {
-                if (e.Data is not null)
+                if (e.Data is null)
                 {
-                    errorOutput.AppendLine(e.Data);
+                    return;
                 }
+
+                // Many tools (nuclei in particular, once -silent suppresses its stdout banner)
+                // write their progress/status logging to stderr rather than stdout — stream it
+                // live too instead of only surfacing it after the fact on failure, so the console
+                // reflects real activity even on a run with zero stdout output.
+                errorOutput.AppendLine(e.Data);
+                await onOutputLine(e.Data, "stderr");
             };
 
             process.Start();
@@ -127,8 +134,13 @@ public sealed partial class DockerScanRunner : IScanRunner
             // Nuclei's -u accepts either a full URL or a bare host, so the raw identifier is fine
             // as-is. -irr (include request/response) adds curl-command/request/response to each
             // JSONL record so NucleiOutputParser can populate a real proof-of-concept instead of
-            // just a title.
-            ScanTool.Nuclei => ("projectdiscovery/nuclei:latest", new[] { "-u", target, "-jsonl", "-irr", "-silent" }),
+            // just a title. -stats -stats-interval 5 makes nuclei print periodic scan-progress
+            // stats to stderr regardless of whether anything has matched yet — unlike naabu
+            // (which reports every open port it finds), nuclei's JSONL stdout only ever emits a
+            // line on an actual template match, so a clean target can otherwise go through an
+            // entire run with zero output; -stats gives the live console something real to show
+            // in that case instead of looking frozen.
+            ScanTool.Nuclei => ("projectdiscovery/nuclei:latest", new[] { "-u", target, "-jsonl", "-irr", "-silent", "-stats", "-stats-interval", "5" }),
             // Reconftw's -d wants a bare domain, same problem as Naabu.
             ScanTool.Reconftw => ("six2dez/reconftw:latest", new[] { "-d", ExtractHost(target), "--recon" }),
             _ => throw new ArgumentOutOfRangeException(nameof(tool), tool, "Unsupported scan tool.")
