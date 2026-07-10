@@ -17,4 +17,10 @@ public interface IScanRealtimeNotifier
     // Emitted as soon as a single streamed output line parses into a finding, ahead of the
     // scan's final completion — lets the console show "what we found" as it happens.
     Task PushScanFindingAsync(Guid scanPublicId, string title, string? severity, string endpoint, CancellationToken cancellationToken = default);
+
+    // Nuclei's own -stats output already reports a real completion percentage, so this is
+    // forwarded verbatim rather than estimated — drives a determinate progress bar for tools
+    // that report one. Tools with no such metric (Naabu, Reconftw) simply never call this, and
+    // the frontend falls back to an indeterminate "still running" bar.
+    Task PushScanProgressAsync(Guid scanPublicId, int percent, long? requests, long? rps, long? matched, long? total, CancellationToken cancellationToken = default);
 }

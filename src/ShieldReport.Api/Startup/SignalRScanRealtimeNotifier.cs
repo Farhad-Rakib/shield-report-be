@@ -36,4 +36,10 @@ public sealed class SignalRScanRealtimeNotifier : IScanRealtimeNotifier
         await _hubContext.Clients.Group(NotificationHub.ScanGroupName(scanPublicId.ToString()))
             .SendAsync("ScanFinding", new { scanPublicId, title, severity, endpoint }, cancellationToken);
     }
+
+    public async Task PushScanProgressAsync(Guid scanPublicId, int percent, long? requests, long? rps, long? matched, long? total, CancellationToken cancellationToken = default)
+    {
+        await _hubContext.Clients.Group(NotificationHub.ScanGroupName(scanPublicId.ToString()))
+            .SendAsync("ScanProgress", new { scanPublicId, percent, requests, rps, matched, total }, cancellationToken);
+    }
 }

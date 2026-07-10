@@ -179,16 +179,19 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
     {
         await _realtimeNotifier.PushScanOutputAsync(scan.PublicId, line, stream, cancellationToken);
 
+        if (stream == "stderr")
+        {
+            // Nuclei's -stats output (also stderr) already computes a real completion
+            // percentage — forward it as-is instead of estimating one ourselves.
+            await TryPushProgressAsync(scan, line, cancellationToken);
+            return;
+        }
+
         // Best-effort live finding parse — the parsers already split on '\n' and skip
         // malformed/non-matching lines internally, so re-using them per single streamed line is
         // just a normal call, not a special "line mode". Never let a parse hiccup break the
         // stream; the authoritative parse of the full RawOutput still runs after the scan
         // completes in ProcessScanAsync, so a live-parse miss here has no lasting effect.
-        if (stream != "stdout")
-        {
-            return;
-        }
-
         try
         {
             foreach (var finding in parser.Parse(line))
@@ -200,6 +203,50 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         {
             // Live-only convenience — swallow and let the post-scan parse be authoritative.
         }
+    }
+
+    // Nuclei's -stats-interval JSON looks like:
+    // {"duration":"0:00:05","errors":"2","hosts":"1","matched":"0","percent":"2",
+    //  "requests":"498","rps":"94","startedAt":"...","templates":"10447","total":"18274"}
+    // — every value is a string, and "percent" is unique to this stats shape (findings and
+    // Naabu's port records never have it), so its presence alone is a safe, cheap discriminator.
+    private async Task TryPushProgressAsync(Scan scan, string line, CancellationToken cancellationToken)
+    {
+        var trimmed = line.Trim();
+        if (trimmed.Length == 0 || trimmed[0] != '{')
+        {
+            return;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(trimmed);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("percent", out var percentElement) || !int.TryParse(percentElement.GetString(), out var percent))
+            {
+                return;
+            }
+
+            await _realtimeNotifier.PushScanProgressAsync(
+                scan.PublicId,
+                percent,
+                ReadLong(root, "requests"),
+                ReadLong(root, "rps"),
+                ReadLong(root, "matched"),
+                ReadLong(root, "total"),
+                cancellationToken);
+        }
+        catch (JsonException)
+        {
+            // Not a stats line — nothing to do.
+        }
+    }
+
+    private static long? ReadLong(JsonElement root, string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var element) && long.TryParse(element.GetString(), out var value)
+            ? value
+            : null;
     }
 
     private async Task PushStatusAsync(Scan scan, CancellationToken cancellationToken)
