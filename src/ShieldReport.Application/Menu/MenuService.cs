@@ -6,13 +6,19 @@ namespace ShieldReport.Application.Menu
     {
         private readonly IMenuRepository _menuRepository;
         private readonly ShieldReport.Application.Common.Interfaces.IAppCache _cache;
+        private readonly ShieldReport.Application.Common.Interfaces.IUnitOfWork _unitOfWork;
 
         private readonly TimeSpan MenuCacheTtl;
 
-        public MenuService(IMenuRepository menuRepository, ShieldReport.Application.Common.Interfaces.IAppCache cache, Microsoft.Extensions.Options.IOptions<ShieldReport.Application.Common.Configuration.CachingOptions> cachingOptions)
+        public MenuService(
+            IMenuRepository menuRepository,
+            ShieldReport.Application.Common.Interfaces.IAppCache cache,
+            ShieldReport.Application.Common.Interfaces.IUnitOfWork unitOfWork,
+            Microsoft.Extensions.Options.IOptions<ShieldReport.Application.Common.Configuration.CachingOptions> cachingOptions)
         {
             _menuRepository = menuRepository;
             _cache = cache;
+            _unitOfWork = unitOfWork;
             MenuCacheTtl = TimeSpan.FromMinutes(cachingOptions?.Value?.MenusTtlMinutes ?? 30);
         }
 
@@ -97,6 +103,7 @@ namespace ShieldReport.Application.Menu
             };
 
             var created = await _menuRepository.CreateAsync(entity, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             // Invalidate caches
             await _cache.RemoveAsync("menus:tree", cancellationToken);
             await _cache.RemoveAsync("menus:all", cancellationToken);
@@ -115,6 +122,7 @@ namespace ShieldReport.Application.Menu
             menu.ParentMenuId = request.ParentMenuId;
 
             await _menuRepository.UpdateAsync(menu, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _cache.RemoveAsync("menus:tree", cancellationToken);
             await _cache.RemoveAsync("menus:all", cancellationToken);
         }
@@ -125,6 +133,7 @@ namespace ShieldReport.Application.Menu
             if (menu == null) throw new KeyNotFoundException("Menu not found");
 
             await _menuRepository.DeleteAsync(menu, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _cache.RemoveAsync("menus:tree", cancellationToken);
             await _cache.RemoveAsync("menus:all", cancellationToken);
         }

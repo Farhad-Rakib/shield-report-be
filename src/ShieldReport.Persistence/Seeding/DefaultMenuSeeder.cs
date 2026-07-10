@@ -17,8 +17,6 @@ namespace ShieldReport.Persistence.Seeding
             await UpsertMenuAsync(dbContext, "Permissions", "/permissions", "permissions", Permissions.PermissionsRead, configuration);
             await UpsertMenuAsync(dbContext, "User Roles", "/users/roles", "user-roles", Permissions.UserRolesRead, configuration);
             await UpsertMenuAsync(dbContext, "Role Permissions", "/roles/permissions", "role-permissions", Permissions.RolePermissionsRead, configuration);
-            // Example additional menu: Reports (requires reports.read permission)
-            await UpsertMenuAsync(dbContext, "Reports", "/reports", "chart-bar", Permissions.ReportsRead, configuration);
             await UpsertMenuAsync(dbContext, "Registration Invites", "/registration-invites", "user-plus", Permissions.RegistrationInvitesRead, configuration);
 
             // PentestOps — Client Organizations is the org registry; Client Assets links to the

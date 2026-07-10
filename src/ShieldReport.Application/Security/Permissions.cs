@@ -29,7 +29,6 @@ public static class Permissions
     public const string MenusCreate = "menus.create";
     public const string MenusUpdate = "menus.update";
     public const string MenusDelete = "menus.delete";
-    public const string ReportsRead = "reports.read";
     public const string DashboardRead = "dashboard.read";
     public const string SiteSettingsRead = "site-settings.read";
     public const string SiteSettingsCreate = "site-settings.create";
@@ -57,7 +56,8 @@ public static class Permissions
     public const string EvidenceUpload = "evidence.upload";
     public const string EvidenceDelete = "evidence.delete";
 
-    // Reports (ReportsRead already exists above)
+    // Reports — for the not-yet-built Finding/Report workflow engine (PRD-PentestOps.md), not
+    // the removed Configuration > Reports mock dashboard page. No controller uses these yet.
     public const string ReportsCreate = "reports.create";
     public const string ReportsUpdate = "reports.update";
     public const string ReportsExport = "reports.export";
@@ -143,7 +143,6 @@ public static class Permissions
         MenusCreate,
         MenusUpdate,
         MenusDelete,
-        ReportsRead,
         DashboardRead,
         SiteSettingsRead,
         SiteSettingsCreate,
