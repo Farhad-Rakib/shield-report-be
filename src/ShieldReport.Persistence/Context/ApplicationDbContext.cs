@@ -45,6 +45,9 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<EngagementTaskAsset> EngagementTaskAssets => Set<EngagementTaskAsset>();
     public DbSet<RetestRequest> RetestRequests => Set<RetestRequest>();
     public DbSet<RetestRequestCase> RetestRequestCases => Set<RetestRequestCase>();
+    public DbSet<LlmProviderConfiguration> LlmProviderConfigurations => Set<LlmProviderConfiguration>();
+    public DbSet<ReportTemplate> ReportTemplates => Set<ReportTemplate>();
+    public DbSet<Report> Reports => Set<Report>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -44,3 +44,37 @@ CRUD via a new Application module (e.g. `ShieldReport.Application/ToolConfigurat
 2. **Scope: global or per-client/per-engagement?** One configuration per tool platform-wide, or does each client engagement potentially point at different scanning infrastructure?
 3. **Who can edit it?** SuperAdmin only, or also Admin.
 4. **Does a config change affect in-flight/queued scans**, or only scans queued after the change?
+
+## New Requirement: LLM-Assisted Vulnerability Explanation & Scoring (implemented)
+
+> Tracked as tasks **#122-127** in `../../TASK-GROUPS-MASTER.md` under "Feature: LLM-Assisted Vulnerability Explanation". Fully implemented — kept here for reference since, like Tool Configuration, no companion planning doc covered it before this pass.
+
+Clients must not see which underlying scan tool (Naabu/Nuclei/Reconftw) produced a finding — the FE now renders generic labels ("Port Checking"/"Vulnerability Scanning"/"Reconnaissance") everywhere a tool name could leak, including the previously-public `/login` page's terminal demo (`SecurityShowcasePanel.tsx`, which hardcoded literal `naabu`/`nuclei` commands outside any auth guard). `Vulnerability.ToolsUsed` and the report's per-finding "Tools Used" cell (see mapping below) are unaffected — that's an internal/report-authoring detail, not the live-console/tool-picker labels this covers.
+
+Separately, `LlmProviderConfiguration` (one row per `OpenRouter`/`Gemini`/`OpenAi`, single `IsActive` row enforced app-side, API key encrypted via `IDataProtector`) lets an admin wire up an LLM. Once active, every new/updated finding from `ScanWorkerBackgroundService` enqueues a Hangfire `LlmExplanationJob` that renders the active configuration's saved `PromptTemplate` (placeholders: `{ToolName}`/`{FindingTitle}`/`{Endpoint}`/`{RawFinding}`/`{CvssScore}`, strict-JSON-only output contract to bound tokens and curb hallucination) and calls the provider (`OpenAiCompatibleLlmClient` shared by OpenAI/OpenRouter since they're wire-compatible, `GeminiLlmClient` separately). The result populates `Vulnerability.AiExplanation`/`AiSuggestedSeverity` — the suggested severity is never auto-applied; a pentester must call `POST /vulnerabilities/{id}/ai-severity/apply` to write it into the existing `SeverityOverride`, matching the human-in-the-loop pattern already used for CVSS overrides.
+
+## New Requirement: White Box Testing Report Content Mapping
+
+> Extends the already-planned **Feature: Reporting** (tasks #59-68, 83, 92 — `Report`/`ReportTemplate` entities, `QuestPDF` generation, approval gate, send-to-client) rather than replacing it. That feature is speced generically ("branding fields" on `ReportTemplate`); this section supplies the concrete field-by-field mapping from a real Selise deliverable (`White Box Testing.docx`, workspace root) so #59/#62/#63 can be scoped precisely instead of just "a branded PDF." **Output format is already decided by #63 as PDF via QuestPDF — this is not a case for docx-template filling (e.g. OpenXML), despite the source document being a .docx.**
+
+### Section-by-section mapping
+
+| Report section (from the template) | Source data |
+|---|---|
+| Cover (client name, engagement dates) | `Engagement` (client via `ClientOrganization`), `StartDate`/`EndDate` |
+| Version control table | New `Report.Version` (already in #62's spec) + `ApprovedByUserId`/`ApprovedAt` |
+| Acronyms table | Static boilerplate — belongs on `ReportTemplate`, not per-report data |
+| Executive Summary | Narrative prose — **no existing field holds this** (see open question below) |
+| Summary of Findings (counts by severity + table) | Aggregated from `Vulnerability` rows filtered by `EngagementId` + `ReportIncluded`/severity filter (#62's JSON filter) |
+| Key Findings / Key Recommendations (bullets) | Narrative — same gap as Executive Summary; candidate: derive from `Vulnerability.AiExplanation` across included findings, or a new editable field |
+| Project Overview / Scope of Engagement table | `Engagement` scope fields + `ClientAsset` rows in scope |
+| Introduction / Methodology / Tools Used for VAPT / Security Testing Components | Static boilerplate — belongs on `ReportTemplate` (per-template, not per-report) |
+| Limitations | Static boilerplate — `ReportTemplate` |
+| Discovered Vulnerabilities table | `Vulnerability` rows: Title, Severity/`SeverityOverride`, `ClientAsset`, `PatchStatus` |
+| Detailed Findings (per finding: ID, Severity, CVSS, Affected System, Endpoint, **Tools Used**, References, Description, Impact, Recommendation, PoC, Steps to Reproduce) | `Vulnerability.Title`/`Severity`/`CvssScore`/`CvssVector`/`Endpoint`/`ClientAsset`/**`ToolsUsed`** (real tool names — this field is not subject to the client-masking above)/`ReferenceLinks`/`Description`/`Impact`/`Recommendation` (#31a)/`ProofOfConcept`/`StepsToReproduce`. **Should also surface `Vulnerability.AiExplanation`** when present, alongside `Recommendation`, the same way #31a's note ties `Recommendation` into #63 |
+| Annexure — CVSS Scoring table | Static boilerplate — `ReportTemplate` |
+
+### Open questions (resolve before starting #59/#62/#63 with this mapping in hand)
+1. **Where do the narrative-only sections (Executive Summary, Key Findings, Key Recommendations) come from?** Three options: (a) new free-text fields on `Report` that a pentester authors by hand before approval, (b) auto-generated by summarizing the included findings' `AiExplanation` values through the same active LLM provider, or (c) both — LLM-drafted, pentester-editable before approval. This is a real scope decision for #62, not an implementation detail.
+2. **Is `ReportTemplate` one row per client/engagement-type, or one global default?** The static boilerplate sections above (Acronyms, Methodology, Security Testing Components, Limitations, CVSS Annexure) rarely change between engagements — confirm whether `ReportTemplate` needs to support multiple variants or just one, before #59's schema is finalized.
+3. **Does the per-finding "Tools Used" cell stay as real tool names indefinitely**, or does the client-facing masking requirement above eventually need to extend to the report too? Out of scope for this pass — flagged since it directly contradicts the template's own boilerplate (which names Nuclei/Nikto/Sqlmap/Nmap/etc. as SELISE's methodology) if masking were ever extended here.

@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Options;
 using ShieldReport.Application.Auth.Dtos;
+using ShieldReport.Application.Common.Configuration;
 using ShieldReport.Application.Common.Exceptions;
 using ShieldReport.Application.Common.Interfaces;
 using ShieldReport.Application.Common.Interfaces.Security;
@@ -24,6 +26,7 @@ public sealed class AuthService : IAuthService
     private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppCache _appCache;
+    private readonly FrontendOptions _frontendOptions;
 
     private static readonly string[] PasswordOnlyAmr = ["pwd"];
     private static readonly string[] PasswordAndMfaAmr = ["pwd", "otp"];
@@ -40,7 +43,8 @@ public sealed class AuthService : IAuthService
         IPasswordResetTokenGenerator passwordResetTokenGenerator,
         IEmailService emailService,
         IUnitOfWork unitOfWork,
-        IAppCache appCache)
+        IAppCache appCache,
+        IOptions<FrontendOptions> frontendOptions)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;
@@ -54,6 +58,7 @@ public sealed class AuthService : IAuthService
         _emailService = emailService;
         _unitOfWork = unitOfWork;
         _appCache = appCache;
+        _frontendOptions = frontendOptions.Value;
     }
 
     public async Task<LoginResultDto> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
@@ -181,7 +186,7 @@ public sealed class AuthService : IAuthService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Send email with reset link
-        var resetLink = $"https://localhost:3000/reset-password?token={resetToken.Token}&email={Uri.EscapeDataString(user.Email)}";
+        var resetLink = $"{_frontendOptions.BaseUrl}/reset-password?token={Uri.EscapeDataString(resetToken.Token)}&email={Uri.EscapeDataString(user.Email)}";
         var htmlBody = $@"
             <h2>Password Reset Request</h2>
             <p>Hi {user.FullName},</p>

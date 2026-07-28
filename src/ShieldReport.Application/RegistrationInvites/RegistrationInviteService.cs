@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Options;
 using ShieldReport.Application.Auth;
+using ShieldReport.Application.Common.Configuration;
 using ShieldReport.Application.Common.Exceptions;
 using ShieldReport.Application.Common.Interfaces;
 using ShieldReport.Application.Common.Interfaces.Security;
@@ -24,6 +26,7 @@ public sealed class RegistrationInviteService : IRegistrationInviteService
     private readonly IRegistrationInviteTokenGenerator _tokenGenerator;
     private readonly IEmailService _emailService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly FrontendOptions _frontendOptions;
 
     public RegistrationInviteService(
         IRegistrationInviteRepository registrationInviteRepository,
@@ -32,7 +35,8 @@ public sealed class RegistrationInviteService : IRegistrationInviteService
         IPasswordHasher passwordHasher,
         IRegistrationInviteTokenGenerator tokenGenerator,
         IEmailService emailService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IOptions<FrontendOptions> frontendOptions)
     {
         _registrationInviteRepository = registrationInviteRepository;
         _userRepository = userRepository;
@@ -41,6 +45,7 @@ public sealed class RegistrationInviteService : IRegistrationInviteService
         _tokenGenerator = tokenGenerator;
         _emailService = emailService;
         _unitOfWork = unitOfWork;
+        _frontendOptions = frontendOptions.Value;
     }
 
     public async Task<RegistrationInviteDto> CreateInviteAsync(CreateRegistrationInviteRequestDto request, long createdByUserId, CancellationToken cancellationToken = default)
@@ -72,7 +77,7 @@ public sealed class RegistrationInviteService : IRegistrationInviteService
         await _registrationInviteRepository.AddAsync(invite, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var registrationLink = $"https://localhost:3000/register/{generated.Token}";
+        var registrationLink = $"{_frontendOptions.BaseUrl}/register/{Uri.EscapeDataString(generated.Token)}";
         var htmlBody = $@"
             <h2>You've Been Invited</h2>
             <p>You've been invited to join ShieldReport as a {role.Name}.</p>

@@ -55,6 +55,9 @@ public static class DependencyInjection
         services.AddScoped<IVulnerabilityAttachmentRepository, VulnerabilityAttachmentRepository>();
         services.AddScoped<IVulnerabilityRemarkRepository, VulnerabilityRemarkRepository>();
         services.AddScoped<IRetestRequestRepository, RetestRequestRepository>();
+        services.AddScoped<ILlmProviderConfigurationRepository, LlmProviderConfigurationRepository>();
+        services.AddScoped<IReportTemplateRepository, ReportTemplateRepository>();
+        services.AddScoped<IReportRepository, ReportRepository>();
 
         return services;
     }

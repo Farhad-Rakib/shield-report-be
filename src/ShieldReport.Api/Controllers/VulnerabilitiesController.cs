@@ -106,6 +106,24 @@ public sealed class VulnerabilitiesController : ControllerBase
         return Ok(ApiResponse<VulnerabilityDto>.SuccessResponse(vulnerability, "Report-included flag updated successfully"));
     }
 
+    [HttpPatch("{id:long}/severity-override")]
+    [Authorize(Policy = Permissions.VulnerabilitiesUpdate)]
+    [ProducesResponseType(typeof(ApiResponse<VulnerabilityDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateSeverityOverride(long id, [FromBody] UpdateSeverityOverrideRequestDto request, CancellationToken cancellationToken)
+    {
+        var vulnerability = await _vulnerabilityService.UpdateSeverityOverrideAsync(id, request.SeverityOverride, cancellationToken);
+        return Ok(ApiResponse<VulnerabilityDto>.SuccessResponse(vulnerability, "Severity override updated successfully"));
+    }
+
+    [HttpPost("{id:long}/ai-severity/apply")]
+    [Authorize(Policy = Permissions.VulnerabilitiesUpdate)]
+    [ProducesResponseType(typeof(ApiResponse<VulnerabilityDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ApplyAiSuggestedSeverity(long id, CancellationToken cancellationToken)
+    {
+        var vulnerability = await _vulnerabilityService.ApplyAiSuggestedSeverityAsync(id, cancellationToken);
+        return Ok(ApiResponse<VulnerabilityDto>.SuccessResponse(vulnerability, "AI-suggested severity applied successfully"));
+    }
+
     [HttpDelete("{id:long}")]
     [Authorize(Policy = Permissions.VulnerabilitiesDelete)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]

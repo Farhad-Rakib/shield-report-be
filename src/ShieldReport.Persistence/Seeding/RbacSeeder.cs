@@ -80,7 +80,7 @@ public sealed class RbacSeeder : IRbacSeeder
 
         // NOTE: SuperAdmin bypasses permission checks at runtime; do NOT assign explicit permissions here.
 
-        foreach (var permission in persistedPermissions.Where(p => p.Name is not Permissions.UsersDelete and not Permissions.RolesDelete and not Permissions.PermissionsDelete and not Permissions.UserRolesDelete and not Permissions.RolePermissionsDelete and not Permissions.ClientsDelete and not Permissions.EngagementsDelete and not Permissions.FindingsDelete and not Permissions.EvidenceDelete and not Permissions.ClientAssetsDelete and not Permissions.VulnerabilitiesDelete))
+        foreach (var permission in persistedPermissions.Where(p => p.Name is not Permissions.UsersDelete and not Permissions.RolesDelete and not Permissions.PermissionsDelete and not Permissions.UserRolesDelete and not Permissions.RolePermissionsDelete and not Permissions.ClientsDelete and not Permissions.EngagementsDelete and not Permissions.FindingsDelete and not Permissions.EvidenceDelete and not Permissions.ClientAssetsDelete and not Permissions.VulnerabilitiesDelete and not Permissions.LlmProviderConfigurationsDelete and not Permissions.VulnerabilityReportsApprove))
         {
             if (existingSet.Add((admin.Id, permission.Id)))
             {

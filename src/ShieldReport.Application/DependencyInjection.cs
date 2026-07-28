@@ -5,10 +5,13 @@ using ShieldReport.Application.ClientAssets;
 using ShieldReport.Application.ClientOrganizations;
 using ShieldReport.Application.Dashboard;
 using ShieldReport.Application.Engagements;
+using ShieldReport.Application.LlmProviderConfigurations;
 using ShieldReport.Application.Menu;
 using ShieldReport.Application.Notifications;
 using ShieldReport.Application.Permissions;
 using ShieldReport.Application.RegistrationInvites;
+using ShieldReport.Application.ReportTemplates;
+using ShieldReport.Application.Reports;
 using ShieldReport.Application.RetestRequests;
 using ShieldReport.Application.Roles;
 using ShieldReport.Application.Scans;
@@ -42,9 +45,14 @@ public static class DependencyInjection
         services.AddScoped<IVulnerabilityDedupService, VulnerabilityDedupService>();
         services.AddScoped<ICvssSeverityMappingService, CvssSeverityMappingService>();
         services.AddScoped<IVulnerabilityService, VulnerabilityService>();
+        services.AddScoped<IVulnerabilityAiExplanationService, VulnerabilityAiExplanationService>();
         services.AddScoped<IVulnerabilityAttachmentService, VulnerabilityAttachmentService>();
         services.AddScoped<IVulnerabilityRemarkService, VulnerabilityRemarkService>();
         services.AddScoped<IRetestRequestService, RetestRequestService>();
+        services.AddScoped<ILlmProviderConfigurationService, LlmProviderConfigurationService>();
+        services.AddScoped<IReportTemplateService, ReportTemplateService>();
+        services.AddScoped<IReportNarrativeDraftingService, ReportNarrativeDraftingService>();
+        services.AddScoped<IReportService, ReportService>();
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         return services;

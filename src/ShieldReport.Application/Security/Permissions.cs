@@ -117,6 +117,28 @@ public static class Permissions
     public const string RetestRequestsCreate = "retest-requests.create";
     public const string RetestRequestsResolve = "retest-requests.resolve";
 
+    // LLM Provider Configuration — SuperAdmin/Admin only (holds encrypted API keys), separate
+    // from SiteSettings* since these govern which external LLM vendor findings/severity data
+    // gets sent to, not general app config.
+    public const string LlmProviderConfigurationsRead = "llm-provider-configurations.read";
+    public const string LlmProviderConfigurationsCreate = "llm-provider-configurations.create";
+    public const string LlmProviderConfigurationsUpdate = "llm-provider-configurations.update";
+    public const string LlmProviderConfigurationsDelete = "llm-provider-configurations.delete";
+
+    // Vulnerability Reports (White Box Testing PDF generator) — deliberately distinct from the
+    // pre-existing ReportsCreate/Update/Export above, which belong to the old, never-built
+    // Finding/Report workflow engine (see that constant group's comment). Approve is
+    // PLATFORM_ADMIN-ish, excluded from Admin's default grant like VulnerabilitiesDelete.
+    public const string VulnerabilityReportsRead = "vulnerability-reports.read";
+    public const string VulnerabilityReportsGenerate = "vulnerability-reports.generate";
+    public const string VulnerabilityReportsApprove = "vulnerability-reports.approve";
+    public const string VulnerabilityReportsDownload = "vulnerability-reports.download";
+
+    public const string ReportTemplatesRead = "report-templates.read";
+    public const string ReportTemplatesCreate = "report-templates.create";
+    public const string ReportTemplatesUpdate = "report-templates.update";
+    public const string ReportTemplatesDelete = "report-templates.delete";
+
     public static readonly string[] All =
     [
         UsersRead,
@@ -201,6 +223,18 @@ public static class Permissions
         VulnerabilityRemarksCreate,
         RetestRequestsRead,
         RetestRequestsCreate,
-        RetestRequestsResolve
+        RetestRequestsResolve,
+        LlmProviderConfigurationsRead,
+        LlmProviderConfigurationsCreate,
+        LlmProviderConfigurationsUpdate,
+        LlmProviderConfigurationsDelete,
+        VulnerabilityReportsRead,
+        VulnerabilityReportsGenerate,
+        VulnerabilityReportsApprove,
+        VulnerabilityReportsDownload,
+        ReportTemplatesRead,
+        ReportTemplatesCreate,
+        ReportTemplatesUpdate,
+        ReportTemplatesDelete
     ];
 }

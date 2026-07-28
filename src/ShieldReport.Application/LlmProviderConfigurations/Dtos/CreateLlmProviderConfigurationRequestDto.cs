@@ -1,0 +1,13 @@
+using ShieldReport.Domain.Enums;
+
+namespace ShieldReport.Application.LlmProviderConfigurations.Dtos;
+
+public sealed record CreateLlmProviderConfigurationRequestDto(
+    LlmProvider Provider,
+    string ApiKey,
+    string Model,
+    string? BaseUrl,
+    decimal Temperature,
+    int MaxOutputTokens,
+    string? PromptTemplate
+);

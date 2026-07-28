@@ -18,6 +18,8 @@ namespace ShieldReport.Persistence.Seeding
             await UpsertMenuAsync(dbContext, "User Roles", "/users/roles", "user-roles", Permissions.UserRolesRead, configuration);
             await UpsertMenuAsync(dbContext, "Role Permissions", "/roles/permissions", "role-permissions", Permissions.RolePermissionsRead, configuration);
             await UpsertMenuAsync(dbContext, "Registration Invites", "/registration-invites", "user-plus", Permissions.RegistrationInvitesRead, configuration);
+            await UpsertMenuAsync(dbContext, "LLM Provider Configuration", "/llm-providers", "Sparkles", Permissions.LlmProviderConfigurationsRead, configuration);
+            await UpsertMenuAsync(dbContext, "Report Templates", "/report-templates", "FileText", Permissions.ReportTemplatesRead, configuration);
 
             // PentestOps — Client Organizations is the org registry; Client Assets links to the
             // asset registration/scan-launch page; Scans now has its own list page.

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -73,6 +74,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         var findingRepository = scope.ServiceProvider.GetRequiredService<IScanFindingRawRepository>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var scanQueueService = scope.ServiceProvider.GetRequiredService<IScanQueueService>();
+        var backgroundJobClient = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
 
         var scan = await scanRepository.GetByIdWithDetailsAsync(scanId, cancellationToken);
         if (scan is null || scan.Status != ScanStatus.Queued)
@@ -149,6 +151,10 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
 
                 findingRaw.MarkProcessed(vulnerability.Id);
                 findingRepository.Update(findingRaw);
+
+                // Best-effort — if no LLM provider is configured/active, LlmExplanationJob's
+                // service no-ops; a failed AI call never blocks or fails the scan itself.
+                backgroundJobClient.Enqueue<LlmExplanationJob>(job => job.RunAsync(vulnerability.Id, scan.Tool.ToString(), CancellationToken.None));
             }
 
             scan.Complete(rawLogBlobKey: null, rawOutput: result.RawOutput);

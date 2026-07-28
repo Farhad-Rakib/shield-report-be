@@ -11,9 +11,14 @@ public sealed class PasswordResetTokenGenerator : IPasswordResetTokenGenerator
     public PasswordResetTokenGenerationResult Generate()
     {
         var randomBytes = RandomNumberGenerator.GetBytes(32);
-        var token = Convert.ToBase64String(randomBytes);
+        // Base64Url — this token gets embedded in a query string; standard Base64's '+' would
+        // silently decode as a literal space by the time the SPA reads it back out of the URL.
+        var token = ToBase64Url(randomBytes);
         var expiresAtUtc = DateTime.UtcNow.AddHours(TokenExpiryHours);
 
         return new PasswordResetTokenGenerationResult(token, expiresAtUtc);
     }
+
+    private static string ToBase64Url(byte[] bytes) =>
+        Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }

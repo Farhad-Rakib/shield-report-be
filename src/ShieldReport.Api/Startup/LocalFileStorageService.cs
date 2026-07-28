@@ -27,6 +27,12 @@ public sealed class LocalFileStorageService : IFileStorageService
         return Path.Combine(relativeDirectory, safeFileName).Replace(Path.DirectorySeparatorChar, '/');
     }
 
+    public Stream? OpenRead(string relativeUrl)
+    {
+        var absolutePath = Path.Combine(_environment.ContentRootPath, relativeUrl.Replace('/', Path.DirectorySeparatorChar));
+        return File.Exists(absolutePath) ? new FileStream(absolutePath, FileMode.Open, FileAccess.Read) : null;
+    }
+
     public void Delete(string relativeUrl)
     {
         var absolutePath = Path.Combine(_environment.ContentRootPath, relativeUrl.Replace('/', Path.DirectorySeparatorChar));

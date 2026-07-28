@@ -38,6 +38,19 @@ services:
       - shieldreport-net
     restart: unless-stopped
 
+  # Backs the "Edit in Browser" report feature (ReportEditorModal.tsx). Not a hard startup
+  # dependency of api/fe — same rationale as the scanner-image services below: if this is down,
+  # only that one feature breaks, not the whole app. JWT is left disabled (no JWT_ENABLED env var)
+  # since this is an internal demo network, not internet-exposed.
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: shieldreport-onlyoffice
+    ports:
+      - "8090:80"
+    networks:
+      - shieldreport-net
+    restart: unless-stopped
+
   api:
     build:
       context: .
@@ -50,6 +63,7 @@ services:
       Jwt__Issuer: ShieldReport
       Jwt__Audience: ShieldReport.Client
       Cors__AllowedOrigins__0: http://${SERVER_IP}:${FE_PORT:-8080}
+      Frontend__BaseUrl: http://${SERVER_IP}:${FE_PORT:-8080}
       Smtp__Host: mailhog
       Smtp__Port: 1025
       Smtp__Username: demo
@@ -62,6 +76,12 @@ services:
       # silently breaks once the LAN IP is used. See RefreshTokenCookie.cs.
       Cookies__RequireSecure: "false"
       Serilog__MinimumLevel__Default: Information
+      # DocumentServerUrl is fetched by the *browser* (to load the editor's api.js), so it must be
+      # the LAN-reachable address, not localhost. ApiHostForContainer is fetched by the onlyoffice
+      # *container* to pull/save the report draft — same compose network, so the service name and
+      # its internal port work directly (plain HTTP; see Program.cs for why this stays unencrypted).
+      OnlyOffice__DocumentServerUrl: http://${SERVER_IP}:8090
+      OnlyOffice__ApiHostForContainer: http://api:8080
     ports:
       - "${API_PORT:-5050}:8080"
     volumes:
@@ -140,6 +160,7 @@ services:
       # so this image never needs to be rebuilt just because SERVER_IP changes.
       API_BASE_URL: http://${SERVER_IP}:${API_PORT:-5050}/api/v1
       CSP_CONNECT_SRC: http://${SERVER_IP}:${API_PORT:-5050} ws://${SERVER_IP}:${API_PORT:-5050}
+      CSP_ONLYOFFICE_SRC: http://${SERVER_IP}:8090
     ports:
       - "${FE_PORT:-8080}:80"
     networks:

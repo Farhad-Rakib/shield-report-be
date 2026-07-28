@@ -8,6 +8,10 @@ obj/
 *.nupkg
 TestResults/
 
+# Runtime-generated — uploaded report templates/generated reports, and API log files
+src/ShieldReport.Api/App_Data/
+src/ShieldReport.Api/logs/
+
 # Docker compose secrets (see .env.example for the template)
 .env
 

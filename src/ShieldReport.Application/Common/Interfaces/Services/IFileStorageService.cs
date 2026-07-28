@@ -7,5 +7,9 @@ public interface IFileStorageService
 {
     Task<string> SaveAsync(string subPath, string fileName, Stream content, CancellationToken cancellationToken = default);
 
+    // Returns null if the relative path doesn't resolve to an existing file — lets a caller
+    // (e.g. a download endpoint) 404 cleanly instead of throwing.
+    Stream? OpenRead(string relativeUrl);
+
     void Delete(string relativeUrl);
 }

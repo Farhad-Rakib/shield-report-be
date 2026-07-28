@@ -5,6 +5,7 @@ using Asp.Versioning;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ShieldReport.Api.Authorization;
@@ -133,6 +134,9 @@ builder.Services.AddSingleton<ShieldReport.Application.Common.Interfaces.Service
 builder.Services.AddScoped<ShieldReport.Application.Common.Interfaces.Services.IFileStorageService, ShieldReport.Api.Startup.LocalFileStorageService>();
 builder.Services.Configure<ShieldReport.Infrastructure.Nvd.NvdOptions>(builder.Configuration.GetSection(ShieldReport.Infrastructure.Nvd.NvdOptions.SectionName));
 builder.Services.AddHttpClient<ShieldReport.Application.Common.Interfaces.Services.INvdClient, ShieldReport.Infrastructure.Nvd.NvdClient>();
+builder.Services.AddHttpClient<ShieldReport.Infrastructure.Llm.OpenAiCompatibleLlmClient>();
+builder.Services.AddHttpClient<ShieldReport.Infrastructure.Llm.GeminiLlmClient>();
+builder.Services.AddScoped<ShieldReport.Application.Common.Interfaces.Services.ILlmClientFactory, ShieldReport.Infrastructure.Llm.LlmClientFactory>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
@@ -141,6 +145,24 @@ builder.Services.AddScanning();
 // Hangfire — base wiring only for now; recurring/background jobs land in later phases.
 var hangfireConnectionString = builder.Configuration.GetConnectionString("SqlServerConnection")
     ?? throw new InvalidOperationException("Missing connection string: SqlServerConnection.");
+
+// UseSqlServerStorage below installs Hangfire's own schema eagerly, at DI-configuration time —
+// on a brand-new deployment (database doesn't exist yet) this races EfCoreDatabaseBootstrapper's
+// later Database.MigrateAsync() (the thing that actually creates the database) and permanently
+// loses for that process's lifetime: "Cannot open database ... login failed", then Hangfire gives
+// up and never retries the schema install until the app restarts, silently breaking every scan
+// and report background job. Guarantee the database exists here first, so Hangfire never races it.
+var hangfireConnectionBuilder = new SqlConnectionStringBuilder(hangfireConnectionString);
+var targetDatabaseName = hangfireConnectionBuilder.InitialCatalog;
+hangfireConnectionBuilder.InitialCatalog = "master";
+await using (var masterConnection = new SqlConnection(hangfireConnectionBuilder.ConnectionString))
+{
+    await masterConnection.OpenAsync();
+    await using var createDbCommand = masterConnection.CreateCommand();
+    createDbCommand.CommandText = $"IF DB_ID('{targetDatabaseName}') IS NULL CREATE DATABASE [{targetDatabaseName}];";
+    await createDbCommand.ExecuteNonQueryAsync();
+}
+
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
@@ -177,6 +199,8 @@ builder.Services.AddRateLimiter(options =>
 // Caching: bind options and register the in-memory distributed cache
 var cachingSection = builder.Configuration.GetSection("Caching");
 builder.Services.Configure<ShieldReport.Application.Common.Configuration.CachingOptions>(cachingSection);
+builder.Services.Configure<ShieldReport.Application.Common.Configuration.FrontendOptions>(
+    builder.Configuration.GetSection(ShieldReport.Application.Common.Configuration.FrontendOptions.SectionName));
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddScoped<ShieldReport.Application.Permissions.IPermissionCache, ShieldReport.Api.Startup.DistributedPermissionCache>();
@@ -279,7 +303,17 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// The OnlyOffice Document Server container fetches/saves a report's draft over plain HTTP
+// (host.docker.internal:5000) since it has no way to trust our self-signed dev HTTPS cert —
+// redirecting those specific requests to HTTPS would just break them, so they're exempted.
+app.UseWhen(
+    context =>
+    {
+        var path = context.Request.Path.Value ?? string.Empty;
+        return !path.Contains("/editor-source", StringComparison.OrdinalIgnoreCase)
+            && !path.Contains("/editor-callback", StringComparison.OrdinalIgnoreCase);
+    },
+    appBuilder => appBuilder.UseHttpsRedirection());
 app.UseAuthentication();
 app.UseTokenValidation();
 app.UseRateLimiter();

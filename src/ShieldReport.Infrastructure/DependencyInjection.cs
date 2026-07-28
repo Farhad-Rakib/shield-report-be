@@ -4,6 +4,7 @@ using ShieldReport.Application.Common.Interfaces.Security;
 using ShieldReport.Application.Common.Interfaces.Services;
 using ShieldReport.Infrastructure.Authentication;
 using ShieldReport.Infrastructure.Email;
+using ShieldReport.Infrastructure.Reporting;
 using ShieldReport.Infrastructure.Security;
 
 namespace ShieldReport.Infrastructure;
@@ -22,6 +23,13 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddScoped<ITotpService, TotpService>();
         services.AddScoped<IEmailService, SmtpEmailService>();
+        services.AddDataProtection();
+        services.AddSingleton<IApiKeyEncryptor, DataProtectionApiKeyEncryptor>();
+        // Scoped, not Singleton — it now depends on IFileStorageService (Scoped, needs
+        // IWebHostEnvironment) to load a custom-uploaded template's bytes.
+        services.AddScoped<IReportDocxTemplateFiller, OpenXmlReportDocxTemplateFiller>();
+        services.AddScoped<IReportPdfConverter, LibreOfficeReportPdfConverter>();
+        services.AddSingleton<IReportEditorAccessTokenService, HmacReportEditorAccessTokenService>();
 
         return services;
     }

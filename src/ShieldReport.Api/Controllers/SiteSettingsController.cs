@@ -18,7 +18,14 @@ public sealed class SiteSettingsController : ControllerBase
         _siteSettingService = siteSettingService;
     }
 
+    // Site settings (title/branding) are read here by AuthLayout to render the login/register
+    // screens *before* a user has a session — that only works if these two GETs are actually
+    // reachable pre-auth. Left [Authorize] before, every pre-login page's settings fetch 401'd,
+    // which (via BaseRepository's refresh-then-hard-redirect interceptor) silently bounced
+    // visitors on public pages like /register/:token straight back to /login before they could
+    // see anything. Mutations below stay behind [Authorize].
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<SiteSettingDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
@@ -27,6 +34,7 @@ public sealed class SiteSettingsController : ControllerBase
     }
 
     [HttpGet("{key}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<SiteSettingDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByKey(string key, CancellationToken cancellationToken)
