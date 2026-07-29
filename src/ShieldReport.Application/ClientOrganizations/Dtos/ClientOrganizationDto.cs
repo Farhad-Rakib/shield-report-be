@@ -7,4 +7,5 @@ public sealed record ClientOrganizationDto(
     string? PrimaryContactName,
     string? PrimaryContactEmail,
     bool IsActive,
-    bool AllowSelfServiceScanning);
+    bool AllowSelfServiceScanning,
+    bool AllowScanConsoleAccess);

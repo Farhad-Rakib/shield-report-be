@@ -35,7 +35,7 @@ public sealed class ScansController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ScanDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> List([FromQuery] PagedRequest request, [FromQuery] long? clientOrganizationId, [FromQuery] long? clientAssetId, [FromQuery] ScanStatus? status, CancellationToken cancellationToken)
     {
-        var scans = await _scanService.ListAsync(request, clientOrganizationId, clientAssetId, status, cancellationToken);
+        var scans = await _scanService.ListAsync(request, clientOrganizationId, clientAssetId, status, _currentUserService.IsClientPortalUser, _currentUserService.ClientOrganizationId, cancellationToken);
         return Ok(ApiResponse<PagedResult<ScanDto>>.SuccessResponse(scans, "Scans retrieved successfully"));
     }
 
@@ -44,7 +44,7 @@ public sealed class ScansController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<ScanDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByPublicId(Guid publicId, CancellationToken cancellationToken)
     {
-        var scan = await _scanService.GetByPublicIdAsync(publicId, cancellationToken);
+        var scan = await _scanService.GetByPublicIdAsync(publicId, _currentUserService.IsClientPortalUser, _currentUserService.ClientOrganizationId, cancellationToken);
         return Ok(ApiResponse<ScanDto>.SuccessResponse(scan, "Scan retrieved successfully"));
     }
 
@@ -53,7 +53,7 @@ public sealed class ScansController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ScanFindingRawDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRawFindings(Guid publicId, CancellationToken cancellationToken)
     {
-        var findings = await _scanService.GetRawFindingsAsync(publicId, cancellationToken);
+        var findings = await _scanService.GetRawFindingsAsync(publicId, _currentUserService.IsClientPortalUser, _currentUserService.ClientOrganizationId, cancellationToken);
         return Ok(ApiResponse<IReadOnlyList<ScanFindingRawDto>>.SuccessResponse(findings, "Raw findings retrieved successfully"));
     }
 

@@ -4,4 +4,5 @@ public sealed record UpdateClientOrganizationRequestDto(
     string Name,
     string? PrimaryContactName,
     string? PrimaryContactEmail,
-    bool AllowSelfServiceScanning);
+    bool AllowSelfServiceScanning,
+    bool AllowScanConsoleAccess);

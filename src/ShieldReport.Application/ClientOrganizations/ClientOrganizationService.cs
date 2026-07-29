@@ -38,7 +38,7 @@ public sealed class ClientOrganizationService : IClientOrganizationService
             throw new AppException("A client organization with this name already exists.", 409);
         }
 
-        var organization = new ClientOrganization(request.Name, request.PrimaryContactName, request.PrimaryContactEmail, request.AllowSelfServiceScanning);
+        var organization = new ClientOrganization(request.Name, request.PrimaryContactName, request.PrimaryContactEmail, request.AllowSelfServiceScanning, request.AllowScanConsoleAccess);
         await _clientOrganizationRepository.AddAsync(organization, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -55,7 +55,7 @@ public sealed class ClientOrganizationService : IClientOrganizationService
             throw new AppException("A client organization with this name already exists.", 409);
         }
 
-        organization.UpdateDetails(request.Name, request.PrimaryContactName, request.PrimaryContactEmail, request.AllowSelfServiceScanning);
+        organization.UpdateDetails(request.Name, request.PrimaryContactName, request.PrimaryContactEmail, request.AllowSelfServiceScanning, request.AllowScanConsoleAccess);
         _clientOrganizationRepository.Update(organization);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -81,6 +81,7 @@ public sealed class ClientOrganizationService : IClientOrganizationService
             organization.PrimaryContactName,
             organization.PrimaryContactEmail,
             organization.IsActive,
-            organization.AllowSelfServiceScanning);
+            organization.AllowSelfServiceScanning,
+            organization.AllowScanConsoleAccess);
     }
 }

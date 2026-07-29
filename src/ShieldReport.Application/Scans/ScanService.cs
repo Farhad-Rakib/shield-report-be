@@ -14,6 +14,7 @@ public sealed class ScanService : IScanService
     private readonly IScanFindingRawRepository _scanFindingRawRepository;
     private readonly IClientAssetRepository _clientAssetRepository;
     private readonly IEngagementRepository _engagementRepository;
+    private readonly IClientOrganizationRepository _clientOrganizationRepository;
     private readonly IScanQueueService _scanQueueService;
     private readonly IScanCancellationRegistry _scanCancellationRegistry;
     private readonly IScanRealtimeNotifier _realtimeNotifier;
@@ -24,6 +25,7 @@ public sealed class ScanService : IScanService
         IScanFindingRawRepository scanFindingRawRepository,
         IClientAssetRepository clientAssetRepository,
         IEngagementRepository engagementRepository,
+        IClientOrganizationRepository clientOrganizationRepository,
         IScanQueueService scanQueueService,
         IScanCancellationRegistry scanCancellationRegistry,
         IScanRealtimeNotifier realtimeNotifier,
@@ -33,20 +35,47 @@ public sealed class ScanService : IScanService
         _scanFindingRawRepository = scanFindingRawRepository;
         _clientAssetRepository = clientAssetRepository;
         _engagementRepository = engagementRepository;
+        _clientOrganizationRepository = clientOrganizationRepository;
         _scanQueueService = scanQueueService;
         _scanCancellationRegistry = scanCancellationRegistry;
         _realtimeNotifier = realtimeNotifier;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PagedResult<ScanDto>> ListAsync(PagedRequest request, long? clientOrganizationId, long? clientAssetId, ScanStatus? status, CancellationToken cancellationToken = default)
+    // Gates scan *visibility* for the client portal, separate from AllowSelfServiceScanning
+    // (which only gates the client's own scan-trigger button). Scan rows are already isolated
+    // to the caller's own org via the EF Core HasQueryFilter on Scan — this is the second,
+    // opt-in gate on top of that: staff must explicitly flip AllowScanConsoleAccess on for a
+    // client org (default false) before that org's users can see scan data at all.
+    private async Task EnsureClientCanViewScansAsync(bool callerIsClientPortalUser, long? callerClientOrganizationId, CancellationToken cancellationToken)
     {
+        if (!callerIsClientPortalUser)
+        {
+            return;
+        }
+
+        var organization = callerClientOrganizationId.HasValue
+            ? await _clientOrganizationRepository.GetByIdAsync(callerClientOrganizationId.Value, cancellationToken)
+            : null;
+
+        if (organization is null || !organization.AllowScanConsoleAccess)
+        {
+            throw new AppException("Scan visibility isn't enabled for your organization yet. Contact your pentest team to request access.", 403);
+        }
+    }
+
+    public async Task<PagedResult<ScanDto>> ListAsync(PagedRequest request, long? clientOrganizationId, long? clientAssetId, ScanStatus? status, bool callerIsClientPortalUser, long? callerClientOrganizationId, CancellationToken cancellationToken = default)
+    {
+        await EnsureClientCanViewScansAsync(callerIsClientPortalUser, callerClientOrganizationId, cancellationToken);
+
         var (items, total) = await _scanRepository.GetPagedAsync(request.Page, request.PageSize, clientOrganizationId, clientAssetId, status, cancellationToken);
         return PagedResult<ScanDto>.Create(items.Select(s => ToDto(s)).ToList(), total, request.Page, request.PageSize);
     }
 
-    public async Task<ScanDto> GetByPublicIdAsync(Guid publicId, CancellationToken cancellationToken = default)
+    public async Task<ScanDto> GetByPublicIdAsync(Guid publicId, bool callerIsClientPortalUser, long? callerClientOrganizationId, CancellationToken cancellationToken = default)
     {
+        await EnsureClientCanViewScansAsync(callerIsClientPortalUser, callerClientOrganizationId, cancellationToken);
+
         var scan = await _scanRepository.GetByPublicIdAsync(publicId, cancellationToken)
             ?? throw new AppException("Scan not found.", 404);
 
@@ -188,8 +217,10 @@ public sealed class ScanService : IScanService
         return ToDto(scan);
     }
 
-    public async Task<IReadOnlyList<ScanFindingRawDto>> GetRawFindingsAsync(Guid publicId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ScanFindingRawDto>> GetRawFindingsAsync(Guid publicId, bool callerIsClientPortalUser, long? callerClientOrganizationId, CancellationToken cancellationToken = default)
     {
+        await EnsureClientCanViewScansAsync(callerIsClientPortalUser, callerClientOrganizationId, cancellationToken);
+
         var scan = await _scanRepository.GetByPublicIdAsync(publicId, cancellationToken)
             ?? throw new AppException("Scan not found.", 404);
 

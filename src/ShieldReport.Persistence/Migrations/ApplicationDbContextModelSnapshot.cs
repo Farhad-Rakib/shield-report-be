@@ -157,6 +157,11 @@ namespace ShieldReport.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<bool>("AllowScanConsoleAccess")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<bool>("AllowSelfServiceScanning")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")

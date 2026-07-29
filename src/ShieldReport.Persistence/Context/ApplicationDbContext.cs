@@ -67,6 +67,13 @@ public sealed class ApplicationDbContext : DbContext
         modelBuilder.Entity<Engagement>().HasQueryFilter(x =>
             !_currentUserService.IsClientPortalUser || x.ClientOrganizationId == _currentUserService.ClientOrganizationId);
 
+        // Scan previously had no isolation at all (unlike its ClientAsset/Vulnerability/Engagement
+        // siblings above) — ScanService.GetByPublicIdAsync did a bare PublicId lookup with zero
+        // ownership check, so any client-portal user holding ScansRead could fetch any other
+        // org's scan by GUID. Closed as part of exposing the scan console to the client portal.
+        modelBuilder.Entity<Scan>().HasQueryFilter(x =>
+            !_currentUserService.IsClientPortalUser || x.ClientOrganizationId == _currentUserService.ClientOrganizationId);
+
         base.OnModelCreating(modelBuilder);
     }
 }

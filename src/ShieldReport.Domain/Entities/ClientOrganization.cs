@@ -15,11 +15,18 @@ public sealed class ClientOrganization : BaseEntity
     // staff explicitly turns it off for a specific org.
     public bool AllowSelfServiceScanning { get; private set; } = true;
 
+    // Per-client toggle for whether client-portal users (CLIENT_ADMIN/CLIENT_USER) can see the
+    // Scans list/detail/live console at all. Unlike AllowSelfServiceScanning (which only gates
+    // the client's own scan-trigger button), this gates read access to scan data entirely — so
+    // it defaults false: a brand-new client org sees nothing about scans until staff explicitly
+    // opts them in, rather than inheriting an always-on default with no prior behavior to preserve.
+    public bool AllowScanConsoleAccess { get; private set; }
+
     private ClientOrganization()
     {
     }
 
-    public ClientOrganization(string name, string? primaryContactName = null, string? primaryContactEmail = null, bool allowSelfServiceScanning = true)
+    public ClientOrganization(string name, string? primaryContactName = null, string? primaryContactEmail = null, bool allowSelfServiceScanning = true, bool allowScanConsoleAccess = false)
     {
         Name = !string.IsNullOrWhiteSpace(name)
             ? name.Trim()
@@ -27,9 +34,10 @@ public sealed class ClientOrganization : BaseEntity
         PrimaryContactName = primaryContactName;
         PrimaryContactEmail = primaryContactEmail;
         AllowSelfServiceScanning = allowSelfServiceScanning;
+        AllowScanConsoleAccess = allowScanConsoleAccess;
     }
 
-    public void UpdateDetails(string name, string? primaryContactName, string? primaryContactEmail, bool allowSelfServiceScanning)
+    public void UpdateDetails(string name, string? primaryContactName, string? primaryContactEmail, bool allowSelfServiceScanning, bool allowScanConsoleAccess)
     {
         if (!string.IsNullOrWhiteSpace(name))
         {
@@ -39,6 +47,7 @@ public sealed class ClientOrganization : BaseEntity
         PrimaryContactName = primaryContactName;
         PrimaryContactEmail = primaryContactEmail;
         AllowSelfServiceScanning = allowSelfServiceScanning;
+        AllowScanConsoleAccess = allowScanConsoleAccess;
     }
 
     public void Disable()

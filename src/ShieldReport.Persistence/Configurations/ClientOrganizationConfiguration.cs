@@ -16,6 +16,7 @@ public sealed class ClientOrganizationConfiguration : IEntityTypeConfiguration<C
         builder.Property(x => x.PrimaryContactName).HasMaxLength(200);
         builder.Property(x => x.PrimaryContactEmail).HasMaxLength(256);
         builder.Property(x => x.AllowSelfServiceScanning).HasDefaultValue(true);
+        builder.Property(x => x.AllowScanConsoleAccess).HasDefaultValue(false);
         builder.Property(x => x.CreatedAt).IsRequired();
 
         builder.HasIndex(x => x.PublicId).IsUnique();
