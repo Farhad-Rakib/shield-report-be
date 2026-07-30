@@ -5,6 +5,7 @@ using Asp.Versioning;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -125,6 +126,17 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddHealthChecks();
 
+// Without this, ASP.NET Core falls back to its default per-container key ring (warned about at
+// startup: "Storing keys in a directory '/root/.aspnet/DataProtection-Keys' that may not be
+// persisted outside of the container"). Every LlmProviderConfiguration's API key is encrypted
+// via DataProtectionApiKeyEncryptor, so a container recreate silently orphans all of them —
+// confirmed as the cause of GET /api/v1/LlmProviderConfigurations 500ing with
+// "CryptographicException: key not found in the key ring" after a `docker compose up --build`.
+// DataProtection-Keys below is a named volume (see docker-compose.yml) so the ring survives
+// rebuilds/recreates.
+builder.Services.AddDataProtection()
+    .SetApplicationName("ShieldReport")
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/DataProtection-Keys"));
 
 builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();

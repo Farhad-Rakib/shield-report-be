@@ -112,6 +112,20 @@ services:
       # scanner-images below — a broken/unavailable third-party scan-tool image shouldn't
       # block the app itself from coming up; the first scan with that tool just eats a pull.
       - /var/run/docker.sock:/var/run/docker.sock
+      # LocalFileStorageService writes report drafts/PDFs and uploaded templates under
+      # <ContentRootPath>/App_Data/uploads (ContentRootPath is /app, per src/Dockerfile's
+      # WORKDIR). With no volume here, every `docker compose up --build` recreates the api
+      # container's writable layer from scratch and silently deletes every uploaded file —
+      # the DB rows (Report.DraftDocxPath etc.) survive in mssql but point at nothing, so
+      # GetDraftFileAsync/GetPdfFileAsync 404 and OnlyOffice's editor-source fetch fails the
+      # same way. Confirmed via docservice logs: "Request failed with status code 404".
+      - api_uploads:/app/App_Data/uploads
+      # See the AddDataProtection().PersistKeysToFileSystem() call in Program.cs — without a
+      # volume here the key ring is recreated on every container recreate, which permanently
+      # orphans every already-encrypted LlmProviderConfiguration API key (confirmed as the
+      # cause of GET /api/v1/LlmProviderConfigurations 500ing with "CryptographicException:
+      # key not found in the key ring").
+      - dataprotection_keys:/app/DataProtection-Keys
     depends_on:
       mssql:
         condition: service_healthy
@@ -247,3 +261,5 @@ volumes:
   # while every real scan mounted a completely different, empty, auto-created nuclei-templates).
   nuclei-templates:
     name: nuclei-templates
+  api_uploads:
+  dataprotection_keys:
