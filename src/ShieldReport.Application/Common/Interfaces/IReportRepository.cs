@@ -10,4 +10,5 @@ public interface IReportRepository
     Task<IReadOnlyList<Report>> GetByEngagementIdAsync(long engagementId, CancellationToken cancellationToken = default);
     Task<int> GetLatestVersionAsync(long engagementId, CancellationToken cancellationToken = default);
     void Update(Report entity);
+    void Delete(Report entity);
 }

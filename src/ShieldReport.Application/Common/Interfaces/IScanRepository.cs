@@ -16,6 +16,7 @@ public interface IScanRepository : IRepository<Scan>
         int pageSize,
         long? clientOrganizationId,
         long? clientAssetId,
+        long? engagementId,
         ScanStatus? status,
         CancellationToken cancellationToken = default);
 }

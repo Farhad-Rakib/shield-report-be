@@ -129,6 +129,25 @@ public sealed class ReportService : IReportService
         return MapToDto(report);
     }
 
+    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
+    {
+        var report = await _reportRepository.GetByIdAsync(id, cancellationToken)
+            ?? throw new AppException("Report not found.", 404);
+
+        if (!string.IsNullOrWhiteSpace(report.DraftDocxPath))
+        {
+            _fileStorageService.Delete(report.DraftDocxPath);
+        }
+
+        if (!string.IsNullOrWhiteSpace(report.FinalPdfPath))
+        {
+            _fileStorageService.Delete(report.FinalPdfPath);
+        }
+
+        _reportRepository.Delete(report);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<ReportDto> ConvertToPdfAsync(long id, CancellationToken cancellationToken = default)
     {
         var report = await _reportRepository.GetByIdAsync(id, cancellationToken)

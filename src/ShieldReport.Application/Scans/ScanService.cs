@@ -64,11 +64,11 @@ public sealed class ScanService : IScanService
         }
     }
 
-    public async Task<PagedResult<ScanDto>> ListAsync(PagedRequest request, long? clientOrganizationId, long? clientAssetId, ScanStatus? status, bool callerIsClientPortalUser, long? callerClientOrganizationId, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<ScanDto>> ListAsync(PagedRequest request, long? clientOrganizationId, long? clientAssetId, long? engagementId, ScanStatus? status, bool callerIsClientPortalUser, long? callerClientOrganizationId, CancellationToken cancellationToken = default)
     {
         await EnsureClientCanViewScansAsync(callerIsClientPortalUser, callerClientOrganizationId, cancellationToken);
 
-        var (items, total) = await _scanRepository.GetPagedAsync(request.Page, request.PageSize, clientOrganizationId, clientAssetId, status, cancellationToken);
+        var (items, total) = await _scanRepository.GetPagedAsync(request.Page, request.PageSize, clientOrganizationId, clientAssetId, engagementId, status, cancellationToken);
         return PagedResult<ScanDto>.Create(items.Select(s => ToDto(s)).ToList(), total, request.Page, request.PageSize);
     }
 

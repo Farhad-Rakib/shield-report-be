@@ -133,6 +133,7 @@ public static class Permissions
     public const string VulnerabilityReportsGenerate = "vulnerability-reports.generate";
     public const string VulnerabilityReportsApprove = "vulnerability-reports.approve";
     public const string VulnerabilityReportsDownload = "vulnerability-reports.download";
+    public const string VulnerabilityReportsDelete = "vulnerability-reports.delete";
 
     public const string ReportTemplatesRead = "report-templates.read";
     public const string ReportTemplatesCreate = "report-templates.create";
@@ -232,6 +233,7 @@ public static class Permissions
         VulnerabilityReportsGenerate,
         VulnerabilityReportsApprove,
         VulnerabilityReportsDownload,
+        VulnerabilityReportsDelete,
         ReportTemplatesRead,
         ReportTemplatesCreate,
         ReportTemplatesUpdate,

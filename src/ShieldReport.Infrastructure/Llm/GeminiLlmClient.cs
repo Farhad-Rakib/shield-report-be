@@ -25,7 +25,13 @@ public sealed class GeminiLlmClient : ILlmClient
             Content = JsonContent.Create(new
             {
                 contents = new[] { new { parts = new[] { new { text = request.Prompt } } } },
-                generationConfig = new { temperature = request.Temperature, maxOutputTokens = request.MaxOutputTokens }
+                // thinkingBudget: 0 turns off this model family's extended "thinking" pass — left
+                // on, it silently burns most of maxOutputTokens on invisible reasoning tokens
+                // (confirmed via the raw API: a 1024-token budget produced ~980 thinking tokens
+                // and finishReason "MAX_TOKENS", truncating the actual JSON answer mid-string).
+                // That's what caused report narrative drafting and vulnerability AI-explanation
+                // JSON parsing to fail/silently no-op.
+                generationConfig = new { temperature = request.Temperature, maxOutputTokens = request.MaxOutputTokens, thinkingConfig = new { thinkingBudget = 0 } }
             })
         };
 
@@ -35,11 +41,19 @@ public sealed class GeminiLlmClient : ILlmClient
         using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
 
-        return document.RootElement
-            .GetProperty("candidates")[0]
-            .GetProperty("content")
-            .GetProperty("parts")[0]
-            .GetProperty("text")
-            .GetString() ?? string.Empty;
+        // Concatenate every text part rather than assuming parts[0] holds the whole answer — a
+        // defensive measure in case a future model variant still splits output across parts even
+        // with thinking disabled.
+        var parts = document.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts");
+        var textBuilder = new System.Text.StringBuilder();
+        foreach (var part in parts.EnumerateArray())
+        {
+            if (part.TryGetProperty("text", out var textElement))
+            {
+                textBuilder.Append(textElement.GetString());
+            }
+        }
+
+        return textBuilder.ToString();
     }
 }

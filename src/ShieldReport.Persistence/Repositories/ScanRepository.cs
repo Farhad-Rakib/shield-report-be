@@ -44,6 +44,7 @@ public sealed class ScanRepository : BaseRepository<Scan>, IScanRepository
         int pageSize,
         long? clientOrganizationId,
         long? clientAssetId,
+        long? engagementId,
         ScanStatus? status,
         CancellationToken cancellationToken = default)
     {
@@ -57,6 +58,11 @@ public sealed class ScanRepository : BaseRepository<Scan>, IScanRepository
         if (clientAssetId.HasValue)
         {
             query = query.Where(x => x.ClientAssetId == clientAssetId.Value);
+        }
+
+        if (engagementId.HasValue)
+        {
+            query = query.Where(x => x.EngagementId == engagementId.Value);
         }
 
         if (status.HasValue)

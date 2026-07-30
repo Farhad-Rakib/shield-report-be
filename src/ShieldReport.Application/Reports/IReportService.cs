@@ -12,6 +12,7 @@ public interface IReportService
     Task<ReportDto> ApproveAsync(long id, long currentUserId, CancellationToken cancellationToken = default);
     Task<ReportDto> RejectAsync(long id, long currentUserId, string reason, CancellationToken cancellationToken = default);
     Task<ReportDto> ConvertToPdfAsync(long id, CancellationToken cancellationToken = default);
+    Task DeleteAsync(long id, CancellationToken cancellationToken = default);
     Task OverwriteDraftAsync(long id, byte[] docxBytes, CancellationToken cancellationToken = default);
     Task<(Stream Content, string FileName)> GetDraftFileAsync(long id, CancellationToken cancellationToken = default);
     Task<(Stream Content, string FileName)> GetPdfFileAsync(long id, CancellationToken cancellationToken = default);

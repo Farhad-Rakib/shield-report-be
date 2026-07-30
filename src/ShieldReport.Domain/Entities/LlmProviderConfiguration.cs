@@ -20,11 +20,11 @@ public sealed class LlmProviderConfiguration : BaseEntity
 
         Using ONLY the data above, respond with a single JSON object (no markdown, no prose
         outside the JSON) matching exactly this shape:
-        {"explanation": "<plain-language explanation of the vulnerability and its risk, 2-4 sentences>", "suggestedSeverity": "<one of Informational, Low, Medium, High, Critical>", "confidence": <number 0-1>}
+        {"explanation": "<plain-language explanation of the vulnerability and its risk, 2-4 sentences>", "suggestedSeverity": "<one of Informational, Low, Medium, High, Critical>", "recommendation": "<concrete remediation guidance for the client, 1-3 sentences>", "confidence": <number 0-1>}
 
         If the provided data is insufficient to explain or score the finding, set "explanation" to
-        "Insufficient data to generate an explanation." and "suggestedSeverity" to null rather than
-        guessing.
+        "Insufficient data to generate an explanation.", "suggestedSeverity" to null, and
+        "recommendation" to null rather than guessing.
         """;
 
     public LlmProvider Provider { get; private set; }

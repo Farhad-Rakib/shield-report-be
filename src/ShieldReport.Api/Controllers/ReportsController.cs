@@ -113,6 +113,15 @@ public sealed class ReportsController : ControllerBase
         return Ok(ApiResponse<ReportDto>.SuccessResponse(report, "Report rejected successfully"));
     }
 
+    [HttpDelete("reports/{id:long}")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsDelete)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
+    {
+        await _reportService.DeleteAsync(id, cancellationToken);
+        return Ok(ApiResponse.SuccessResponse("Report deleted successfully"));
+    }
+
     [HttpGet("reports/{id:long}/download-docx")]
     [Authorize(Policy = Permissions.VulnerabilityReportsDownload)]
     public async Task<IActionResult> DownloadDraft(long id, CancellationToken cancellationToken)

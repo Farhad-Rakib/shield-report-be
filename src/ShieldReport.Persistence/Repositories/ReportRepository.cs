@@ -57,4 +57,9 @@ public sealed class ReportRepository : IReportRepository
     {
         _dbContext.Reports.Update(entity);
     }
+
+    public void Delete(Report entity)
+    {
+        _dbContext.Reports.Remove(entity);
+    }
 }

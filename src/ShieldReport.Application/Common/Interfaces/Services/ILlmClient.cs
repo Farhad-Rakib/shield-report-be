@@ -9,7 +9,7 @@ public sealed record LlmCompletionRequest(LlmProvider Provider, string ApiKey, s
 
 // Used by VulnerabilityAiExplanationService after it parses the raw completion text — kept here
 // alongside the other LLM contracts even though ILlmClient itself no longer produces it directly.
-public sealed record LlmExplanationResult(string Explanation, Severity? SuggestedSeverity, double? Confidence);
+public sealed record LlmExplanationResult(string Explanation, Severity? SuggestedSeverity, string? Recommendation, double? Confidence);
 
 // One implementation per wire format, not per vendor — OpenAI and OpenRouter share the same
 // chat-completions shape, so they're the same client with a different BaseUrl. Resolved via
