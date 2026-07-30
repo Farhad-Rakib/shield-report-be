@@ -73,6 +73,19 @@ public sealed partial class DockerScanRunner : IScanRunner
         // confirmed against the real image. /tmp is world-writable regardless of UID.
         startInfo.ArgumentList.Add("--env");
         startInfo.ArgumentList.Add("HOME=/tmp");
+        if (scan.Tool == ScanTool.Nuclei)
+        {
+            // Without a persistent cache, every single Nuclei run re-downloads the entire
+            // 10,000+ template set from GitHub into the ephemeral container's throwaway
+            // filesystem — confirmed to hang/fail outright under transient network trouble or
+            // GitHub rate-limiting after repeated runs in a short window. This named volume
+            // (created + chmod'd 777 once by the nuclei-templates-init service in
+            // docker-compose.yml, since a fresh volume is root-owned and UID 1000 can't write to
+            // it otherwise) persists the templates across every scan, so only the first run ever
+            // has to download anything.
+            startInfo.ArgumentList.Add("-v");
+            startInfo.ArgumentList.Add("nuclei-templates:/tmp/nuclei-templates");
+        }
         startInfo.ArgumentList.Add(image);
         foreach (var arg in toolArgs)
         {
@@ -199,8 +212,16 @@ public sealed partial class DockerScanRunner : IScanRunner
             // (which reports every open port it finds), nuclei's JSONL stdout only ever emits a
             // line on an actual template match, so a clean target can otherwise go through an
             // entire run with zero output; -stats gives the live console something real to show
-            // in that case instead of looking frozen.
-            ScanTool.Nuclei => ("projectdiscovery/nuclei:latest", new[] { "-u", target, "-jsonl", "-irr", "-silent", "-stats", "-stats-interval", "5" }),
+            // in that case instead of looking frozen. -t points the scan at the persistent
+            // nuclei-templates volume (mounted above) as its template *source* — confirmed via
+            // manual testing that -ud (update-template-dir) only controls where
+            // `-update-templates` writes to, NOT where a normal scan run reads from; using -ud
+            // alone here made every scan fail instantly with "no templates provided for scan"
+            // regardless of the volume's actual contents. The volume is pre-populated once by
+            // the nuclei-templates-init service's sibling step (see docker-compose.yml) rather
+            // than relying on this per-scan invocation to auto-install into a custom -t path,
+            // which nuclei does not do.
+            ScanTool.Nuclei => ("projectdiscovery/nuclei:latest", new[] { "-u", target, "-t", "/tmp/nuclei-templates", "-jsonl", "-irr", "-silent", "-stats", "-stats-interval", "5" }),
             // Reconftw's -d wants a bare domain, same problem as Naabu.
             ScanTool.Reconftw => ("six2dez/reconftw:latest", new[] { "-d", ExtractHost(target), "--recon" }),
             _ => throw new ArgumentOutOfRangeException(nameof(tool), tool, "Unsupported scan tool.")

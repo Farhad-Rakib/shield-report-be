@@ -40,11 +40,31 @@ services:
 
   # Backs the "Edit in Browser" report feature (ReportEditorModal.tsx). Not a hard startup
   # dependency of api/fe — same rationale as the scanner-image services below: if this is down,
-  # only that one feature breaks, not the whole app. JWT is left disabled (no JWT_ENABLED env var)
-  # since this is an internal demo network, not internet-exposed.
+  # only that one feature breaks, not the whole app.
+  #
+  # JWT_ENABLED=false is required explicitly here — current onlyoffice/documentserver images
+  # default JWT to ON with an auto-generated random secret even with no JWT_* env vars set at
+  # all, which the app has no way to learn or sign against. Without this, every editor session
+  # fails client-side with "Document security token is not correctly formed" (Document Server
+  # rejecting ReportEditorModal's un-signed config, confirmed via `docker logs` showing
+  # `checkJwt error: jwt must be provided`). Fine for this internal demo network; a real
+  # internet-facing deployment should flip this back on with an explicit JWT_SECRET the API
+  # also knows, and sign the docEditor config accordingly (see INFRASTRUCTURE-PentestOps.md).
+  #
+  # ALLOW_PRIVATE_IP_ADDRESS=true is separately required: Document Server 9.x ships an SSRF
+  # guard (request-filtering-agent) that refuses to fetch/callback any URL resolving to a
+  # private IP range by default — which is exactly what `http://api:8080` (this compose
+  # network's internal address) is. Without this, the editor UI opens but every document
+  # load/save fails with "Download failed" (confirmed via docservice logs: "DNS lookup
+  # 172.x.x.x ... is not allowed. Because, It is private IP address."). Same LAN-demo caveat
+  # as JWT_ENABLED above — a real deployment reachable from the internet shouldn't need this
+  # at all if api/onlyoffice are on public-ish addresses, or should scope it more narrowly.
   onlyoffice:
     image: onlyoffice/documentserver:latest
     container_name: shieldreport-onlyoffice
+    environment:
+      JWT_ENABLED: "false"
+      ALLOW_PRIVATE_IP_ADDRESS: "true"
     ports:
       - "8090:80"
     networks:
@@ -95,6 +115,8 @@ services:
     depends_on:
       mssql:
         condition: service_healthy
+      nuclei-templates-populate:
+        condition: service_completed_successfully
     networks:
       - shieldreport-net
     restart: unless-stopped
@@ -121,6 +143,48 @@ services:
     image: projectdiscovery/naabu:latest
     container_name: shieldreport-naabu-image
     entrypoint: ["true"]
+    restart: "no"
+    networks:
+      - shieldreport-net
+
+  # One-time permission fixup for the persistent Nuclei template cache (DockerScanRunner.cs
+  # mounts `nuclei-templates` into every Nuclei scan container at /tmp/nuclei-templates so
+  # templates download once instead of on every single scan). A freshly created named volume is
+  # root-owned; Nuclei's scan containers run as --user 1000:1000 (no root, see DockerScanRunner's
+  # own comments on why), so without this they'd hit the same class of "permission denied"
+  # writing into it that $HOME=/tmp already works around for nuclei's config dir. Confirmed via
+  # a manual `docker run --user 1000:1000` against the un-chmod'd volume failing with exactly
+  # that error. Runs once and exits; safe to re-run on every `docker compose up`.
+  nuclei-templates-init:
+    image: alpine:latest
+    container_name: shieldreport-nuclei-templates-init
+    command: ["chmod", "-R", "777", "/data"]
+    volumes:
+      - nuclei-templates:/data
+    restart: "no"
+    networks:
+      - shieldreport-net
+
+  # Pre-populates the (now-writable) volume with the actual template files. DockerScanRunner.cs
+  # invokes nuclei per-scan with `-t /tmp/nuclei-templates` (the *read* flag) — nuclei does not
+  # auto-install templates into a custom -t directory on a normal scan run, it just fails
+  # instantly with "no templates provided for scan" if that directory is empty. `-update-templates
+  # -ud <dir>` is the only thing that actually populates a custom directory; confirmed both
+  # behaviors manually before landing on this two-step (chmod, then populate) shape. Safe/cheap to
+  # re-run on every `docker compose up` — nuclei no-ops ("No new updates found") once current.
+  nuclei-templates-populate:
+    image: projectdiscovery/nuclei:latest
+    container_name: shieldreport-nuclei-templates-populate
+    user: "1000:1000"
+    environment:
+      HOME: /tmp
+    entrypoint: ["nuclei"]
+    command: ["-update-templates", "-ud", "/tmp/nuclei-templates"]
+    volumes:
+      - nuclei-templates:/tmp/nuclei-templates
+    depends_on:
+      nuclei-templates-init:
+        condition: service_completed_successfully
     restart: "no"
     networks:
       - shieldreport-net
@@ -173,3 +237,13 @@ networks:
 
 volumes:
   mssql_data:
+  # Pinned to this exact literal name (no compose project-name prefix) because
+  # DockerScanRunner.cs references it via a bare `docker run -v nuclei-templates:...` — that's a
+  # raw Docker CLI call outside of compose, so it has no notion of "this compose project's"
+  # volume naming and would otherwise silently talk to a second, different, unprefixed volume
+  # of the same short name that Docker auto-creates on first reference (confirmed: this is
+  # exactly what caused "no templates provided for scan" to persist even after the
+  # nuclei-templates-populate step succeeded — it was populating shield-report-be_nuclei-templates
+  # while every real scan mounted a completely different, empty, auto-created nuclei-templates).
+  nuclei-templates:
+    name: nuclei-templates
