@@ -14,8 +14,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddScoped<ShieldReport.Persistence.Interceptors.AuditSaveChangesInterceptor>();
+        services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
         {
+            options.AddInterceptors(serviceProvider.GetRequiredService<ShieldReport.Persistence.Interceptors.AuditSaveChangesInterceptor>());
             var provider = GetProvider(configuration);
             if (provider == "sqlserver")
             {
@@ -49,6 +51,11 @@ public static class DependencyInjection
         services.AddScoped<IClientAssetRepository, ClientAssetRepository>();
         services.AddScoped<IClientOrganizationRepository, ClientOrganizationRepository>();
         services.AddScoped<IScanRepository, ScanRepository>();
+        services.AddScoped<IBackgroundJobRepository, BackgroundJobRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IScanAuthorizationRepository, ScanAuthorizationRepository>();
+        services.AddScoped<IScanToolSettingRepository, ScanToolSettingRepository>();
+        services.AddScoped<IReportDeliveryRepository, ReportDeliveryRepository>();
         services.AddScoped<IScanFindingRawRepository, ScanFindingRawRepository>();
         services.AddScoped<IVulnerabilityRepository, VulnerabilityRepository>();
         services.AddScoped<ICvssSeverityBandRepository, CvssSeverityBandRepository>();

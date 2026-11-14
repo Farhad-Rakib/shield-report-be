@@ -1,3 +1,4 @@
+using ShieldReport.Domain.Enums;
 namespace ShieldReport.Application.Engagements.Dtos;
 
 public sealed record CreateEngagementRequestDto(
@@ -6,4 +7,5 @@ public sealed record CreateEngagementRequestDto(
     long LeadPentesterId,
     string? Scope,
     DateTime? StartDate,
-    DateTime? EndDate);
+    DateTime? EndDate,
+    TestingType TestingType = TestingType.White);

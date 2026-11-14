@@ -9,4 +9,6 @@ public interface ILlmProviderConfigurationService
     Task<LlmProviderConfigurationDto> UpdateAsync(long id, UpdateLlmProviderConfigurationRequestDto request, long? currentUserId, CancellationToken cancellationToken = default);
     Task DeleteAsync(long id, CancellationToken cancellationToken = default);
     Task<LlmProviderConfigurationDto> ActivateAsync(long id, long? currentUserId, CancellationToken cancellationToken = default);
+    Task<LlmProviderConfigurationDto> DeactivateAsync(long id, long? currentUserId, CancellationToken cancellationToken = default);
+    Task<LlmProviderTestResultDto> TestAsync(long id, CancellationToken cancellationToken = default);
 }

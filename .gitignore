@@ -17,3 +17,6 @@ src/ShieldReport.Api/logs/
 
 # Prompt files
 INITIAL_TEMPLATE_PROMPT.md
+
+# Local DataProtection key ring when running the API outside Docker
+**/DataProtection-Keys/

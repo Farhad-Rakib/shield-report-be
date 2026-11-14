@@ -16,9 +16,17 @@ public sealed class ScanConfiguration : IEntityTypeConfiguration<Scan>
         builder.Property(x => x.QueuedAt).IsRequired();
         builder.Property(x => x.RawLogBlobKey).HasMaxLength(500);
         builder.Property(x => x.ErrorMessage).HasMaxLength(1000);
+        builder.Property(x => x.LeaseOwner).HasMaxLength(200);
+        builder.HasOne<ScanAuthorization>()
+            .WithMany()
+            .HasForeignKey(x => x.ScanAuthorizationId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.PublicId).IsUnique();
         builder.HasIndex(x => new { x.ClientOrganizationId, x.Status });
+        // Supports the queue claim (ScanRepository.TryClaimNextAsync): per tool, by status.
+        builder.HasIndex(x => new { x.Tool, x.Status, x.QueuedAt });
+        builder.HasIndex(x => x.NextScanId);
 
         builder.HasOne(x => x.ClientOrganization)
             .WithMany()

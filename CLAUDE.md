@@ -8,7 +8,7 @@ Clean layered architecture:
 - **ShieldReport.Domain** — Entities, enums, value objects (no dependencies)
 - **ShieldReport.Application** — Business logic, service interfaces, DTOs, FluentValidation
 - **ShieldReport.Infrastructure** — JWT, password hashing, SMTP email, Serilog logging
-- **ShieldReport.Scanning** — Scan execution pipeline: Hangfire dispatch (`HangfireScanDispatcher`/`ScanDispatchJob`), per-`ScanTool` work queues (`PerToolScanWorkQueue`), `ScanWorkerBackgroundService`, `DockerScanRunner` (shells out to `docker run` for Naabu/Nuclei/Reconftw), and the tool-specific output parsers. References Application + Domain only — not Infrastructure/Persistence/Api.
+- **ShieldReport.Scanning** — Scan execution pipeline, **no Hangfire** (removed 2026-11-14): the `scans` table is the queue. `ScanWorkerBackgroundService` runs one loop per `ScanTool` that claims work with an atomic lease (`IScanRepository.TryClaimNextAsync`: next Queued scan whose chain predecessor finished, or a Running scan whose lease expired) and renews it every 20s. `DockerScanRunner` runs tools in **detached** labelled containers (`shieldreport-scan-{id}`) and follows `docker logs -f`; on API shutdown it only detaches, and the next process re-attaches. `ScanContainerJanitorService` removes leftover containers/output folders. Per-tool limits/timeouts: `ScanToolSettingsProvider` (`Scanning:Tools:*` in appsettings). Tool-specific output parsers live here too. References Application + Domain only.
 - **ShieldReport.Persistence** — EF Core (SQL Server), repositories, migrations, seeders
 - **ShieldReport.Api** — Controllers, middleware, authorization handlers, startup
 
@@ -49,6 +49,15 @@ dotnet ef database update --project ShieldReport.Persistence --startup-project S
 | `Serilog:*` | Structured logging (console + file + optional Seq, disabled by default) |
 | `Cors` (`AllowFrontend` policy in `Program.cs`) | Allowed frontend origins |
 | `Caching:*TtlMinutes` | TTLs for the permission/menu/role caches (always in-memory — see below) |
+
+## Background jobs (replaces Hangfire)
+Durable jobs live in the `background_jobs` table. Queue one with `IBackgroundJobQueue.EnqueueAsync(type, payload)`: it only adds the row to the current unit of work, so it commits atomically with the caller's own `SaveChangesAsync` (transactional outbox). `BackgroundJobWorkerService` (Infrastructure) claims due jobs with a lease, runs the `IBackgroundJobHandler` registered for the type in its own DI scope, and retries with exponential back-off up to `MaxAttempts`. Succeeded jobs are purged after 7 days; failed ones are kept with `LastError`. **Handlers must be idempotent.** The old Hangfire tables (`HangFire.*` schema) are no longer used and can be dropped manually.
+
+## Reporting (HTML engine)
+Reports render from a Handlebars HTML template (`ShieldReport.Infrastructure/Reporting/Html/default-report.hbs`, variables = `ReportRenderModel`) into PDF (headless Chromium + paged.js) and Word (HtmlToOpenXml onto the SELISE .docx). User/LLM text must go through `{{{text X}}}` (escaped). The renderer blocks all network requests; images are data URIs (`{{asset "x.png"}}`). Needs Chromium locally (auto-detects Google Chrome on macOS) — the Docker image installs it. See `src/Docs/REQUIREMENTS.md` "HTML Report Engine".
+
+## Health
+`/health` is liveness only (container HEALTHCHECK). `/health/ready` checks the database, the Docker daemon (Degraded if unavailable: scans can't run) and free disk, returning JSON. Point uptime monitoring at `/health/ready`.
 
 ## Caching
 Caching is in-memory only (`AddDistributedMemoryCache`) — Redis support was removed. Permission/menu/role caching goes through the generic `IAppCache`/`IPermissionCache` abstractions in `ShieldReport.Api/Startup/Distributed*Cache.cs`, so swapping the backend later just means changing the `AddDistributedMemoryCache()` call in `Program.cs`. Cache admin endpoints: `GET /api/v1/system/cache/distributed/keys`, `DELETE /api/v1/system/cache/distributed/flush`.
@@ -93,6 +102,7 @@ Ported from `ims_be`'s dashboard concept but re-themed generically (no inventory
 - **`NotificationPreference` has no API**: the entity/table exists (task #11) but there's no service/controller for it yet (task #72) — the frontend's `NotificationSettingsPage` is a local-only stub with no backend to call.
 
 ## Task Tracking / Resuming Work
+- **Current status snapshot for both repos: `../STATE.md`** (workspace root, next to this repo). Read it first; update it when a feature lands. It supersedes the master tracker's Status column, which was last updated 2026-07-27 and still shows Reporting as unbuilt. Reporting is mostly built now (`ReportsController`, `ReportTemplatesController`, OpenXML docx filling, LibreOffice PDF). OnlyOffice in-browser editing was **removed 2026-11-14** to cut hosting requirements. The plan is to move generation to an HTML template with injected fields, rendered to PDF. Send-to-client is still missing.
 - Master status tracker for the whole PentestOps build-out (all features, Backend/Frontend, Done/Not-Started): `../TASK-GROUPS-MASTER.md` (one level up from this repo, in the `Selise Projects` workspace root). Companion detail docs (`TASK-GROUPS-PentestOps.md`, `TASK-GROUPS-AutomatedScanning.md`, `TASK-GROUPS-EngagementManagement.md`, `TASK-GROUPS-InvitationRegistration.md`) live alongside it but are historical — the master doc is canonical for status.
 - Net-new requirements not yet in the master tracker's companion docs get written up in `src/Docs/REQUIREMENTS.md` first, then added to the master tracker as their own Feature section.
 - **Next planned work**: Scan Tool Configuration (tasks #117-121 in the master tracker, spec in `src/Docs/REQUIREMENTS.md`) — make scan tool image/host/command configurable instead of hardcoded in `ShieldReport.Scanning/Runners/DockerScanRunner.cs`. Has open architectural questions (remote Docker daemon vs. remote HTTP API per tool) that need answering before starting.

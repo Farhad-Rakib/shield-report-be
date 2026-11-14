@@ -7,4 +7,5 @@ public sealed record UpdateEngagementRequestDto(
     string? Scope,
     DateTime? StartDate,
     DateTime? EndDate,
-    EngagementStatus? Status);
+    EngagementStatus? Status,
+    TestingType? TestingType = null);

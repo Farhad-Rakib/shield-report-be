@@ -26,9 +26,9 @@ public sealed class LlmProviderConfigurationRepository : ILlmProviderConfigurati
         return await _dbContext.LlmProviderConfigurations.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<LlmProviderConfiguration?> GetByProviderAsync(LlmProvider provider, CancellationToken cancellationToken = default)
+    public async Task<bool> NameExistsAsync(string name, long? excludeId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.LlmProviderConfigurations.FirstOrDefaultAsync(x => x.Provider == provider, cancellationToken);
+        return await _dbContext.LlmProviderConfigurations.AnyAsync(x => x.Name == name && (excludeId == null || x.Id != excludeId), cancellationToken);
     }
 
     public async Task<LlmProviderConfiguration?> GetActiveAsync(CancellationToken cancellationToken = default)
@@ -40,7 +40,7 @@ public sealed class LlmProviderConfigurationRepository : ILlmProviderConfigurati
     {
         return await _dbContext.LlmProviderConfigurations
             .AsNoTracking()
-            .OrderBy(x => x.Provider)
+            .OrderByDescending(x => x.IsActive).ThenBy(x => x.Name)
             .ToListAsync(cancellationToken);
     }
 

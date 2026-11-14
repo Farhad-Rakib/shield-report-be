@@ -11,50 +11,41 @@ namespace ShieldReport.Application.Reports;
 
 public sealed class ReportNarrativeDraftingService : IReportNarrativeDraftingService
 {
-    private const string PlaceholderText = "<To be completed>";
+    private const string Placeholder = "<To be completed>";
 
-    private const string PromptTemplate =
-        """
-        You are a security analyst assistant drafting the narrative sections of a penetration
-        test report. You are given a list of findings (title, severity, and explanation) that
-        will appear in the report's detailed findings section.
 
-        Findings:
-        {FindingsList}
-
-        Using ONLY the data above, respond with a single JSON object (no markdown, no prose
-        outside the JSON) matching exactly this shape:
-        {"executiveSummary": "<2-4 sentence summary of the overall security posture and engagement objective>", "keyFindings": "<3-6 bullet-style sentences on the recurring themes across findings>", "keyRecommendations": "<3-6 bullet-style sentences on how to remediate the recurring themes>"}
-
-        If the findings list is empty or insufficient to draft meaningful narrative, use
-        "Insufficient data to generate this section." for each field rather than speculating.
-        """;
 
     private readonly ILlmProviderConfigurationRepository _llmProviderConfigurationRepository;
     private readonly IApiKeyEncryptor _apiKeyEncryptor;
     private readonly ILlmClientFactory _llmClientFactory;
     private readonly ILogger<ReportNarrativeDraftingService> _logger;
+    private readonly ShieldReport.Application.LlmPrompts.ILlmPromptService _prompts;
 
     public ReportNarrativeDraftingService(
         ILlmProviderConfigurationRepository llmProviderConfigurationRepository,
         IApiKeyEncryptor apiKeyEncryptor,
         ILlmClientFactory llmClientFactory,
-        ILogger<ReportNarrativeDraftingService> logger)
+        ILogger<ReportNarrativeDraftingService> logger,
+        ShieldReport.Application.LlmPrompts.ILlmPromptService prompts)
     {
+        _prompts = prompts;
         _llmProviderConfigurationRepository = llmProviderConfigurationRepository;
         _apiKeyEncryptor = apiKeyEncryptor;
         _llmClientFactory = llmClientFactory;
         _logger = logger;
     }
 
-    public async Task<ReportNarrative> DraftAsync(IReadOnlyList<Vulnerability> includedFindings, CancellationToken cancellationToken = default)
-    {
-        var placeholder = new ReportNarrative(PlaceholderText, PlaceholderText, PlaceholderText);
+    public string PlaceholderText => Placeholder;
 
+    public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default) =>
+        await _llmProviderConfigurationRepository.GetActiveAsync(cancellationToken) is not null;
+
+    public async Task<ReportNarrative?> DraftAsync(IReadOnlyList<Vulnerability> includedFindings, Engagement? engagement = null, CancellationToken cancellationToken = default)
+    {
         var activeConfiguration = await _llmProviderConfigurationRepository.GetActiveAsync(cancellationToken);
         if (activeConfiguration is null)
         {
-            return placeholder;
+            return null;
         }
 
         var findingsList = new StringBuilder();
@@ -66,29 +57,40 @@ public sealed class ReportNarrativeDraftingService : IReportNarrativeDraftingSer
             findingsList.AppendLine($"- {finding.Title} [{finding.SeverityOverride ?? finding.Severity}]: {explanation}");
         }
 
-        var prompt = PromptTemplate.Replace("{FindingsList}", findingsList.Length > 0 ? findingsList.ToString() : "(none)");
+        var template = await _prompts.GetTemplateAsync(ShieldReport.Application.LlmPrompts.LlmPromptCatalog.ReportNarrative, cancellationToken);
+        engagement ??= includedFindings.FirstOrDefault()?.Engagement;
+        var prompt = template
+            .Replace("{FindingsList}", findingsList.Length > 0 ? findingsList.ToString() : "(none)")
+            .Replace("{ClientName}", engagement?.ClientOrganization?.Name ?? "the client")
+            .Replace("{EngagementTitle}", engagement?.Title ?? "the engagement")
+            .Replace("{TestingType}", engagement?.TestingType.ToString() ?? "White");
         var apiKey = _apiKeyEncryptor.Decrypt(activeConfiguration.ApiKeyEncrypted);
         var client = _llmClientFactory.GetClient(activeConfiguration.Provider);
 
+        // Narrative JSON for many findings needs room; a small per-finding budget would truncate it.
+        var maxTokens = Math.Max(activeConfiguration.MaxOutputTokens, 2048);
+        var request = new LlmCompletionRequest(activeConfiguration.Provider, apiKey, activeConfiguration.Model, activeConfiguration.BaseUrl, activeConfiguration.Temperature, maxTokens, prompt);
+
+        _logger.LogInformation("Drafting report narrative with {Provider} ({Name}) for {Count} findings.", activeConfiguration.Provider, activeConfiguration.Name, includedFindings.Count);
+        var rawContent = await client.CompleteAsync(request, cancellationToken);
         try
         {
-            var request = new LlmCompletionRequest(activeConfiguration.Provider, apiKey, activeConfiguration.Model, activeConfiguration.BaseUrl, activeConfiguration.Temperature, activeConfiguration.MaxOutputTokens, prompt);
-            var rawContent = await client.CompleteAsync(request, cancellationToken);
-            return ParseNarrativeResponse(rawContent, placeholder);
+            return ParseNarrativeResponse(rawContent);
         }
-        catch (Exception ex)
+        catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Report narrative drafting failed via provider {Provider}.", activeConfiguration.Provider);
-            return placeholder;
+            throw new InvalidOperationException("The AI provider returned text that isn't the expected JSON.", ex);
         }
     }
 
-    private static ReportNarrative ParseNarrativeResponse(string rawContent, ReportNarrative fallback)
+    private static ReportNarrative ParseNarrativeResponse(string rawContent)
     {
         using var document = JsonDocument.Parse(LlmJsonResponseHelper.StripCodeFence(rawContent));
         var root = document.RootElement;
 
-        string ReadField(string name) => root.TryGetProperty(name, out var element) ? element.GetString() ?? fallback.ExecutiveSummary : fallback.ExecutiveSummary;
+        string ReadField(string name) => root.TryGetProperty(name, out var element) && element.ValueKind == JsonValueKind.String
+            ? element.GetString() ?? Placeholder
+            : Placeholder;
 
         return new ReportNarrative(ReadField("executiveSummary"), ReadField("keyFindings"), ReadField("keyRecommendations"));
     }

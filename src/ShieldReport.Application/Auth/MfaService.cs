@@ -1,3 +1,4 @@
+using ShieldReport.Application.Audit;
 using System.Security.Cryptography;
 using System.Text;
 using ShieldReport.Application.Auth.Dtos;
@@ -23,14 +24,18 @@ public sealed class MfaService : IMfaService
     private readonly IAuthService _authService;
     private readonly IUnitOfWork _unitOfWork;
 
+    private readonly IAuditLogger _auditLogger;
+
     public MfaService(
         IUserRepository userRepository,
         ITotpService totpService,
         IMfaRecoveryCodeRepository mfaRecoveryCodeRepository,
         IAppCache appCache,
         IAuthService authService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditLogger auditLogger)
     {
+        _auditLogger = auditLogger;
         _userRepository = userRepository;
         _totpService = totpService;
         _mfaRecoveryCodeRepository = mfaRecoveryCodeRepository;
@@ -155,10 +160,12 @@ public sealed class MfaService : IMfaService
 
         if (!verified)
         {
+            await _auditLogger.LogAsync(AuditActions.MfaFailed, "User", user.Id.ToString(), null, user.Id, cancellationToken);
             throw new AppException("Invalid verification code.", 401);
         }
 
         await _appCache.RemoveAsync(challengeKey, cancellationToken);
+        await _auditLogger.LogAsync(AuditActions.MfaSucceeded, "User", user.Id.ToString(), new { recoveryCodeUsed = usedRecoveryCode }, user.Id, cancellationToken);
 
         var amr = usedRecoveryCode ? PasswordAndRecoveryAmr : PasswordAndMfaAmr;
         return await _authService.IssueTokensAsync(user.Id, amr, cancellationToken);

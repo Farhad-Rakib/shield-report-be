@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.HttpOverrides;
+using ShieldReport.Api.Startup;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Asp.Versioning;
-using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -84,6 +87,8 @@ builder.Services.AddCors(options =>
             .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
+            // Lets a cross-origin frontend (dev server) read download file names.
+            .WithExposedHeaders("Content-Disposition")
             .AllowCredentials();
     });
 });
@@ -124,7 +129,7 @@ builder.Services.AddSwaggerGen(options =>
     options.DocInclusionPredicate((docName, apiDesc) =>
         string.Equals(apiDesc.GroupName, docName, StringComparison.OrdinalIgnoreCase));
 });
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks().AddReadinessChecks();
 
 // Without this, ASP.NET Core falls back to its default per-container key ring (warned about at
 // startup: "Storing keys in a directory '/root/.aspnet/DataProtection-Keys' that may not be
@@ -136,7 +141,12 @@ builder.Services.AddHealthChecks();
 // rebuilds/recreates.
 builder.Services.AddDataProtection()
     .SetApplicationName("ShieldReport")
-    .PersistKeysToFileSystem(new DirectoryInfo("/app/DataProtection-Keys"));
+    // <ContentRoot>/DataProtection-Keys = /app/DataProtection-Keys in the container (same path the
+    // volume mounts), and a writable project-local folder when running outside Docker.
+    .PersistKeysToFileSystem(new DirectoryInfo(
+        builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath
+            ? keysPath
+            : Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys")));
 
 builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();
@@ -146,44 +156,30 @@ builder.Services.AddSingleton<ShieldReport.Application.Common.Interfaces.Service
 builder.Services.AddScoped<ShieldReport.Application.Common.Interfaces.Services.IFileStorageService, ShieldReport.Api.Startup.LocalFileStorageService>();
 builder.Services.Configure<ShieldReport.Infrastructure.Nvd.NvdOptions>(builder.Configuration.GetSection(ShieldReport.Infrastructure.Nvd.NvdOptions.SectionName));
 builder.Services.AddHttpClient<ShieldReport.Application.Common.Interfaces.Services.INvdClient, ShieldReport.Infrastructure.Nvd.NvdClient>();
-builder.Services.AddHttpClient<ShieldReport.Infrastructure.Llm.OpenAiCompatibleLlmClient>();
-builder.Services.AddHttpClient<ShieldReport.Infrastructure.Llm.GeminiLlmClient>();
+// LLM calls are always background or explicit tests now, but a hung provider must not hold a job
+// lease or a request for the default 100s: fail after 60s and let the job retry.
+builder.Services.AddHttpClient<ShieldReport.Infrastructure.Llm.OpenAiCompatibleLlmClient>(c => c.Timeout = TimeSpan.FromSeconds(60));
+builder.Services.AddHttpClient<ShieldReport.Infrastructure.Llm.GeminiLlmClient>(c => c.Timeout = TimeSpan.FromSeconds(60));
+builder.Services.AddSingleton<ShieldReport.Infrastructure.Llm.AnthropicLlmClient>();
 builder.Services.AddScoped<ShieldReport.Application.Common.Interfaces.Services.ILlmClientFactory, ShieldReport.Infrastructure.Llm.LlmClientFactory>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddScanning();
 
-// Hangfire — base wiring only for now; recurring/background jobs land in later phases.
-var hangfireConnectionString = builder.Configuration.GetConnectionString("SqlServerConnection")
-    ?? throw new InvalidOperationException("Missing connection string: SqlServerConnection.");
 
-// UseSqlServerStorage below installs Hangfire's own schema eagerly, at DI-configuration time —
-// on a brand-new deployment (database doesn't exist yet) this races EfCoreDatabaseBootstrapper's
-// later Database.MigrateAsync() (the thing that actually creates the database) and permanently
-// loses for that process's lifetime: "Cannot open database ... login failed", then Hangfire gives
-// up and never retries the schema install until the app restarts, silently breaking every scan
-// and report background job. Guarantee the database exists here first, so Hangfire never races it.
-var hangfireConnectionBuilder = new SqlConnectionStringBuilder(hangfireConnectionString);
-var targetDatabaseName = hangfireConnectionBuilder.InitialCatalog;
-hangfireConnectionBuilder.InitialCatalog = "master";
-await using (var masterConnection = new SqlConnection(hangfireConnectionBuilder.ConnectionString))
-{
-    await masterConnection.OpenAsync();
-    await using var createDbCommand = masterConnection.CreateCommand();
-    createDbCommand.CommandText = $"IF DB_ID('{targetDatabaseName}') IS NULL CREATE DATABASE [{targetDatabaseName}];";
-    await createDbCommand.ExecuteNonQueryAsync();
-}
+// Shutdown grace period. Scans no longer need it (they detach and their containers keep running),
+// but in-flight background jobs and final scan status writes get time to finish. Keep this below
+// the api service's stop_grace_period in docker-compose.yml, or Docker SIGKILLs the process first.
+builder.Services.Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(40));
 
-builder.Services.AddHangfire(config => config
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(hangfireConnectionString));
-builder.Services.AddHangfireServer();
-
-// Rate limiting — 100 req/min for authenticated users (partitioned by user id),
-// 10 req/min per IP for anonymous requests.
+// Rate limiting: fixed one-minute windows, partitioned by user id for authenticated requests and
+// by client IP for anonymous ones (login, refresh, public site settings). Limits come from
+// RateLimiting:PerUserPerMinute / RateLimiting:AnonymousPerMinute (env: RateLimiting__*). The
+// per-user default leaves room for an SPA polling several pages; keep the anonymous one low, it
+// is what throttles password guessing.
+var perUserPerMinute = Math.Max(1, builder.Configuration.GetValue("RateLimiting:PerUserPerMinute", 600));
+var anonymousPerMinute = Math.Max(1, builder.Configuration.GetValue("RateLimiting:AnonymousPerMinute", 30));
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -194,7 +190,7 @@ builder.Services.AddRateLimiter(options =>
         {
             return RateLimitPartition.GetFixedWindowLimiter($"user:{userId}", _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 100,
+                PermitLimit = perUserPerMinute,
                 Window = TimeSpan.FromMinutes(1)
             });
         }
@@ -202,7 +198,7 @@ builder.Services.AddRateLimiter(options =>
         var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         return RateLimitPartition.GetFixedWindowLimiter($"ip:{ipAddress}", _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = 10,
+            PermitLimit = anonymousPerMinute,
             Window = TimeSpan.FromMinutes(1)
         });
     });
@@ -294,11 +290,27 @@ builder.Services.AddSingleton<IAuthorizationHandler, SelfOrPermissionAuthorizati
 builder.Services.AddScoped<ShieldReport.Api.Startup.MenuPermissionValidator>();
 builder.Services.AddScoped<ShieldReport.Api.Startup.PermissionSyncService>();
 
+// Behind the Caddy proxy every request arrives from the proxy's address. Trust exactly one
+// X-Forwarded-For/-Proto hop so RemoteIpAddress is the real client — the anonymous rate limiter
+// partitions by IP (otherwise all anonymous users would share one bucket) and the audit log
+// records it. The proxy is only reachable inside the compose network, so the known-proxy lists
+// are cleared rather than pinned to a container IP that changes on every recreate.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 1;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+// Request logging outside the exception handler, so it records the status code the handler
+// actually returns (inside it, every handled 4xx was logged as a 500 error).
+app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 app.UseSecurityHeaders();
-app.UseSerilogRequestLogging();
 app.UseRouting();
 
 // CORS must be placed before authentication/authorization middleware
@@ -315,31 +327,29 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// The OnlyOffice Document Server container fetches/saves a report's draft over plain HTTP
-// (host.docker.internal:5000) since it has no way to trust our self-signed dev HTTPS cert —
-// redirecting those specific requests to HTTPS would just break them, so they're exempted.
-app.UseWhen(
-    context =>
-    {
-        var path = context.Request.Path.Value ?? string.Empty;
-        return !path.Contains("/editor-source", StringComparison.OrdinalIgnoreCase)
-            && !path.Contains("/editor-callback", StringComparison.OrdinalIgnoreCase);
-    },
-    appBuilder => appBuilder.UseHttpsRedirection());
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseTokenValidation();
 app.UseRateLimiter();
 app.UseAuthorization();
 
 
-app.MapHealthChecks("/health");
+// Liveness: no dependency checks (container HEALTHCHECK). Readiness: database, Docker, disk.
+app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains(ReadinessHealthChecks.Tag),
+    ResponseWriter = ReadinessHealthChecks.WriteJsonAsync,
+    ResultStatusCodes =
+    {
+        [HealthStatus.Healthy] = StatusCodes.Status200OK,
+        [HealthStatus.Degraded] = StatusCodes.Status200OK,
+        [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+    }
+});
 app.MapControllers();
 app.MapHub<ShieldReport.Api.Hubs.NotificationHub>("/hubs/notifications");
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapHangfireDashboard("/hangfire");
-}
 
 
 using (var scope = app.Services.CreateScope())

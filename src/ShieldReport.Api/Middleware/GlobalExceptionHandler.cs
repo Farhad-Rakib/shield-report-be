@@ -16,7 +16,17 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        _logger.LogError(exception, "Unhandled exception occurred");
+        // Expected client errors (validation, not found, forbidden, conflict…) are normal traffic:
+        // log them briefly so real failures stay visible in error-level logs and alerts.
+        var isClientError = exception is ValidationException || exception is AppException { StatusCode: < 500 };
+        if (isClientError)
+        {
+            _logger.LogInformation("Request rejected: {ExceptionType}: {Message}", exception.GetType().Name, exception.Message);
+        }
+        else
+        {
+            _logger.LogError(exception, "Unhandled exception occurred");
+        }
 
         var response = exception switch
         {

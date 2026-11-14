@@ -7,7 +7,11 @@ public sealed class CreateScanRequestDtoValidator : AbstractValidator<CreateScan
 {
     public CreateScanRequestDtoValidator()
     {
-        RuleFor(x => x.Tools).NotEmpty();
+        // Tools may be empty when only custom tools are selected (CustomToolIds), but not both.
+        RuleFor(x => x)
+            .Must(x => (x.Tools?.Length ?? 0) > 0 || (x.CustomToolIds?.Length ?? 0) > 0)
+            .WithName("Tools")
+            .WithMessage("Select at least one scan tool.");
         RuleForEach(x => x.Tools).IsInEnum();
         // Every scan must be scoped to an engagement — a scan with no engagement produces
         // vulnerabilities with EngagementId null, which no report can ever pull in (report

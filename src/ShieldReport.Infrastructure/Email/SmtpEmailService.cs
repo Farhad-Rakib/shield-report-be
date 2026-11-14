@@ -14,7 +14,10 @@ public sealed class SmtpEmailService : IEmailService
         _smtpOptions = smtpOptions.Value;
     }
 
-    public async Task SendAsync(string to, string subject, string htmlBody, CancellationToken cancellationToken = default)
+    public Task SendAsync(string to, string subject, string htmlBody, CancellationToken cancellationToken = default) =>
+        SendAsync(to, subject, htmlBody, Array.Empty<EmailAttachment>(), cancellationToken);
+
+    public async Task SendAsync(string to, string subject, string htmlBody, IReadOnlyList<EmailAttachment> attachments, CancellationToken cancellationToken = default)
     {
         using var message = new MailMessage
         {
@@ -25,6 +28,12 @@ public sealed class SmtpEmailService : IEmailService
         };
 
         message.To.Add(new MailAddress(to));
+
+        // MailMessage disposes the attachments (and their streams) with the message.
+        foreach (var attachment in attachments)
+        {
+            message.Attachments.Add(new Attachment(new MemoryStream(attachment.Content), attachment.FileName, attachment.ContentType));
+        }
 
         using var client = new SmtpClient(_smtpOptions.Host, _smtpOptions.Port)
         {

@@ -11,4 +11,10 @@ public interface IReportTemplateService
     Task<ReportTemplateDto> ClearDocxTemplateAsync(long id, CancellationToken cancellationToken = default);
     Task<ReportTemplateDto> SetDefaultAsync(long id, CancellationToken cancellationToken = default);
     Task DeleteAsync(long id, CancellationToken cancellationToken = default);
+    Task<ReportTemplateHtmlDto> GetHtmlAsync(long id, CancellationToken cancellationToken = default);
+    Task<ReportTemplateHtmlDto> UpdateHtmlAsync(long id, string htmlContent, CancellationToken cancellationToken = default);
+    Task<ReportTemplateDto> UpdateFieldsAsync(long id, IReadOnlyList<ReportTemplateField> fields, CancellationToken cancellationToken = default);
+    Task<ReportTemplateHtmlDto> UploadHtmlAsync(long id, Stream content, string fileName, CancellationToken cancellationToken = default);
+    Task<string> PreviewAsync(long id, string? htmlContent, IReadOnlyList<ReportTemplateField>? fields, CancellationToken cancellationToken = default);
+    Task<ReportTemplateHtmlDto> ResetHtmlAsync(long id, CancellationToken cancellationToken = default);
 }

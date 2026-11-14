@@ -1,26 +1,55 @@
-# LAN demo stack: mssql + mailhog + api (this repo) + fe (shield-report-fe).
+# ShieldReport stack: proxy (only public entry) + mssql + api + fe + backup + scanner images.
 #
-# Requires shield-report-fe to be cloned as a SIBLING directory next to this repo, e.g.:
+# Requires shield-report-fe cloned as a SIBLING directory next to this repo:
 #   server/
 #     shield-report-be/   <- this repo (contains this file)
 #     shield-report-fe/
 #
 # Usage:
-#   cp .env.example .env   # then set SERVER_IP to this machine's LAN IP
-#   docker compose up -d --build
+#   cp .env.example .env   # set SITE_ADDRESS / PUBLIC_URL and the secrets
+#   docker compose up -d --build --remove-orphans
+#
+# Only the `proxy` service publishes ports (80/443). SQL Server, the API and the frontend are
+# reachable only on the internal network; Mailhog's UI and a debug API port bind to 127.0.0.1
+# (use an SSH tunnel to reach them on a remote server).
+#
+# Images are pinned by digest (see .env.example) so an upstream ":latest" can't silently change
+# behaviour. To upgrade, change the digest in .env, take a backup, then `up -d`.
 services:
+  proxy:
+    image: ${CADDY_IMAGE:-caddy:2.8.4-alpine}
+    container_name: shieldreport-proxy
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./docker/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # certificates — keep, or Let's Encrypt rate limits bite on rebuilds
+      - caddy_config:/config
+    depends_on:
+      - api
+      - fe
+    networks:
+      - shieldreport-net
+    restart: unless-stopped
+
   mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: ${MSSQL_IMAGE:-mcr.microsoft.com/mssql/server@sha256:e07b9699a2b749969f19d86563ceeea22bd3a69f7f1db85a8d1ac4bdaf0c6f56}
     container_name: shieldreport-mssql
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
-    ports:
-      - "1433:1433"
+      # Express is free for production use (Developer, the image default, is not licensed for
+      # it). Limits: 10 GB per database, ~1.4 GB buffer pool, 4 cores — fine for the MVP.
+      MSSQL_PID: ${MSSQL_PID:-Express}
+      MSSQL_MEMORY_LIMIT_MB: ${MSSQL_MEMORY_LIMIT_MB:-2048}
     volumes:
       - mssql_data:/var/opt/mssql
+      - mssql_backups:/var/opt/mssql/backups
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1'"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -29,49 +58,44 @@ services:
       - shieldreport-net
     restart: unless-stopped
 
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: shieldreport-mailhog
-    ports:
-      - "8025:8025" # web UI to view password-reset / notification emails sent during the demo
+  # Nightly SQL Server backup + uploads/DataProtection-keys archive with retention. Reuses the
+  # mssql image for sqlcmd (no extra download). See docker/backup/README.md for restore steps.
+  backup:
+    image: ${MSSQL_IMAGE:-mcr.microsoft.com/mssql/server@sha256:e07b9699a2b749969f19d86563ceeea22bd3a69f7f1db85a8d1ac4bdaf0c6f56}
+    container_name: shieldreport-backup
+    user: "0"
+    entrypoint: ["/bin/bash", "/scripts/backup.sh"]
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      BACKUP_HOUR_UTC: ${BACKUP_HOUR_UTC:-2}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_ON_START: ${BACKUP_ON_START:-true}
+    volumes:
+      - ./docker/backup/backup.sh:/scripts/backup.sh:ro
+      - mssql_backups:/backups
+      - api_uploads:/data/uploads:ro
+      - dataprotection_keys:/data/dataprotection-keys:ro
+    depends_on:
+      mssql:
+        condition: service_healthy
     networks:
       - shieldreport-net
     restart: unless-stopped
 
-  # Backs the "Edit in Browser" report feature (ReportEditorModal.tsx). Not a hard startup
-  # dependency of api/fe — same rationale as the scanner-image services below: if this is down,
-  # only that one feature breaks, not the whole app.
-  #
-  # JWT_ENABLED=false is required explicitly here — current onlyoffice/documentserver images
-  # default JWT to ON with an auto-generated random secret even with no JWT_* env vars set at
-  # all, which the app has no way to learn or sign against. Without this, every editor session
-  # fails client-side with "Document security token is not correctly formed" (Document Server
-  # rejecting ReportEditorModal's un-signed config, confirmed via `docker logs` showing
-  # `checkJwt error: jwt must be provided`). Fine for this internal demo network; a real
-  # internet-facing deployment should flip this back on with an explicit JWT_SECRET the API
-  # also knows, and sign the docEditor config accordingly (see INFRASTRUCTURE-PentestOps.md).
-  #
-  # ALLOW_PRIVATE_IP_ADDRESS=true is separately required: Document Server 9.x ships an SSRF
-  # guard (request-filtering-agent) that refuses to fetch/callback any URL resolving to a
-  # private IP range by default — which is exactly what `http://api:8080` (this compose
-  # network's internal address) is. Without this, the editor UI opens but every document
-  # load/save fails with "Download failed" (confirmed via docservice logs: "DNS lookup
-  # 172.x.x.x ... is not allowed. Because, It is private IP address."). Same LAN-demo caveat
-  # as JWT_ENABLED above — a real deployment reachable from the internet shouldn't need this
-  # at all if api/onlyoffice are on public-ish addresses, or should scope it more narrowly.
-  onlyoffice:
-    image: onlyoffice/documentserver:latest
-    container_name: shieldreport-onlyoffice
-    environment:
-      JWT_ENABLED: "false"
-      ALLOW_PRIVATE_IP_ADDRESS: "true"
+  # Dev/demo SMTP sink. For real email set SMTP_* in .env to your provider and stop using this.
+  mailhog:
+    image: ${MAILHOG_IMAGE:-mailhog/mailhog@sha256:8d76a3d4ffa32a3661311944007a415332c4bb855657f4f6c57996405c009bea}
+    container_name: shieldreport-mailhog
     ports:
-      - "8090:80"
+      - "127.0.0.1:8025:8025"
     networks:
       - shieldreport-net
     restart: unless-stopped
 
   api:
+    # Longer than Program.cs's HostOptions.ShutdownTimeout (40s). Scans detach on shutdown (their
+    # containers keep running and are re-attached on start), so this mostly covers jobs/saves.
+    stop_grace_period: 50s
     build:
       context: .
       dockerfile: src/Dockerfile
@@ -82,50 +106,47 @@ services:
       Jwt__SecretKey: ${JWT_SECRET_KEY}
       Jwt__Issuer: ShieldReport
       Jwt__Audience: ShieldReport.Client
-      Cors__AllowedOrigins__0: http://${SERVER_IP}:${FE_PORT:-8080}
-      Frontend__BaseUrl: http://${SERVER_IP}:${FE_PORT:-8080}
-      Smtp__Host: mailhog
-      Smtp__Port: 1025
-      Smtp__Username: demo
-      Smtp__Password: demo
-      Smtp__FromAddress: no-reply@shieldreport.local
-      Smtp__FromName: Shield Report
-      Smtp__UseSsl: "false" # MailHog doesn't speak TLS
-      # This demo serves everything over plain HTTP, and browsers refuse to store/send Secure
-      # cookies on a non-HTTPS, non-"localhost" origin — without this, refresh-token renewal
-      # silently breaks once the LAN IP is used. See RefreshTokenCookie.cs.
-      Cookies__RequireSecure: "false"
+      # Frontend and API share one origin behind the proxy, so CORS is effectively unused.
+      Cors__AllowedOrigins__0: ${PUBLIC_URL}
+      Frontend__BaseUrl: ${PUBLIC_URL}
+      Smtp__Host: ${SMTP_HOST:-mailhog}
+      Smtp__Port: ${SMTP_PORT:-1025}
+      Smtp__Username: ${SMTP_USERNAME:-demo}
+      Smtp__Password: ${SMTP_PASSWORD:-demo}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-no-reply@shieldreport.local}
+      Smtp__FromName: ${SMTP_FROM_NAME:-Shield Report}
+      Smtp__UseSsl: ${SMTP_USE_SSL:-false}
+      # true once PUBLIC_URL is https:// — browsers drop Secure cookies on plain-HTTP origins,
+      # which silently breaks refresh-token renewal (see RefreshTokenCookie.cs).
+      Cookies__RequireSecure: ${COOKIES_REQUIRE_SECURE:-false}
       Serilog__MinimumLevel__Default: Information
-      # DocumentServerUrl is fetched by the *browser* (to load the editor's api.js), so it must be
-      # the LAN-reachable address, not localhost. ApiHostForContainer is fetched by the onlyoffice
-      # *container* to pull/save the report draft — same compose network, so the service name and
-      # its internal port work directly (plain HTTP; see Program.cs for why this stays unencrypted).
-      OnlyOffice__DocumentServerUrl: http://${SERVER_IP}:8090
-      OnlyOffice__ApiHostForContainer: http://api:8080
+      # Requests per minute: per signed-in user, and per client IP for anonymous calls (login).
+      RateLimiting__PerUserPerMinute: ${RATE_LIMIT_PER_USER_PER_MINUTE:-600}
+      RateLimiting__AnonymousPerMinute: ${RATE_LIMIT_ANONYMOUS_PER_MINUTE:-30}
+      # Scanner images: must match the images pulled below, since DockerScanRunner invokes them
+      # by these exact references through the host Docker daemon.
+      Scanning__Tools__Naabu__Image: ${NAABU_IMAGE:-projectdiscovery/naabu@sha256:0b7efcd6eb4bf7be2c5cfb2bbfe091a132df0e442e549267bca818a4cef15ea4}
+      Scanning__Tools__Nuclei__Image: ${NUCLEI_IMAGE:-projectdiscovery/nuclei@sha256:66b5f88c9b98ad29c03343dd34e5e85bde0ad10428d72e0171b067efe1ed7811}
+      Scanning__Tools__Reconftw__Image: shieldreport/reconftw-lean:latest
     ports:
-      - "${API_PORT:-5050}:8080"
+      # Debug access only, bound to localhost (the public path is the proxy).
+      - "127.0.0.1:${API_PORT:-5050}:8080"
     volumes:
-      # Docker-outside-of-Docker: lets DockerScanRunner (ShieldReport.Scanning) shell out to
-      # `docker run` for Naabu/Nuclei/Reconftw against the HOST's Docker daemon. The api
-      # container runs as root (no USER in src/Dockerfile), so it can access the socket
-      # regardless of its host-side group ownership. Not a hard startup dependency on
-      # scanner-images below — a broken/unavailable third-party scan-tool image shouldn't
-      # block the app itself from coming up; the first scan with that tool just eats a pull.
+      # Docker-outside-of-Docker: DockerScanRunner runs the scanner containers on the HOST's
+      # daemon. This is effectively root on the host — the future scan runner removes it.
       - /var/run/docker.sock:/var/run/docker.sock
-      # LocalFileStorageService writes report drafts/PDFs and uploaded templates under
-      # <ContentRootPath>/App_Data/uploads (ContentRootPath is /app, per src/Dockerfile's
-      # WORKDIR). With no volume here, every `docker compose up --build` recreates the api
-      # container's writable layer from scratch and silently deletes every uploaded file —
-      # the DB rows (Report.DraftDocxPath etc.) survive in mssql but point at nothing, so
-      # GetDraftFileAsync/GetPdfFileAsync 404 and OnlyOffice's editor-source fetch fails the
-      # same way. Confirmed via docservice logs: "Request failed with status code 404".
+      # Report drafts/PDFs, templates and attachments (App_Data/uploads under /app).
       - api_uploads:/app/App_Data/uploads
-      # See the AddDataProtection().PersistKeysToFileSystem() call in Program.cs — without a
-      # volume here the key ring is recreated on every container recreate, which permanently
-      # orphans every already-encrypted LlmProviderConfiguration API key (confirmed as the
-      # cause of GET /api/v1/LlmProviderConfigurations 500ing with "CryptographicException:
-      # key not found in the key ring").
+      # reconftw result files (DockerScanRunner mounts the same volume at /scan-output).
+      - scan_output:/app/scan-output
+      # DataProtection key ring — losing it orphans every encrypted LLM API key.
       - dataprotection_keys:/app/DataProtection-Keys
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
     depends_on:
       mssql:
         condition: service_healthy
@@ -135,11 +156,26 @@ services:
       - shieldreport-net
     restart: unless-stopped
 
-  # Pulls the scan tool images once as part of `docker compose up`/`pull`, so DockerScanRunner's
-  # ephemeral `docker run` calls never have to pull on-demand mid-scan or after a redeploy.
-  # These aren't long-running services — each just pulls its image and exits immediately.
+  fe:
+    build:
+      context: ../shield-report-fe
+      dockerfile: Dockerfile
+    container_name: shieldreport-fe
+    depends_on:
+      - api
+    environment:
+      # Relative: the SPA calls its own origin (the proxy), so it works on any host name and
+      # over HTTPS, and the SignalR hub resolves to /hubs/notifications on the same origin.
+      API_BASE_URL: /api/v1
+      CSP_CONNECT_SRC: ${CSP_CONNECT_SRC:-}
+    networks:
+      - shieldreport-net
+    restart: unless-stopped
+
+  # ---- Scanner images: pulled/built once on `up`, then run on demand by DockerScanRunner ----
+
   scanner-images:
-    image: alpine:latest
+    image: ${ALPINE_IMAGE:-alpine@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b}
     container_name: shieldreport-scanner-images
     depends_on:
       naabu-image:
@@ -154,23 +190,19 @@ services:
       - shieldreport-net
 
   naabu-image:
-    image: projectdiscovery/naabu:latest
+    image: ${NAABU_IMAGE:-projectdiscovery/naabu@sha256:0b7efcd6eb4bf7be2c5cfb2bbfe091a132df0e442e549267bca818a4cef15ea4}
     container_name: shieldreport-naabu-image
     entrypoint: ["true"]
     restart: "no"
     networks:
       - shieldreport-net
 
-  # One-time permission fixup for the persistent Nuclei template cache (DockerScanRunner.cs
-  # mounts `nuclei-templates` into every Nuclei scan container at /tmp/nuclei-templates so
-  # templates download once instead of on every single scan). A freshly created named volume is
-  # root-owned; Nuclei's scan containers run as --user 1000:1000 (no root, see DockerScanRunner's
-  # own comments on why), so without this they'd hit the same class of "permission denied"
-  # writing into it that $HOME=/tmp already works around for nuclei's config dir. Confirmed via
-  # a manual `docker run --user 1000:1000` against the un-chmod'd volume failing with exactly
-  # that error. Runs once and exits; safe to re-run on every `docker compose up`.
+  # Nuclei templates live in a persistent volume (pinned literal name: DockerScanRunner mounts it
+  # with a raw `docker run -v nuclei-templates:...`, outside compose's project-name prefixing).
+  # Step 1 makes the fresh root-owned volume writable for UID 1000; step 2 downloads/updates the
+  # templates (cheap no-op once current). Templates float on purpose: new CVE checks.
   nuclei-templates-init:
-    image: alpine:latest
+    image: ${ALPINE_IMAGE:-alpine@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b}
     container_name: shieldreport-nuclei-templates-init
     command: ["chmod", "-R", "777", "/data"]
     volumes:
@@ -179,15 +211,8 @@ services:
     networks:
       - shieldreport-net
 
-  # Pre-populates the (now-writable) volume with the actual template files. DockerScanRunner.cs
-  # invokes nuclei per-scan with `-t /tmp/nuclei-templates` (the *read* flag) — nuclei does not
-  # auto-install templates into a custom -t directory on a normal scan run, it just fails
-  # instantly with "no templates provided for scan" if that directory is empty. `-update-templates
-  # -ud <dir>` is the only thing that actually populates a custom directory; confirmed both
-  # behaviors manually before landing on this two-step (chmod, then populate) shape. Safe/cheap to
-  # re-run on every `docker compose up` — nuclei no-ops ("No new updates found") once current.
   nuclei-templates-populate:
-    image: projectdiscovery/nuclei:latest
+    image: ${NUCLEI_IMAGE:-projectdiscovery/nuclei@sha256:66b5f88c9b98ad29c03343dd34e5e85bde0ad10428d72e0171b067efe1ed7811}
     container_name: shieldreport-nuclei-templates-populate
     user: "1000:1000"
     environment:
@@ -204,21 +229,19 @@ services:
       - shieldreport-net
 
   nuclei-image:
-    image: projectdiscovery/nuclei:latest
+    image: ${NUCLEI_IMAGE:-projectdiscovery/nuclei@sha256:66b5f88c9b98ad29c03343dd34e5e85bde0ad10428d72e0171b067efe1ed7811}
     container_name: shieldreport-nuclei-image
     entrypoint: ["true"]
     restart: "no"
     networks:
       - shieldreport-net
 
-  # six2dez/reconftw only publishes a linux/arm64 manifest on Docker Hub (verified via
-  # `docker manifest inspect six2dez/reconftw:latest` — no linux/amd64 entry exists at all).
-  # Pinning the platform here means this pulls natively on arm64 hosts and via QEMU emulation
-  # on amd64 hosts, instead of failing outright with "no matching manifest for linux/amd64".
-  # DockerScanRunner.cs must pass the same --platform linux/arm64 flag when it invokes this
-  # image at scan time, or the runtime `docker run` call hits the identical error.
+  # Lean derived reconftw image (docker/reconftw/: upstream pinned by digest + reconftw.lean.cfg).
+  # Upstream only publishes linux/arm64, so on amd64 hosts it runs under QEMU emulation.
   reconftw-image:
-    image: six2dez/reconftw:latest
+    build:
+      context: ./docker/reconftw
+    image: shieldreport/reconftw-lean:latest
     platform: linux/arm64
     container_name: shieldreport-reconftw-image
     entrypoint: ["true"]
@@ -226,40 +249,19 @@ services:
     networks:
       - shieldreport-net
 
-  fe:
-    build:
-      context: ../shield-report-fe
-      dockerfile: Dockerfile
-    container_name: shieldreport-fe
-    depends_on:
-      - api
-    environment:
-      # Baked into a static file at container startup (see shield-report-fe/docker/entrypoint.sh),
-      # so this image never needs to be rebuilt just because SERVER_IP changes.
-      API_BASE_URL: http://${SERVER_IP}:${API_PORT:-5050}/api/v1
-      CSP_CONNECT_SRC: http://${SERVER_IP}:${API_PORT:-5050} ws://${SERVER_IP}:${API_PORT:-5050}
-      CSP_ONLYOFFICE_SRC: http://${SERVER_IP}:8090
-    ports:
-      - "${FE_PORT:-8080}:80"
-    networks:
-      - shieldreport-net
-    restart: unless-stopped
-
 networks:
   shieldreport-net:
     driver: bridge
 
 volumes:
   mssql_data:
-  # Pinned to this exact literal name (no compose project-name prefix) because
-  # DockerScanRunner.cs references it via a bare `docker run -v nuclei-templates:...` — that's a
-  # raw Docker CLI call outside of compose, so it has no notion of "this compose project's"
-  # volume naming and would otherwise silently talk to a second, different, unprefixed volume
-  # of the same short name that Docker auto-creates on first reference (confirmed: this is
-  # exactly what caused "no templates provided for scan" to persist even after the
-  # nuclei-templates-populate step succeeded — it was populating shield-report-be_nuclei-templates
-  # while every real scan mounted a completely different, empty, auto-created nuclei-templates).
-  nuclei-templates:
-    name: nuclei-templates
+  mssql_backups:
+    name: shieldreport-backups
   api_uploads:
   dataprotection_keys:
+  caddy_data:
+  caddy_config:
+  nuclei-templates:
+    name: nuclei-templates
+  scan_output:
+    name: shieldreport-scan-output

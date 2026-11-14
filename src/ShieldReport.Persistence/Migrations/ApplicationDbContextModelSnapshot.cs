@@ -69,11 +69,75 @@ namespace ShieldReport.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("EntityName", "EntityId");
 
                     b.ToTable("audit_logs", (string)null);
+                });
+
+            modelBuilder.Entity("ShieldReport.Domain.Entities.BackgroundJob", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("LeaseExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LeaseOwner")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("MaxAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RunAfter")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status", "RunAfter");
+
+                    b.ToTable("background_jobs", (string)null);
                 });
 
             modelBuilder.Entity("ShieldReport.Domain.Entities.ClientAsset", b =>
@@ -209,6 +273,86 @@ namespace ShieldReport.Persistence.Migrations
                     b.ToTable("client_organizations", (string)null);
                 });
 
+            modelBuilder.Entity("ShieldReport.Domain.Entities.CustomScanTool", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ArgumentsJson")
+                        .IsRequired()
+                        .HasMaxLength(8000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClientLabel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<double>("Cpus")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("DefaultSeverity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MemoryMb")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("OutputFormat")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("RunAsRoot")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TimeoutMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("UpdatedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("custom_scan_tools", (string)null);
+                });
+
             modelBuilder.Entity("ShieldReport.Domain.Entities.CvssSeverityBand", b =>
                 {
                     b.Property<long>("Id")
@@ -284,6 +428,9 @@ namespace ShieldReport.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("TestingType")
                         .HasColumnType("tinyint");
 
                     b.Property<string>("Title")
@@ -395,6 +542,46 @@ namespace ShieldReport.Persistence.Migrations
                     b.ToTable("engagement_task_assets", (string)null);
                 });
 
+            modelBuilder.Entity("ShieldReport.Domain.Entities.LlmPrompt", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Template")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("UpdatedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("llm_prompts", (string)null);
+                });
+
             modelBuilder.Entity("ShieldReport.Domain.Entities.LlmProviderConfiguration", b =>
                 {
                     b.Property<long>("Id")
@@ -428,6 +615,11 @@ namespace ShieldReport.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("PromptTemplate")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -449,8 +641,10 @@ namespace ShieldReport.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Provider")
+                    b.HasIndex("Name")
                         .IsUnique();
+
+                    b.HasIndex("Provider");
 
                     b.ToTable("llm_provider_configurations", (string)null);
                 });
@@ -479,6 +673,9 @@ namespace ShieldReport.Persistence.Migrations
                     b.Property<string>("RequiredPermission")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -908,6 +1105,10 @@ namespace ShieldReport.Persistence.Migrations
                     b.Property<long>("CreatedBy")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("CustomFieldValuesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DraftDocxPath")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -937,6 +1138,21 @@ namespace ShieldReport.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Limitations")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NarrativeError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<byte>("NarrativeStatus")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("ProjectGoals")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("PublicId")
                         .HasColumnType("uniqueidentifier");
 
@@ -950,8 +1166,19 @@ namespace ShieldReport.Persistence.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<string>("RenderedHtml")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<long>("ReportTemplateId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("ScopeStatusesJson")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<bool>("ShowToolNames")
+                        .HasColumnType("bit");
 
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
@@ -984,6 +1211,68 @@ namespace ShieldReport.Persistence.Migrations
                     b.ToTable("reports", (string)null);
                 });
 
+            modelBuilder.Entity("ShieldReport.Domain.Entities.ReportDelivery", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("AttachWord")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("DeliveredTo")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Recipients")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<long>("ReportId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SentByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportId");
+
+                    b.HasIndex("SentByUserId");
+
+                    b.ToTable("report_deliveries", (string)null);
+                });
+
             modelBuilder.Entity("ShieldReport.Domain.Entities.ReportTemplate", b =>
                 {
                     b.Property<long>("Id")
@@ -1003,6 +1292,10 @@ namespace ShieldReport.Persistence.Migrations
                     b.Property<long>("CreatedBy")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("CustomFieldsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DocxTemplateFileName")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
@@ -1010,6 +1303,9 @@ namespace ShieldReport.Persistence.Migrations
                     b.Property<string>("DocxTemplatePath")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("HtmlContent")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
@@ -1217,6 +1513,9 @@ namespace ShieldReport.Persistence.Migrations
                     b.Property<long>("CreatedBy")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("CustomScanToolId")
+                        .HasColumnType("bigint");
+
                     b.Property<long?>("EngagementId")
                         .HasColumnType("bigint");
 
@@ -1226,6 +1525,13 @@ namespace ShieldReport.Persistence.Migrations
                     b.Property<string>("ErrorMessage")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("LeaseExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LeaseOwner")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<long?>("NextScanId")
                         .HasColumnType("bigint");
@@ -1246,6 +1552,9 @@ namespace ShieldReport.Persistence.Migrations
                     b.Property<long>("RequestedByUserId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("ScanAuthorizationId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime?>("StartedAt")
                         .HasColumnType("datetime2");
 
@@ -1254,6 +1563,9 @@ namespace ShieldReport.Persistence.Migrations
 
                     b.Property<byte>("Tool")
                         .HasColumnType("tinyint");
+
+                    b.Property<string>("ToolSettingsJson")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1281,11 +1593,105 @@ namespace ShieldReport.Persistence.Migrations
 
                     b.HasIndex("RequestedByUserId");
 
+                    b.HasIndex("ScanAuthorizationId");
+
                     b.HasIndex("WorkerNodeId");
 
                     b.HasIndex("ClientOrganizationId", "Status");
 
+                    b.HasIndex("Tool", "Status", "QueuedAt");
+
                     b.ToTable("scans", (string)null);
+                });
+
+            modelBuilder.Entity("ShieldReport.Domain.Entities.ScanAuthorization", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AllowedTools")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<long>("AuthorizedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ClientAssetId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ClientContactEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("ClientContactName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("EngagementId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("EvidenceContentType")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("EvidenceFileName")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("EvidenceFilePath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("EvidenceUploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("RevocationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("RevokedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ValidUntil")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorizedByUserId");
+
+                    b.HasIndex("EngagementId");
+
+                    b.HasIndex("RevokedByUserId");
+
+                    b.HasIndex("ClientAssetId", "RevokedAt");
+
+                    b.ToTable("scan_authorizations", (string)null);
                 });
 
             modelBuilder.Entity("ShieldReport.Domain.Entities.ScanFindingRaw", b =>
@@ -1340,6 +1746,57 @@ namespace ShieldReport.Persistence.Migrations
                     b.HasIndex("ScanId");
 
                     b.ToTable("scan_finding_raws", (string)null);
+                });
+
+            modelBuilder.Entity("ShieldReport.Domain.Entities.ScanToolSetting", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<double>("Cpus")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxParallel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MemoryMb")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OptionsJson")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("TimeoutMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("Tool")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Tool")
+                        .IsUnique();
+
+                    b.ToTable("scan_tool_settings", (string)null);
                 });
 
             modelBuilder.Entity("ShieldReport.Domain.Entities.ScanWorkerNode", b =>
@@ -1707,6 +2164,10 @@ namespace ShieldReport.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Caption")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1727,6 +2188,9 @@ namespace ShieldReport.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IncludeInReport")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -2050,6 +2514,23 @@ namespace ShieldReport.Persistence.Migrations
                     b.Navigation("ReportTemplate");
                 });
 
+            modelBuilder.Entity("ShieldReport.Domain.Entities.ReportDelivery", b =>
+                {
+                    b.HasOne("ShieldReport.Domain.Entities.Report", "Report")
+                        .WithMany()
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ShieldReport.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("SentByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("ShieldReport.Domain.Entities.RetestRequest", b =>
                 {
                     b.HasOne("ShieldReport.Domain.Entities.User", "AssignedToUser")
@@ -2153,6 +2634,11 @@ namespace ShieldReport.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ShieldReport.Domain.Entities.ScanAuthorization", null)
+                        .WithMany()
+                        .HasForeignKey("ScanAuthorizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ShieldReport.Domain.Entities.ScanWorkerNode", "WorkerNode")
                         .WithMany()
                         .HasForeignKey("WorkerNodeId")
@@ -2169,6 +2655,33 @@ namespace ShieldReport.Persistence.Migrations
                     b.Navigation("NextScan");
 
                     b.Navigation("WorkerNode");
+                });
+
+            modelBuilder.Entity("ShieldReport.Domain.Entities.ScanAuthorization", b =>
+                {
+                    b.HasOne("ShieldReport.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorizedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ShieldReport.Domain.Entities.ClientAsset", "ClientAsset")
+                        .WithMany()
+                        .HasForeignKey("ClientAssetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ShieldReport.Domain.Entities.Engagement", null)
+                        .WithMany()
+                        .HasForeignKey("EngagementId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ShieldReport.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("RevokedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ClientAsset");
                 });
 
             modelBuilder.Entity("ShieldReport.Domain.Entities.ScanFindingRaw", b =>

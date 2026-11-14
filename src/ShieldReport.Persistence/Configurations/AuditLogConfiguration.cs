@@ -20,5 +20,7 @@ public sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 
         builder.HasIndex(x => new { x.EntityName, x.EntityId });
         builder.HasIndex(x => x.UserId);
+        // Newest-first listing and retention purge.
+        builder.HasIndex(x => x.CreatedAt);
     }
 }

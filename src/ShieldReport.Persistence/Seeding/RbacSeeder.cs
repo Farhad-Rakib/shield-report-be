@@ -80,7 +80,7 @@ public sealed class RbacSeeder : IRbacSeeder
 
         // NOTE: SuperAdmin bypasses permission checks at runtime; do NOT assign explicit permissions here.
 
-        foreach (var permission in persistedPermissions.Where(p => p.Name is not Permissions.UsersDelete and not Permissions.RolesDelete and not Permissions.PermissionsDelete and not Permissions.UserRolesDelete and not Permissions.RolePermissionsDelete and not Permissions.ClientsDelete and not Permissions.EngagementsDelete and not Permissions.FindingsDelete and not Permissions.EvidenceDelete and not Permissions.ClientAssetsDelete and not Permissions.VulnerabilitiesDelete and not Permissions.LlmProviderConfigurationsDelete and not Permissions.VulnerabilityReportsApprove and not Permissions.VulnerabilityReportsDelete))
+        foreach (var permission in persistedPermissions.Where(p => p.Name is not Permissions.UsersDelete and not Permissions.RolesDelete and not Permissions.PermissionsDelete and not Permissions.UserRolesDelete and not Permissions.RolePermissionsDelete and not Permissions.ClientsDelete and not Permissions.EngagementsDelete and not Permissions.FindingsDelete and not Permissions.EvidenceDelete and not Permissions.ClientAssetsDelete and not Permissions.VulnerabilitiesDelete and not Permissions.LlmProviderConfigurationsDelete and not Permissions.VulnerabilityReportsApprove and not Permissions.VulnerabilityReportsDelete and not Permissions.CustomScanToolsManage))
         {
             if (existingSet.Add((admin.Id, permission.Id)))
             {
@@ -107,7 +107,7 @@ public sealed class RbacSeeder : IRbacSeeder
         {
             Permissions.ClientsRead, Permissions.ClientsCreate, Permissions.ClientsUpdate,
             Permissions.ClientAssetsRead, Permissions.ClientAssetsCreate, Permissions.ClientAssetsUpdate,
-            Permissions.ClientAssetsAuthorizeForScanning,
+            Permissions.ClientAssetsAuthorizeForScanning, Permissions.ScanAuthorizationsRead,
             Permissions.ScansRead, Permissions.ScansCreate, Permissions.ScansCancel,
             Permissions.EngagementsRead, Permissions.DashboardRead,
             Permissions.RegistrationInvitesCreate, Permissions.RegistrationInvitesRead, Permissions.RegistrationInvitesRevoke,
@@ -121,6 +121,7 @@ public sealed class RbacSeeder : IRbacSeeder
         // assets, but cannot authorize an asset for scanning (that requires the firm's sign-off).
         AssignPermissions(clientAdmin, new[]
         {
+            Permissions.ClientReportsRead,
             Permissions.ClientAssetsRead, Permissions.ClientAssetsCreate, Permissions.ClientAssetsUpdate,
             Permissions.ScansRead, Permissions.ScansCreate, Permissions.ScansCancel,
             Permissions.DashboardRead,
@@ -140,6 +141,7 @@ public sealed class RbacSeeder : IRbacSeeder
         // role matrix — posting a remark is open to all 4 roles).
         AssignPermissions(clientUser, new[]
         {
+            Permissions.ClientReportsRead,
             Permissions.ClientAssetsRead, Permissions.ScansRead, Permissions.DashboardRead,
             Permissions.VulnerabilitiesRead, Permissions.VulnerabilityAttachmentsRead,
             Permissions.VulnerabilityRemarksRead, Permissions.VulnerabilityRemarksCreate,

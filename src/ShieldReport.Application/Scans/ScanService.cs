@@ -1,3 +1,5 @@
+using ShieldReport.Application.ScanTools;
+using ShieldReport.Application.ScanAuthorizations;
 using ShieldReport.Application.Common.Exceptions;
 using ShieldReport.Application.Common.Interfaces;
 using ShieldReport.Application.Common.Interfaces.Services;
@@ -19,6 +21,9 @@ public sealed class ScanService : IScanService
     private readonly IScanCancellationRegistry _scanCancellationRegistry;
     private readonly IScanRealtimeNotifier _realtimeNotifier;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IScanAuthorizationService _scanAuthorizationService;
+    private readonly IScanToolSettingsService _scanToolSettingsService;
+    private readonly CustomScanTools.ICustomScanToolService _customScanToolService;
 
     public ScanService(
         IScanRepository scanRepository,
@@ -29,8 +34,14 @@ public sealed class ScanService : IScanService
         IScanQueueService scanQueueService,
         IScanCancellationRegistry scanCancellationRegistry,
         IScanRealtimeNotifier realtimeNotifier,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IScanAuthorizationService scanAuthorizationService,
+        IScanToolSettingsService scanToolSettingsService,
+        CustomScanTools.ICustomScanToolService customScanToolService)
     {
+        _customScanToolService = customScanToolService;
+        _scanToolSettingsService = scanToolSettingsService;
+        _scanAuthorizationService = scanAuthorizationService;
         _scanRepository = scanRepository;
         _scanFindingRawRepository = scanFindingRawRepository;
         _clientAssetRepository = clientAssetRepository;
@@ -84,18 +95,22 @@ public sealed class ScanService : IScanService
 
     public async Task<IReadOnlyList<ScanDto>> CreateAsync(long clientAssetId, CreateScanRequestDto request, long requestedByUserId, bool callerIsPentester, bool callerIsClientPortalUser, CancellationToken cancellationToken = default)
     {
-        if (request.Tools is null || request.Tools.Length == 0)
+        var customToolIds = (request.CustomToolIds ?? []).Distinct().ToArray();
+        var builtInTools = (request.Tools ?? []).Where(t => t != ScanTool.Custom).Distinct().ToArray();
+        if (builtInTools.Length == 0 && customToolIds.Length == 0)
         {
             throw new AppException("At least one tool must be selected.", 400);
         }
 
+        // Custom checks need an authorization that explicitly covers "Custom".
+        var toolsToAuthorize = customToolIds.Length > 0 ? builtInTools.Append(ScanTool.Custom).ToArray() : builtInTools;
+
         var asset = await _clientAssetRepository.GetByIdWithDetailsAsync(clientAssetId, cancellationToken)
             ?? throw new AppException("Client asset not found.", 404);
 
-        if (!asset.IsAuthorizedForScanning)
-        {
-            throw new AppException("This asset is not authorized for scanning yet.", 400);
-        }
+        // Must be covered right now, for every requested tool, by a recorded authorization; the
+        // scans remember which one (Scan.ScanAuthorizationId) so they can be traced back to it.
+        var authorization = await _scanAuthorizationService.EnsureCoveredAsync(asset, toolsToAuthorize, cancellationToken);
 
         if (callerIsClientPortalUser && !asset.ClientOrganization.AllowSelfServiceScanning)
         {
@@ -122,27 +137,48 @@ public sealed class ScanService : IScanService
             engagementTaskId = matchingTasks.Count == 1 ? matchingTasks[0].Id : null;
         }
 
-        var distinctTools = request.Tools.Distinct().ToArray();
         var activeCount = await _scanQueueService.GetActiveCountAsync(asset.ClientOrganizationId, cancellationToken);
         var freeSlots = _scanQueueService.MaxConcurrentScansPerClient - activeCount;
+        var requested = builtInTools.Length + customToolIds.Length;
 
-        if (distinctTools.Length > freeSlots)
+        if (requested > freeSlots)
         {
             throw new AppException(
-                $"Cannot start {distinctTools.Length} scan(s) — only {Math.Max(freeSlots, 0)} concurrent scan slot(s) free for this client (cap: {_scanQueueService.MaxConcurrentScansPerClient}).",
+                $"Cannot start {requested} scan(s) — only {Math.Max(freeSlots, 0)} concurrent scan slot(s) free for this client (cap: {_scanQueueService.MaxConcurrentScansPerClient}).",
                 409);
         }
 
         // Auto-chain: run requested tools one at a time in a fixed Naabu -> Nuclei -> Reconftw
-        // order (matches ScanTool's declared enum order) instead of all in parallel — each Scan
-        // row links to the next via NextScanId, but only the first is enqueued now.
-        // ScanWorkerBackgroundService enqueues NextScanId once a scan reaches a terminal state.
-        var orderedTools = distinctTools.OrderBy(tool => (int)tool).ToArray();
+        // order (matches ScanTool's declared enum order), then custom tools in the order given,
+        // instead of all in parallel — each Scan row links to the next via NextScanId, but only
+        // the first is enqueued now. ScanWorkerBackgroundService enqueues NextScanId once a scan
+        // reaches a terminal state.
+        // Resolve (and snapshot) each tool's settings up front: a disabled tool rejects the whole
+        // request with 400 before any scan row is created.
+        var plan = new List<(ScanTool Tool, long? CustomToolId, string SettingsJson)>();
+        foreach (var tool in builtInTools.OrderBy(tool => (int)tool))
+        {
+            var runtime = await _scanToolSettingsService.ResolveForScanAsync(tool, cancellationToken);
+            plan.Add((tool, null, System.Text.Json.JsonSerializer.Serialize(runtime)));
+        }
+
+        foreach (var customToolId in customToolIds)
+        {
+            var (runtime, _) = await _customScanToolService.ResolveForScanAsync(customToolId, cancellationToken);
+            plan.Add((ScanTool.Custom, customToolId, System.Text.Json.JsonSerializer.Serialize(runtime)));
+        }
 
         var scans = new List<Scan>();
-        foreach (var tool in orderedTools)
+        foreach (var step in plan)
         {
-            var scan = new Scan(asset.ClientOrganizationId, clientAssetId, tool, requestedByUserId, request.EngagementId, engagementTaskId);
+            var scan = new Scan(asset.ClientOrganizationId, clientAssetId, step.Tool, requestedByUserId, request.EngagementId, engagementTaskId);
+            scan.SetScanAuthorization(authorization.Id);
+            scan.SetToolSettingsSnapshot(step.SettingsJson);
+            if (step.CustomToolId is { } id)
+            {
+                scan.SetCustomScanTool(id);
+            }
+
             await _scanRepository.AddAsync(scan, cancellationToken);
             scans.Add(scan);
         }
@@ -247,6 +283,8 @@ public sealed class ScanService : IScanService
             scan.RequestedByUserId,
             scan.ErrorMessage,
             scan.RawOutput,
-            nextScanPublicIdOverride ?? scan.NextScan?.PublicId);
+            nextScanPublicIdOverride ?? scan.NextScan?.PublicId,
+            ScanTools.ScanToolLabels.ClientLabel(scan),
+            scan.CustomScanToolId);
     }
 }

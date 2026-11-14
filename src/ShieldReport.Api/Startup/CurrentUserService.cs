@@ -6,11 +6,15 @@ namespace ShieldReport.Api.Startup;
 public sealed class CurrentUserService : ICurrentUserService
 {
     private readonly ClaimsPrincipal? _user;
+    private readonly string? _ipAddress;
 
     public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         _user = httpContextAccessor.HttpContext?.User;
+        _ipAddress = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
     }
+
+    public string? IpAddress => _ipAddress;
 
     public long? UserId
     {

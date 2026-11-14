@@ -13,6 +13,21 @@ public sealed class ReportTemplate : BaseEntity
     public bool IsDefault { get; private set; }
     public string? DocxTemplatePath { get; private set; }
     public string? DocxTemplateFileName { get; private set; }
+    // Custom Handlebars HTML template. Null = the built-in default (White/Gray/Black Box) template.
+    public string? HtmlContent { get; private set; }
+    // Admin-defined dynamic fields ([{key,label,type,defaultValue,help}]), filled per report and
+    // available to the template as {{Custom.<key>}} (escape user text with {{{text Custom.<key>}}}).
+    public string CustomFieldsJson { get; private set; } = "[]";
+
+    public void SetCustomFields(string customFieldsJson)
+    {
+        CustomFieldsJson = string.IsNullOrWhiteSpace(customFieldsJson) ? "[]" : customFieldsJson;
+    }
+
+    public void SetHtmlContent(string? htmlContent)
+    {
+        HtmlContent = string.IsNullOrWhiteSpace(htmlContent) ? null : htmlContent;
+    }
 
     private ReportTemplate()
     {

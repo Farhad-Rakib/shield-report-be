@@ -1,0 +1,54 @@
+
+Running 41 tests using 3 workers
+
+  ✓  1 [chromium] › auth.spec.ts:8:3 › auth › unauthenticated visit redirects to login (653ms)
+  ✓  2 [chromium] › llm-prompts.spec.ts:28:3 › AI prompt library › both prompts are listed and selectable (719ms)
+  ✓  3 [chromium] › llm-providers.spec.ts:33:3 › AI providers & models › form is provider-aware (921ms)
+  ✓  4 [chromium] › auth.spec.ts:14:3 › auth › bad password shows an error and stays on login (580ms)
+  ✓  6 [chromium] › llm-providers.spec.ts:56:3 › AI providers & models › add an OpenAI-compatible provider; Test reports the failure instead of crashing (1.0s)
+  ✓  5 [chromium] › llm-prompts.spec.ts:39:3 › AI prompt library › edit, validation, placeholder insert, save, test, reset (2.1s)
+  ✓  8 [chromium] › llm-providers.spec.ts:86:3 › AI providers & models › edit the provider (879ms)
+  ✓  9 [chromium] › llm-prompts.spec.ts:96:3 › AI prompt library › second prompt: missing JSON field blocks save; switching prompts keeps each text (638ms)
+  ✓  10 [chromium] › llm-providers.spec.ts:102:3 › AI providers & models › activate, deactivate, then restore the original active provider (997ms)
+  ✓  11 [chromium] › modals.spec.ts:4:3 › modals close on Escape › Add Provider modal closes on Escape, also with focus in an input (791ms)
+  ✓  12 [chromium] › llm-providers.spec.ts:124:3 › AI providers & models › delete the provider (629ms)
+  ✓  13 [chromium] › modals.spec.ts:25:3 › modals close on Escape › confirm dialog closes on Escape without confirming (649ms)
+  ✓  7 [chromium] › auth.spec.ts:24:3 › auth › login, then logout (3.8s)
+  ✓  15 [chromium] › modals.spec.ts:37:3 › modals close on Escape › Add Report Template and Add custom tool modals close on Escape (614ms)
+  ✓  17 [chromium] › report-templates.spec.ts:27:3 › report template studio › create a template (868ms)
+  ✓  16 [chromium] › operational-flow.spec.ts:77:3 › operational flow › register harmless custom tools and pull their image (1.6s)
+  ✓  14 [chromium] › navigation.spec.ts:46:3 › navigation smoke › sidebar shows every section heading in order (2.5s)
+  ✓  18 [chromium] › report-templates.spec.ts:41:3 › report template studio › add a dynamic field and save it (960ms)
+  ✓  20 [chromium] › navigation.spec.ts:54:3 › navigation smoke › collapsing a section hides its links and expanding restores them (613ms)
+  ✓  19 [chromium] › operational-flow.spec.ts:95:3 › operational flow › register client organization and asset (1.4s)
+  ✓  21 [chromium] › report-templates.spec.ts:63:3 › report template studio › HTML tab: insert a variable and the dynamic field, save (1.0s)
+  ✓  23 [chromium] › operational-flow.spec.ts:123:3 › operational flow › record a scan authorization covering Custom Check (1.0s)
+  ✓  24 [chromium] › report-templates.spec.ts:89:3 › report template studio › invalid HTML is rejected on save (874ms)
+  ✓  26 [chromium] › report-templates.spec.ts:101:3 › report template studio › upload a .hbs file and preview it with sample data (1.2s)
+  ✓  27 [chromium] › report-templates.spec.ts:118:3 › report template studio › delete the template (639ms)
+  ✓  25 [chromium] › operational-flow.spec.ts:148:3 › operational flow › create an engagement for the client (2.4s)
+  ✓  28 [chromium] › scan-tools.spec.ts:23:3 › scan tool configuration › reconnaissance module checkboxes save, persist and restore (1.3s)
+  ✓  22 [chromium] › navigation.spec.ts:66:5 › navigation smoke › every Operations page renders without errors (5.2s)
+  ✓  30 [chromium] › navigation.spec.ts:66:5 › navigation smoke › every Findings page renders without errors (2.2s)
+  ✓  31 [chromium] › navigation.spec.ts:66:5 › navigation smoke › every Scanning page renders without errors (3.3s)
+  ✓  32 [chromium] › navigation.spec.ts:66:5 › navigation smoke › every AI page renders without errors (3.2s)
+  ✓  33 [chromium] › navigation.spec.ts:66:5 › navigation smoke › every Reporting page renders without errors (2.1s)
+  ✓  34 [chromium] › navigation.spec.ts:66:5 › navigation smoke › every Administration page renders without errors (8.5s)
+  ✓  35 [chromium] › navigation.spec.ts:89:3 › navigation smoke › every page also works as a deep link / on refresh (963ms)
+  ✓  36 [chromium] › navigation.spec.ts:99:3 › navigation smoke › deep link to an unknown route shows the 404 page inside the app (620ms)
+  ✓  29 [chromium] › operational-flow.spec.ts:184:3 › operational flow › app stays navigable while scan output streams (26.6s)
+  ✓  37 [chromium] › operational-flow.spec.ts:221:3 › operational flow › scan with the finding tool completes and its finding is listed (1.5s)
+  ✓  38 [chromium] › operational-flow.spec.ts:242:3 › operational flow › generate a report from the engagement with the dialog (3.7s)
+  ✓  39 [chromium] › operational-flow.spec.ts:276:3 › operational flow › edit sections: required dynamic field blocks saving; preview shows the edits (3.3s)
+  ✓  40 [chromium] › operational-flow.spec.ts:311:3 › operational flow › approve and download PDF and Word (1.7s)
+  ✓  41 [chromium] › operational-flow.spec.ts:346:3 › operational flow › a scan-created finding can be deleted; its raw scan line is kept (507ms)
+
+  Slow test file: [chromium] › operational-flow.spec.ts (43.9s)
+  Slow test file: [chromium] › navigation.spec.ts (29.2s)
+  Consider splitting slow test files to speed up parallel execution
+  41 passed (51.4s)
+
+To open last HTML report run:
+
+  npx playwright show-report e2e-results/html
+

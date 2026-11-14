@@ -19,4 +19,11 @@ public sealed class ScanFindingRawRepository : BaseRepository<ScanFindingRaw>, I
             .OrderBy(x => x.Id)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<ScanFindingRaw>> GetByResultingVulnerabilityIdAsync(long vulnerabilityId, CancellationToken cancellationToken = default)
+    {
+        return await DbSet
+            .Where(x => x.ResultingVulnerabilityId == vulnerabilityId)
+            .ToListAsync(cancellationToken);
+    }
 }

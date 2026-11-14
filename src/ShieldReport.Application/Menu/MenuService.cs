@@ -54,13 +54,16 @@ namespace ShieldReport.Application.Menu
                 await _cache.SetAsync("menus:tree", dtoTree, MenuCacheTtl, cancellationToken);
             }
 
-            return FilterMenuItems(allMenus, userPermissions);
+            // SuperAdmin bypasses permission checks everywhere else, and its token carries no
+            // permission claims: give it the whole (ordered) tree.
+            var isSuperAdmin = user.IsInRole(ShieldReport.Domain.Enums.SystemRoles.SuperAdmin);
+            return FilterMenuItems(allMenus, userPermissions, isSuperAdmin);
         }
 
-        private List<MenuItemDto> FilterMenuItems(List<Domain.Entities.Menu> items, HashSet<string> userPermissions)
+        private List<MenuItemDto> FilterMenuItems(List<Domain.Entities.Menu> items, HashSet<string> userPermissions, bool allowAll = false)
         {
             return items
-                .Where(item => string.IsNullOrEmpty(item.RequiredPermission) || userPermissions.Contains(item.RequiredPermission))
+                .Where(item => allowAll || string.IsNullOrEmpty(item.RequiredPermission) || userPermissions.Contains(item.RequiredPermission))
                 .Select(item => new MenuItemDto
                 {
                     Id = item.Id,
@@ -68,8 +71,10 @@ namespace ShieldReport.Application.Menu
                     Url = item.Url,
                     Icon = item.Icon,
                     RequiredPermission = item.RequiredPermission,
-                    Children = item.Children != null ? FilterMenuItems(item.Children, userPermissions) : null
+                    Children = item.Children != null ? FilterMenuItems(item.Children, userPermissions, allowAll) : null
                 })
+                // A section heading (no url) with nothing visible under it is hidden.
+                .Where(item => !string.IsNullOrEmpty(item.Url) || item.Children is { Count: > 0 })
                 .ToList();
         }
 

@@ -17,6 +17,8 @@ public sealed class Scan : BaseEntity
     public long? EngagementTaskId { get; private set; }
 
     public ScanTool Tool { get; private set; }
+    // Set when Tool == Custom: which registered custom tool this scan runs.
+    public long? CustomScanToolId { get; private set; }
     public ScanStatus Status { get; private set; } = ScanStatus.Queued;
     public DateTime QueuedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? StartedAt { get; private set; }
@@ -33,11 +35,25 @@ public sealed class Scan : BaseEntity
     public DateTime? CancelledAt { get; private set; }
 
     // Auto-chaining: when a multi-tool scan is requested, ScanService creates one Scan row per
-    // tool up front (in Naabu -> Nuclei -> Reconftw order) but only enqueues the first — each
-    // links to the next via this self-FK, and ScanWorkerBackgroundService enqueues NextScanId
-    // once the current one reaches a terminal state (Completed or Failed), so the tools run one
-    // at a time instead of all in parallel.
+    // tool up front (in Naabu -> Nuclei -> Reconftw order), each linked to the next via this
+    // self-FK. The database-backed queue (ScanRepository.TryClaimNextAsync) only hands out a
+    // Queued scan once no Queued/Running scan points at it, so the tools run one at a time.
     public long? NextScanId { get; private set; }
+
+    // Queue lease (see ScanWorkerBackgroundService). Whoever holds an unexpired lease owns this
+    // scan: it claimed it from the Queued backlog, or is attached to its running container. The
+    // owner renews the lease while working; if the process dies the lease expires and another
+    // claim re-attaches to the still-running container (or fails the scan if it is gone).
+    // The ScanAuthorization this scan was permitted under (null only for scans created before
+    // authorization records existed).
+    public long? ScanAuthorizationId { get; private set; }
+
+    // Tool settings resolved when the scan was queued (ScanToolRuntimeSettings as JSON), so later
+    // changes on the Scan Tools page don't alter queued or running scans. Null for older scans.
+    public string? ToolSettingsJson { get; private set; }
+
+    public string? LeaseOwner { get; private set; }
+    public DateTime? LeaseExpiresAt { get; private set; }
 
     public ClientAsset ClientAsset { get; private set; } = null!;
     public ClientOrganization ClientOrganization { get; private set; } = null!;
@@ -94,6 +110,28 @@ public sealed class Scan : BaseEntity
         CancelledByUserId = cancelledByUserId;
         CancelledAt = DateTime.UtcNow;
         CompletedAt = DateTime.UtcNow;
+    }
+
+    public void SetCustomScanTool(long customScanToolId)
+    {
+        CustomScanToolId = customScanToolId;
+    }
+
+    public void SetToolSettingsSnapshot(string toolSettingsJson)
+    {
+        ToolSettingsJson = toolSettingsJson;
+    }
+
+    public void SetScanAuthorization(long scanAuthorizationId)
+    {
+        ScanAuthorizationId = scanAuthorizationId;
+    }
+
+    // Called on every terminal transition so a finished scan never looks owned.
+    public void ReleaseLease()
+    {
+        LeaseOwner = null;
+        LeaseExpiresAt = null;
     }
 
     public void SetNextScan(long nextScanId)

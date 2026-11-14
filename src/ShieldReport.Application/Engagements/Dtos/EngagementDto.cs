@@ -13,6 +13,7 @@ public sealed record EngagementDto(
     long LeadPentesterId,
     string LeadPentesterName,
     long CreatedByUserId,
-    IReadOnlyList<EngagementAssigneeDto> Assignees);
+    IReadOnlyList<EngagementAssigneeDto> Assignees,
+    string TestingType);
 
 public sealed record EngagementAssigneeDto(long UserId, string FullName, DateTime AssignedAt);

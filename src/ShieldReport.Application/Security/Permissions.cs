@@ -82,6 +82,21 @@ public static class Permissions
     public const string ClientAssetsUpdate = "client-assets.update";
     public const string ClientAssetsDelete = "client-assets.delete";
     public const string ClientAssetsAuthorizeForScanning = "client-assets.authorize-for-scanning";
+
+    // Scan authorization records (who approved scanning an asset, evidence, validity window,
+    // allowed tools). Manage = create/revoke/upload evidence: Admin/SuperAdmin only.
+    public const string ScanAuthorizationsRead = "scan-authorizations.read";
+    public const string ScanAuthorizationsManage = "scan-authorizations.manage";
+
+    // Scan Tools settings page (enable/disable tools, limits, tool options): Admin/SuperAdmin.
+    public const string ScanToolsManage = "scan-tools.manage";
+
+    // Custom scan tools (any Docker image + argument template). Running an arbitrary image on the
+    // host's Docker daemon is root-equivalent, so this is SuperAdmin-only: not granted to Admin.
+    public const string CustomScanToolsManage = "custom-scan-tools.manage";
+
+    // Audit trail (data changes + security events): admins only.
+    public const string AuditLogsRead = "audit-logs.read";
     public const string ScansRead = "scans.read";
     public const string ScansCreate = "scans.create";
     public const string ScansCancel = "scans.cancel";
@@ -134,6 +149,10 @@ public static class Permissions
     public const string VulnerabilityReportsApprove = "vulnerability-reports.approve";
     public const string VulnerabilityReportsDownload = "vulnerability-reports.download";
     public const string VulnerabilityReportsDelete = "vulnerability-reports.delete";
+    // Email an approved report to the client's contacts (Admin/SuperAdmin).
+    public const string VulnerabilityReportsSend = "vulnerability-reports.send";
+    // Client portal: list/download the organization's approved reports (CLIENT_ADMIN, CLIENT_USER).
+    public const string ClientReportsRead = "client-reports.read";
 
     public const string ReportTemplatesRead = "report-templates.read";
     public const string ReportTemplatesCreate = "report-templates.create";
@@ -207,6 +226,11 @@ public static class Permissions
         ClientAssetsUpdate,
         ClientAssetsDelete,
         ClientAssetsAuthorizeForScanning,
+        ScanAuthorizationsRead,
+        ScanAuthorizationsManage,
+        AuditLogsRead,
+        ScanToolsManage,
+        CustomScanToolsManage,
         ScansRead,
         ScansCreate,
         ScansCancel,
@@ -234,6 +258,8 @@ public static class Permissions
         VulnerabilityReportsApprove,
         VulnerabilityReportsDownload,
         VulnerabilityReportsDelete,
+        VulnerabilityReportsSend,
+        ClientReportsRead,
         ReportTemplatesRead,
         ReportTemplatesCreate,
         ReportTemplatesUpdate,

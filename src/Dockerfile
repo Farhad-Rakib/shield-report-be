@@ -39,6 +39,12 @@ WORKDIR /app
 # this is Docker-outside-of-Docker, not Docker-in-Docker, so no dockerd is started here).
 RUN apt-get update && apt-get install -y curl docker.io && rm -rf /var/lib/apt/lists/*
 
+# Report rendering (HTML engine): headless Chromium prints the PDF; the fonts keep the layout close
+# to the Word templates (Carlito is metric-compatible with Calibri, Liberation with Arial/Times).
+# Path picked up by ChromiumBrowserProvider (/usr/bin/chromium).
+RUN apt-get update && apt-get install -y --no-install-recommends chromium fonts-liberation fonts-crosextra-carlito fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy published application
 COPY --from=publish /app/publish .
 

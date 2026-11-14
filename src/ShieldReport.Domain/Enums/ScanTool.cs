@@ -4,7 +4,9 @@ public enum ScanTool
 {
     Naabu,
     Nuclei,
-    Reconftw
+    Reconftw,
+    // An admin-registered tool (CustomScanTool). The concrete tool is Scan.CustomScanToolId.
+    Custom
 }
 
 // Real tool identity must not be disclosed to clients — every client-facing surface (reports,
@@ -17,6 +19,7 @@ public static class ScanToolExtensions
         ScanTool.Naabu => "Port Checking",
         ScanTool.Nuclei => "Vulnerability Scanning",
         ScanTool.Reconftw => "Reconnaissance",
+        ScanTool.Custom => "Custom Check",
         _ => tool.ToString()
     };
 

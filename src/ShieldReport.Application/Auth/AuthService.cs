@@ -1,3 +1,4 @@
+using ShieldReport.Application.Audit;
 using Microsoft.Extensions.Options;
 using ShieldReport.Application.Auth.Dtos;
 using ShieldReport.Application.Common.Configuration;
@@ -27,6 +28,7 @@ public sealed class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppCache _appCache;
     private readonly FrontendOptions _frontendOptions;
+    private readonly IAuditLogger _auditLogger;
 
     private static readonly string[] PasswordOnlyAmr = ["pwd"];
     private static readonly string[] PasswordAndMfaAmr = ["pwd", "otp"];
@@ -44,8 +46,10 @@ public sealed class AuthService : IAuthService
         IEmailService emailService,
         IUnitOfWork unitOfWork,
         IAppCache appCache,
-        IOptions<FrontendOptions> frontendOptions)
+        IOptions<FrontendOptions> frontendOptions,
+        IAuditLogger auditLogger)
     {
+        _auditLogger = auditLogger;
         _userRepository = userRepository;
         _roleRepository = roleRepository;
         _permissionRepository = permissionRepository;
@@ -67,6 +71,8 @@ public sealed class AuthService : IAuthService
 
         if (user is null || !_passwordHasher.Verify(request.Password, user.PasswordHash) || !user.IsActive)
         {
+            var reason = user is null ? "unknown email" : !user.IsActive ? "inactive user" : "wrong password";
+            await _auditLogger.LogAsync(AuditActions.LoginFailed, "User", user?.Id.ToString(), new { email = request.Email, reason }, user?.Id, cancellationToken);
             throw new AppException("Invalid credentials.", 401);
         }
 
@@ -74,11 +80,13 @@ public sealed class AuthService : IAuthService
         {
             var challengeId = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
             await _appCache.SetAsync(MfaChallengeCacheKey(challengeId), user.Id.ToString(), TimeSpan.FromMinutes(5), cancellationToken);
+            await _auditLogger.LogAsync(AuditActions.MfaChallengeIssued, "User", user.Id.ToString(), null, user.Id, cancellationToken);
             return new LoginResultDto(true, challengeId, null);
         }
 
         var permissions = await _permissionRepository.GetPermissionNamesForUserAsync(user.Id, cancellationToken);
         var tokens = await GenerateAuthTokensAsync(user, permissions, PasswordOnlyAmr, cancellationToken);
+        await _auditLogger.LogAsync(AuditActions.LoginSucceeded, "User", user.Id.ToString(), null, user.Id, cancellationToken);
         return new LoginResultDto(false, null, tokens);
     }
 

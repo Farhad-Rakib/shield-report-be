@@ -12,8 +12,11 @@ public sealed class ReportTemplateService : IReportTemplateService
     private readonly IFileStorageService _fileStorageService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ReportTemplateService(IReportTemplateRepository repository, IFileStorageService fileStorageService, IUnitOfWork unitOfWork)
+    private readonly ShieldReport.Application.Reports.Rendering.IHtmlReportRenderer _htmlRenderer;
+
+    public ReportTemplateService(IReportTemplateRepository repository, IFileStorageService fileStorageService, IUnitOfWork unitOfWork, ShieldReport.Application.Reports.Rendering.IHtmlReportRenderer htmlRenderer)
     {
+        _htmlRenderer = htmlRenderer;
         _repository = repository;
         _fileStorageService = fileStorageService;
         _unitOfWork = unitOfWork;
@@ -122,5 +125,88 @@ public sealed class ReportTemplateService : IReportTemplateService
     }
 
     private static ReportTemplateDto MapToDto(ReportTemplate template)
-        => new(template.Id, template.Name, template.CompanyDisplayName, template.IsDefault, template.DocxTemplatePath is not null, template.DocxTemplateFileName);
+        => new(template.Id, template.Name, template.CompanyDisplayName, template.IsDefault, template.DocxTemplatePath is not null, template.DocxTemplateFileName, template.HtmlContent is not null, ReportTemplateFields.Parse(template.CustomFieldsJson));
+
+    public async Task<ReportTemplateHtmlDto> GetHtmlAsync(long id, CancellationToken cancellationToken = default)
+    {
+        var template = await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new AppException("Report template not found.", 404);
+        return new ReportTemplateHtmlDto(template.Id, template.HtmlContent is not null, template.HtmlContent ?? _htmlRenderer.GetDefaultTemplate());
+    }
+
+    // Saves a custom Handlebars template after checking it compiles and renders against sample data.
+    public async Task<ReportTemplateHtmlDto> UpdateHtmlAsync(long id, string htmlContent, CancellationToken cancellationToken = default)
+    {
+        var template = await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new AppException("Report template not found.", 404);
+
+        if (string.IsNullOrWhiteSpace(htmlContent) || htmlContent.Length > 2_000_000)
+        {
+            throw new AppException("The template must be between 1 character and 2 MB.", 400);
+        }
+
+        var error = await _htmlRenderer.ValidateTemplateAsync(htmlContent, cancellationToken);
+        if (error is not null)
+        {
+            throw new AppException($"Template error: {error}", 400);
+        }
+
+        template.SetHtmlContent(htmlContent);
+        _repository.Update(template);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return new ReportTemplateHtmlDto(template.Id, true, htmlContent);
+    }
+
+    public async Task<ReportTemplateDto> UpdateFieldsAsync(long id, IReadOnlyList<ReportTemplateField> fields, CancellationToken cancellationToken = default)
+    {
+        var template = await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new AppException("Report template not found.", 404);
+        var validated = ReportTemplateFields.Validate(fields);
+        template.SetCustomFields(ReportTemplateFields.Serialize(validated));
+        _repository.Update(template);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return MapToDto(template);
+    }
+
+    // Uploaded .html/.hbs file → the template's HTML (same validation as the editor).
+    public async Task<ReportTemplateHtmlDto> UploadHtmlAsync(long id, Stream content, string fileName, CancellationToken cancellationToken = default)
+    {
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        if (extension is not (".html" or ".htm" or ".hbs" or ".handlebars"))
+        {
+            throw new AppException("Upload an .html, .htm or .hbs file.", 400);
+        }
+
+        using var reader = new StreamReader(content, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        var html = await reader.ReadToEndAsync(cancellationToken);
+        return await UpdateHtmlAsync(id, html, cancellationToken);
+    }
+
+    public async Task<string> PreviewAsync(long id, string? htmlContent, IReadOnlyList<ReportTemplateField>? fields, CancellationToken cancellationToken = default)
+    {
+        var template = await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new AppException("Report template not found.", 404);
+        var html = string.IsNullOrWhiteSpace(htmlContent) ? template.HtmlContent : htmlContent;
+        var effectiveFields = fields is null ? ReportTemplateFields.Parse(template.CustomFieldsJson) : ReportTemplateFields.Validate(fields);
+        var sample = effectiveFields.ToDictionary(f => f.Key, f => string.IsNullOrEmpty(f.DefaultValue) ? $"[{f.Label}]" : f.DefaultValue);
+        try
+        {
+            return await _htmlRenderer.RenderSampleAsync(html, sample, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            throw new AppException($"Template error: {ex.Message}", 400);
+        }
+    }
+
+    public async Task<ReportTemplateHtmlDto> ResetHtmlAsync(long id, CancellationToken cancellationToken = default)
+    {
+        var template = await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new AppException("Report template not found.", 404);
+
+        template.SetHtmlContent(null);
+        _repository.Update(template);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return new ReportTemplateHtmlDto(template.Id, false, _htmlRenderer.GetDefaultTemplate());
+    }
 }

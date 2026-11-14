@@ -53,6 +53,7 @@ public sealed class EngagementService : IEngagementService
             request.Scope,
             request.StartDate,
             request.EndDate);
+        engagement.SetTestingType(request.TestingType);
 
         await _engagementRepository.AddAsync(engagement, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -69,6 +70,10 @@ public sealed class EngagementService : IEngagementService
             ?? throw new AppException("Engagement not found.", 404);
 
         engagement.UpdateDetails(request.Title, request.Scope, request.StartDate, request.EndDate);
+        if (request.TestingType.HasValue)
+        {
+            engagement.SetTestingType(request.TestingType.Value);
+        }
 
         if (request.Status.HasValue && request.Status.Value != engagement.Status)
         {
@@ -175,6 +180,7 @@ public sealed class EngagementService : IEngagementService
             engagement.LeadPentesterId,
             engagement.LeadPentester?.FullName ?? string.Empty,
             engagement.CreatedByUserId,
-            engagement.Assignees.Select(a => new EngagementAssigneeDto(a.UserId, a.User?.FullName ?? string.Empty, a.AssignedAt)).ToList());
+            engagement.Assignees.Select(a => new EngagementAssigneeDto(a.UserId, a.User?.FullName ?? string.Empty, a.AssignedAt)).ToList(),
+            engagement.TestingType.ToString());
     }
 }

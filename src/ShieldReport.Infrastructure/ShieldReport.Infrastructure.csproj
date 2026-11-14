@@ -19,7 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Anthropic" Version="13.8.0" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.1.0" />
+    <PackageReference Include="Handlebars.Net" Version="2.1.6" />
+    <PackageReference Include="HtmlToOpenXml.dll" Version="3.2.0" />
+    <PackageReference Include="PreMailer.Net" Version="2.5.0" />
+    <PackageReference Include="PuppeteerSharp" Version="20.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.11" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
@@ -32,5 +37,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Reporting/Templates/WhiteBoxTesting.docx" />
+    <!-- HTML report engine: default template, paged.js, images (see Reporting/Html). -->
+    <EmbeddedResource Include="Reporting/Html/**/*" />
   </ItemGroup>
 </Project>

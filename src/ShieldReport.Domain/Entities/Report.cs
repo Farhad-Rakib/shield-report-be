@@ -15,6 +15,31 @@ public sealed class Report : BaseEntity
     public string ExecutiveSummary { get; private set; } = string.Empty;
     public string KeyFindings { get; private set; } = string.Empty;
     public string KeyRecommendations { get; private set; } = string.Empty;
+    public ReportNarrativeStatus NarrativeStatus { get; private set; } = ReportNarrativeStatus.Manual;
+    public string? NarrativeError { get; private set; }
+
+    // Additional per-report editable sections (pre-filled from the testing type's default wording).
+    public string ProjectGoals { get; private set; } = string.Empty;
+    public string Limitations { get; private set; } = string.Empty;
+    // {"<clientAssetId>": "Completed" | "In Progress" | ...} for the Scope of Engagement table.
+    public string ScopeStatusesJson { get; private set; } = "{}";
+    // Name real scan tools in the methodology / per-finding "Tools Used" (default: generic wording,
+    // matching the rest of the client-facing app).
+    public bool ShowToolNames { get; private set; }
+    // Values of the template's custom fields for this report: {"<key>": "<value>"}.
+    public string CustomFieldValuesJson { get; private set; } = "{}";
+
+    public void SetCustomFieldValues(string json)
+    {
+        if (Status != ReportStatus.PendingApproval)
+        {
+            throw new InvalidOperationException("Report fields can only be edited while the report is pending approval.");
+        }
+
+        CustomFieldValuesJson = string.IsNullOrWhiteSpace(json) ? "{}" : json;
+    }
+    // Exact HTML the PDF and Word files were produced from — what the approver sees and approves.
+    public string? RenderedHtml { get; private set; }
 
     public string? DraftDocxPath { get; private set; }
     public string? FinalPdfPath { get; private set; }
@@ -57,6 +82,32 @@ public sealed class Report : BaseEntity
         FinalPdfPath = null;
     }
 
+    public void SetSections(string projectGoals, string limitations, string scopeStatusesJson, bool showToolNames)
+    {
+        if (Status != ReportStatus.PendingApproval)
+        {
+            throw new InvalidOperationException("Report sections can only be edited while the report is pending approval.");
+        }
+
+        ProjectGoals = projectGoals;
+        Limitations = limitations;
+        ScopeStatusesJson = scopeStatusesJson;
+        ShowToolNames = showToolNames;
+    }
+
+    // HTML engine output: the rendered HTML snapshot plus both files produced from it.
+    public void MarkRendered(string renderedHtml, string docxPath, string pdfPath)
+    {
+        if (Status != ReportStatus.PendingApproval)
+        {
+            throw new InvalidOperationException("The report can only be regenerated while it is pending approval — generate a new version instead.");
+        }
+
+        RenderedHtml = renderedHtml;
+        DraftDocxPath = docxPath;
+        FinalPdfPath = pdfPath;
+    }
+
     public void MarkPdfGenerated(string finalPdfPath)
     {
         FinalPdfPath = finalPdfPath;
@@ -72,6 +123,30 @@ public sealed class Report : BaseEntity
         ExecutiveSummary = executiveSummary;
         KeyFindings = keyFindings;
         KeyRecommendations = keyRecommendations;
+        // A person's edit wins over a draft still in flight.
+        NarrativeStatus = ReportNarrativeStatus.Manual;
+        NarrativeError = null;
+    }
+
+    public void StartNarrativeDrafting()
+    {
+        NarrativeStatus = ReportNarrativeStatus.Drafting;
+        NarrativeError = null;
+    }
+
+    public void ApplyDraftedNarrative(string executiveSummary, string keyFindings, string keyRecommendations)
+    {
+        ExecutiveSummary = executiveSummary;
+        KeyFindings = keyFindings;
+        KeyRecommendations = keyRecommendations;
+        NarrativeStatus = ReportNarrativeStatus.Drafted;
+        NarrativeError = null;
+    }
+
+    public void FailNarrativeDrafting(string error)
+    {
+        NarrativeStatus = ReportNarrativeStatus.Failed;
+        NarrativeError = error.Length > 1000 ? error[..1000] : error;
     }
 
     public void Approve(long approvedByUserId)

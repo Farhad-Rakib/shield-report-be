@@ -1,69 +1,140 @@
+using ShieldReport.Scanning.Parsing;
 using System.Text.Json;
-using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ShieldReport.Application.BackgroundJobs;
 using ShieldReport.Application.Common.Interfaces;
 using ShieldReport.Application.Common.Interfaces.Services;
-using ShieldReport.Application.Scans;
+using ShieldReport.Application.ScanTools;
 using ShieldReport.Application.Scans.Parsing;
 using ShieldReport.Application.Vulnerabilities;
 using ShieldReport.Domain.Entities;
 using ShieldReport.Domain.Enums;
+using ShieldReport.Scanning.Queueing;
 
 namespace ShieldReport.Scanning.Workers;
 
-// Drains IScanWorkQueue at a bounded concurrency independent of Hangfire's own worker pool
-// (TASK-GROUPS-AutomatedScanning.md AS-17). One drain loop + one SemaphoreSlim(1,1) per
-// ScanTool — concurrency is hardcoded to 1 per tool for the MVP single ScanWorkerNode row
-// seeded in Phase 0, but scans of different tools no longer block each other. Revisit if/when
-// a second worker node or higher per-tool throughput is needed.
+// Database-backed scan queue worker (replaces Hangfire + the in-memory channel).
+//
+// One loop per ScanTool, each handling one scan at a time (so scans of different tools run in
+// parallel, scans of the same tool queue up). A loop claims work with an atomic lease
+// (IScanRepository.TryClaimNextAsync): either the next Queued scan whose chain predecessor has
+// finished, or a Running scan whose lease expired because the process that owned it died. While
+// working, the owner renews the lease every LeaseRenewInterval.
+//
+// Scan containers run detached (DockerScanRunner), so:
+//   - on API shutdown the worker only stops *following* the container and releases its lease; the
+//     container keeps scanning and the next process re-attaches to it and collects the result;
+//   - if the host itself rebooted the container is gone, and the scan is failed as interrupted;
+//   - user Stop and the per-tool timeout stop the container.
+// Final status writes use CancellationToken.None so a shutdown can never half-apply them.
 public sealed class ScanWorkerBackgroundService : BackgroundService
 {
-    private readonly IScanWorkQueue _scanWorkQueue;
+    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan LeaseDuration = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan LeaseRenewInterval = TimeSpan.FromSeconds(20);
+
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IScanRealtimeNotifier _realtimeNotifier;
     private readonly IScanCancellationRegistry _cancellationRegistry;
+    private readonly ScanQueueSignal _signal;
     private readonly ILogger<ScanWorkerBackgroundService> _logger;
-    private readonly Dictionary<ScanTool, SemaphoreSlim> _concurrencyGates =
-        Enum.GetValues<ScanTool>().ToDictionary(tool => tool, _ => new SemaphoreSlim(1, 1));
+    private readonly string _workerId = $"{Environment.MachineName}:{Environment.ProcessId}:{Guid.NewGuid():N}"[..^24];
 
     public ScanWorkerBackgroundService(
-        IScanWorkQueue scanWorkQueue,
         IServiceScopeFactory scopeFactory,
         IScanRealtimeNotifier realtimeNotifier,
         IScanCancellationRegistry cancellationRegistry,
+        ScanQueueSignal signal,
         ILogger<ScanWorkerBackgroundService> logger)
     {
-        _scanWorkQueue = scanWorkQueue;
         _scopeFactory = scopeFactory;
         _realtimeNotifier = realtimeNotifier;
         _cancellationRegistry = cancellationRegistry;
+        _signal = signal;
         _logger = logger;
     }
 
+    // Upper bound for the Scan Tools page's "max parallel" (UpdateScanToolSettingRequestDtoValidator).
+    private const int MaxLoopsPerTool = 3;
+    private static readonly TimeSpan MaxParallelRefresh = TimeSpan.FromSeconds(15);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var toolLoops = Enum.GetValues<ScanTool>().Select(tool => RunToolQueueAsync(tool, stoppingToken));
+        var toolLoops = Enum.GetValues<ScanTool>()
+            .SelectMany(tool => Enumerable.Range(0, MaxLoopsPerTool).Select(slot => RunToolLoopAsync(tool, slot, stoppingToken)));
         await Task.WhenAll(toolLoops);
     }
 
-    private async Task RunToolQueueAsync(ScanTool tool, CancellationToken stoppingToken)
+    // `slot` 0..MaxLoopsPerTool-1: a loop only claims work while slot < the tool's current
+    // MaxParallel setting (re-read every MaxParallelRefresh), so parallelism follows the Scan
+    // Tools page without a restart. An idle slot just waits.
+    private async Task RunToolLoopAsync(ScanTool tool, int slot, CancellationToken stoppingToken)
     {
-        var gate = _concurrencyGates[tool];
+        var leaseOwner = $"{_workerId}:{tool}:{slot}";
+        var maxParallel = 1;
+        var maxParallelReadAt = DateTime.MinValue;
 
-        await foreach (var scanId in _scanWorkQueue.ReadAllAsync(tool, stoppingToken))
+        while (!stoppingToken.IsCancellationRequested)
         {
-            await gate.WaitAsync(stoppingToken);
-            _ = ProcessScanAsync(scanId, stoppingToken).ContinueWith(
-                _ => gate.Release(),
-                CancellationToken.None,
-                TaskContinuationOptions.None,
-                TaskScheduler.Default);
+            try
+            {
+                if (slot > 0)
+                {
+                    if (DateTime.UtcNow - maxParallelReadAt > MaxParallelRefresh)
+                    {
+                        using var settingsScope = _scopeFactory.CreateScope();
+                        maxParallel = await settingsScope.ServiceProvider.GetRequiredService<IScanToolSettingsService>().GetMaxParallelAsync(tool, stoppingToken);
+                        maxParallelReadAt = DateTime.UtcNow;
+                    }
+
+                    if (slot >= maxParallel)
+                    {
+                        await Task.Delay(MaxParallelRefresh, stoppingToken);
+                        continue;
+                    }
+                }
+
+                long? scanId;
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    scanId = await scope.ServiceProvider.GetRequiredService<IScanRepository>()
+                        .TryClaimNextAsync(tool, leaseOwner, LeaseDuration, stoppingToken);
+                }
+
+                if (scanId is null)
+                {
+                    await _signal.WaitAsync(PollInterval, stoppingToken);
+                    continue;
+                }
+
+                await ProcessClaimedScanAsync(scanId.Value, leaseOwner, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                // Database unavailable etc. — back off and keep the loop alive. Any scan claimed in
+                // this iteration keeps its lease until it expires and is then re-claimed.
+                _logger.LogError(ex, "Scan worker loop for {Tool} failed; retrying.", tool);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
         }
     }
 
-    private async Task ProcessScanAsync(long scanId, CancellationToken cancellationToken)
+    private const string InterruptedMessage = "Interrupted: the scan container no longer exists (host restart or manual removal). Please run the scan again.";
+
+    private async Task ProcessClaimedScanAsync(long scanId, string leaseOwner, CancellationToken stoppingToken)
     {
         using var scope = _scopeFactory.CreateScope();
         var scanRepository = scope.ServiceProvider.GetRequiredService<IScanRepository>();
@@ -72,72 +143,135 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         var parserFactory = scope.ServiceProvider.GetRequiredService<IScanOutputParserFactory>();
         var dedupService = scope.ServiceProvider.GetRequiredService<IVulnerabilityDedupService>();
         var findingRepository = scope.ServiceProvider.GetRequiredService<IScanFindingRawRepository>();
+        var jobQueue = scope.ServiceProvider.GetRequiredService<IBackgroundJobQueue>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        var scanQueueService = scope.ServiceProvider.GetRequiredService<IScanQueueService>();
-        var backgroundJobClient = scope.ServiceProvider.GetRequiredService<IBackgroundJobClient>();
 
-        var scan = await scanRepository.GetByIdWithDetailsAsync(scanId, cancellationToken);
-        if (scan is null || scan.Status != ScanStatus.Queued)
+        var scan = await scanRepository.GetByIdWithDetailsAsync(scanId, CancellationToken.None);
+        if (scan is null || (scan.Status != ScanStatus.Queued && scan.Status != ScanStatus.Running))
         {
             return;
         }
 
-        var asset = await clientAssetRepository.GetByIdWithDetailsAsync(scan.ClientAssetId, cancellationToken);
+        async Task FinishFailedAsync(string message, string? rawOutput)
+        {
+            scan.Fail(message, rawOutput);
+            scan.ReleaseLease();
+            scanRepository.Update(scan);
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            await SafePushPhaseAsync(scan, $"{scan.Tool} failed: {message}");
+            await SafePushStatusAsync(scan);
+            _signal.Notify(); // let the next chain step (another tool's loop) start right away
+        }
+
+        var reattach = scan.Status == ScanStatus.Running;
+
+        var asset = await clientAssetRepository.GetByIdWithDetailsAsync(scan.ClientAssetId, CancellationToken.None);
         if (asset is null)
         {
-            scan.Fail("Client asset no longer exists.");
-            scanRepository.Update(scan);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-            await PushStatusAsync(scan, cancellationToken);
-            await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
+            await FinishFailedAsync("Client asset no longer exists.", null);
             return;
         }
 
-        scan.Start();
-        scanRepository.Update(scan);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        await PushStatusAsync(scan, cancellationToken);
+        if (!reattach)
+        {
+            // Re-check at start: the authorization may have been revoked or have expired while
+            // the scan sat in the queue (e.g. behind a long chain step).
+            if (scan.ScanAuthorizationId.HasValue)
+            {
+                var authorization = await scope.ServiceProvider.GetRequiredService<IScanAuthorizationRepository>()
+                    .GetByIdAsync(scan.ScanAuthorizationId.Value, CancellationToken.None);
+                if (authorization is null || !authorization.IsActiveAt(DateTime.UtcNow) || !authorization.Allows(scan.Tool))
+                {
+                    await FinishFailedAsync("The scan authorization was revoked or expired before this scan started.", null);
+                    return;
+                }
+            }
 
-        // Resolved up front (not just after the run, as before) so the live per-line finding
-        // parsing below can reuse it — and so the "starting" phase message can go out immediately,
-        // independent of whatever the tool itself does or doesn't print.
-        var parser = parserFactory.GetParser(scan.Tool);
-        await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, $"Starting {scan.Tool} scan against {asset.Identifier}...", cancellationToken);
+            scan.Start();
+            scanRepository.Update(scan);
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            await SafePushStatusAsync(scan);
+        }
 
-        // Registered so a Cancel API call (ScanService.CancelAsync, in a completely different DI
-        // scope/request) can reach this specific in-flight run and actually stop its `docker run`
-        // process — see ScanCancellationRegistry.
-        var runCts = _cancellationRegistry.Register(scan.Id, cancellationToken);
+        // Settings snapshot taken when the scan was queued; older scans resolve current settings.
+        var settings = DeserializeSettings(scan.ToolSettingsJson)
+            ?? await scope.ServiceProvider.GetRequiredService<IScanToolSettingsService>().ResolveForScanAsync(scan.Tool, CancellationToken.None);
+
+        // Custom tools: parser and tool name come from the snapshot (the client label, never the
+        // real tool name, is what gets recorded on findings).
+        IScanOutputParser parser = scan.Tool == ScanTool.Custom && settings.Custom is { } customOptions
+            ? new CustomToolOutputParser(customOptions, asset.Identifier)
+            : parserFactory.GetParser(scan.Tool);
+        var toolName = scan.Tool == ScanTool.Custom && settings.Custom is { } c ? c.ClientLabel : scan.Tool.ToString();
+
+        await SafePushPhaseAsync(scan, reattach
+            ? $"Re-attached to the running {toolName} scan after a server restart..."
+            : $"Starting {toolName} scan against {asset.Identifier}...");
+        // Deadline is anchored to the original start, so a re-attach doesn't reset the clock.
+        var deadline = (scan.StartedAt ?? DateTime.UtcNow).AddMinutes(settings.TimeoutMinutes);
+        var remaining = deadline - DateTime.UtcNow;
+
+        // stop = user Stop (ScanService.CancelAsync via the registry) or timeout → container stopped.
+        // detach = shutdown or lost lease → stop following only, container keeps running.
+        var userStopCts = _cancellationRegistry.Register(scan.Id, CancellationToken.None);
+        using var timeoutCts = new CancellationTokenSource(remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero);
+        using var stopCts = CancellationTokenSource.CreateLinkedTokenSource(userStopCts.Token, timeoutCts.Token);
+        using var leaseLostCts = new CancellationTokenSource();
+        using var detachCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, leaseLostCts.Token);
+        using var heartbeatCts = new CancellationTokenSource();
+        var heartbeat = RenewLeaseUntilCancelledAsync(scan.Id, leaseOwner, leaseLostCts, heartbeatCts.Token);
 
         try
         {
-            var result = await scanRunner.RunAsync(scan, asset, (line, stream) => PushOutputLineAsync(scan, line, stream, parser, cancellationToken), runCts.Token);
+            var result = await scanRunner.RunAsync(scan, asset, settings, reattach, (line, stream) => PushOutputLineAsync(scan, line, stream, parser), stopCts.Token, detachCts.Token);
 
-            if (!result.Success)
+            switch (result.Outcome)
             {
-                if (runCts.IsCancellationRequested)
-                {
-                    // ScanService.CancelAsync already set this scan (and cascaded the rest of the
-                    // chain) to Cancelled and pushed the status update — nothing left to do here.
-                    _logger.LogInformation("Scan {ScanId} run was stopped by user request.", scanId);
-                    return;
-                }
+                case ScanRunOutcome.Detached:
+                    if (leaseLostCts.IsCancellationRequested)
+                    {
+                        _logger.LogWarning("Lost the lease on scan {ScanId}; another worker will re-attach to it.", scanId);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Detached from scan {ScanId} for shutdown; its container keeps running and will be re-attached.", scanId);
+                        await ReleaseLeaseAsync(scan.Id, leaseOwner);
+                    }
 
-                scan.Fail(result.ErrorMessage ?? "Scan failed.", result.RawOutput);
-                scanRepository.Update(scan);
-                await unitOfWork.SaveChangesAsync(cancellationToken);
-                await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, $"{scan.Tool} failed: {scan.ErrorMessage}", cancellationToken);
-                await PushStatusAsync(scan, cancellationToken);
-                await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
-                return;
+                    return;
+
+                case ScanRunOutcome.ContainerMissing:
+                    _logger.LogWarning("Scan {ScanId} could not be re-attached: its container is gone.", scanId);
+                    await FinishFailedAsync(InterruptedMessage, null);
+                    return;
+
+                case ScanRunOutcome.Stopped when timeoutCts.IsCancellationRequested && !userStopCts.IsCancellationRequested:
+                    _logger.LogWarning("Scan {ScanId} hit its {Minutes}-minute timeout.", scanId, settings.TimeoutMinutes);
+                    await FinishFailedAsync($"Timed out after {settings.TimeoutMinutes} minutes.", result.RawOutput);
+                    await scanRunner.CleanupAsync(scan);
+                    return;
+
+                case ScanRunOutcome.Stopped:
+                    // ScanService.CancelAsync already set this scan (and the rest of its chain) to
+                    // Cancelled and pushed the status update — only the lease is left to clear.
+                    _logger.LogInformation("Scan {ScanId} was stopped by user request.", scanId);
+                    await ReleaseLeaseAsync(scan.Id, leaseOwner);
+                    return;
+
+                case ScanRunOutcome.Failed:
+                    await FinishFailedAsync(result.ErrorMessage ?? "Scan failed.", result.RawOutput);
+                    await scanRunner.CleanupAsync(scan);
+                    return;
             }
 
-            var parsedFindings = parser.Parse(result.RawOutput);
-
+            // Completed. The dedup service saves each vulnerability as it goes; if the process dies
+            // part-way, the scan stays Running, gets re-claimed, re-attaches to the (exited, not yet
+            // removed) container and parses again — dedup keys keep vulnerabilities unique.
+            var parsedFindings = parser.Parse(result.StructuredOutput ?? result.RawOutput);
             foreach (var finding in parsedFindings)
             {
                 var findingRaw = new ScanFindingRaw(scan.Id, JsonSerializer.Serialize(finding), finding.Title, finding.Endpoint, finding.SeverityRaw);
-                await findingRepository.AddAsync(findingRaw, cancellationToken);
+                await findingRepository.AddAsync(findingRaw, CancellationToken.None);
 
                 var vulnerability = await dedupService.ProcessFindingAsync(
                     scan.ClientOrganizationId,
@@ -145,84 +279,164 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
                     scan.Id,
                     scan.EngagementId,
                     scan.EngagementTaskId,
-                    scan.Tool.ToString(),
+                    toolName,
                     finding,
-                    cancellationToken);
+                    CancellationToken.None);
 
                 findingRaw.MarkProcessed(vulnerability.Id);
                 findingRepository.Update(findingRaw);
 
-                // Best-effort — if no LLM provider is configured/active, LlmExplanationJob's
-                // service no-ops; a failed AI call never blocks or fails the scan itself.
-                backgroundJobClient.Enqueue<LlmExplanationJob>(job => job.RunAsync(vulnerability.Id, scan.Tool.ToString(), CancellationToken.None));
+                // Durable, best-effort enrichment (no-op when no LLM provider is active). Saved by
+                // the next SaveChanges together with the finding it belongs to.
+                await jobQueue.EnqueueAsync(LlmExplanationJobHandler.Type, new LlmExplanationJobPayload(vulnerability.Id, toolName), maxAttempts: 3, cancellationToken: CancellationToken.None);
             }
 
             scan.Complete(rawLogBlobKey: null, rawOutput: result.RawOutput);
+            scan.ReleaseLease();
             scanRepository.Update(scan);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-            await _realtimeNotifier.PushScanPhaseAsync(
-                scan.PublicId,
-                parsedFindings.Count > 0 ? $"{scan.Tool} finished — {parsedFindings.Count} finding(s)." : $"{scan.Tool} finished — no findings.",
-                cancellationToken);
-            await PushStatusAsync(scan, cancellationToken);
-            await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            await scanRunner.CleanupAsync(scan);
+
+            await SafePushPhaseAsync(
+                scan,
+                parsedFindings.Count > 0 ? $"{scan.Tool} finished — {parsedFindings.Count} finding(s)." : $"{scan.Tool} finished — no findings.");
+            await SafePushStatusAsync(scan);
+            _signal.Notify();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Scan {ScanId} failed unexpectedly.", scanId);
-            scan.Fail($"Unexpected error: {ex.Message}");
-            scanRepository.Update(scan);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-            await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, $"{scan.Tool} failed: {ex.Message}", cancellationToken);
-            await PushStatusAsync(scan, cancellationToken);
-            await EnqueueNextInChainAsync(scan, scanRepository, scanQueueService, cancellationToken);
+            await TryFinishFailedInFreshScopeAsync(scanId, $"Unexpected error: {ex.Message}");
         }
         finally
         {
+            heartbeatCts.Cancel();
+            await heartbeat;
             _cancellationRegistry.Unregister(scan.Id);
         }
     }
 
-    // A tool failing (e.g. Reconftw's known amd64 manifest gap) shouldn't strand the rest of
-    // the chain — Nuclei/Reconftw still get their turn even if Naabu errored out.
-    private static async Task EnqueueNextInChainAsync(Scan scan, IScanRepository scanRepository, IScanQueueService scanQueueService, CancellationToken cancellationToken)
+    private static ScanToolRuntimeSettings? DeserializeSettings(string? json)
     {
-        if (!scan.NextScanId.HasValue)
+        if (string.IsNullOrWhiteSpace(json))
         {
-            return;
+            return null;
         }
 
-        var nextScan = await scanRepository.GetByIdAsync(scan.NextScanId.Value, cancellationToken);
-        if (nextScan is null || nextScan.Status != ScanStatus.Queued)
+        try
         {
-            return;
+            return JsonSerializer.Deserialize<ScanToolRuntimeSettings>(json);
         }
-
-        scanQueueService.Enqueue(nextScan.Id, nextScan.Tool);
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
-    private async Task PushOutputLineAsync(Scan scan, string line, string stream, IScanOutputParser parser, CancellationToken cancellationToken)
+    // Keeps the lease alive while the scan runs. If renewal fails for longer than the lease
+    // (database unreachable) ownership may pass to another worker, so signal a detach instead of
+    // risking two processes following — and later double-recording — the same scan.
+    private async Task RenewLeaseUntilCancelledAsync(long scanId, string leaseOwner, CancellationTokenSource leaseLostCts, CancellationToken cancellationToken)
     {
-        await _realtimeNotifier.PushScanOutputAsync(scan.PublicId, line, stream, cancellationToken);
+        var lastRenewed = DateTime.UtcNow;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(LeaseRenewInterval, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var renewed = await scope.ServiceProvider.GetRequiredService<IScanRepository>()
+                    .RenewLeaseAsync(scanId, leaseOwner, LeaseDuration, CancellationToken.None);
+                if (!renewed)
+                {
+                    leaseLostCts.Cancel();
+                    return;
+                }
+
+                lastRenewed = DateTime.UtcNow;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not renew the lease on scan {ScanId}.", scanId);
+                if (DateTime.UtcNow - lastRenewed >= LeaseDuration)
+                {
+                    leaseLostCts.Cancel();
+                    return;
+                }
+            }
+        }
+    }
+
+    private async Task ReleaseLeaseAsync(long scanId, string leaseOwner)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<IScanRepository>().ReleaseLeaseAsync(scanId, leaseOwner, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not release the lease on scan {ScanId}; it will expire on its own.", scanId);
+        }
+    }
+
+    // Fresh scope: used when the original scope/DbContext may itself be the thing that failed.
+    private async Task TryFinishFailedInFreshScopeAsync(long scanId, string message)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var scanRepository = scope.ServiceProvider.GetRequiredService<IScanRepository>();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+            var scan = await scanRepository.GetByIdAsync(scanId, CancellationToken.None);
+            if (scan is null || (scan.Status != ScanStatus.Queued && scan.Status != ScanStatus.Running))
+            {
+                return;
+            }
+
+            scan.Fail(message);
+            scan.ReleaseLease();
+            scanRepository.Update(scan);
+            await unitOfWork.SaveChangesAsync(CancellationToken.None);
+            await SafePushStatusAsync(scan);
+            _signal.Notify();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Could not record failure for scan {ScanId}; its lease will expire and it will be re-claimed.", scanId);
+        }
+    }
+
+    // Live console pushes are best-effort and must never be cancelled by (or throw because of)
+    // shutdown; DockerScanRunner additionally guards the call site.
+    private async Task PushOutputLineAsync(Scan scan, string line, string stream, IScanOutputParser parser)
+    {
+        await _realtimeNotifier.PushScanOutputAsync(scan.PublicId, line, stream, CancellationToken.None);
 
         if (stream == "stderr")
         {
             // Nuclei's -stats output (also stderr) already computes a real completion
             // percentage — forward it as-is instead of estimating one ourselves.
-            await TryPushProgressAsync(scan, line, cancellationToken);
+            await TryPushProgressAsync(scan, line);
             return;
         }
 
-        // Best-effort live finding parse — the parsers already split on '\n' and skip
-        // malformed/non-matching lines internally, so re-using them per single streamed line is
-        // just a normal call, not a special "line mode". Never let a parse hiccup break the
-        // stream; the authoritative parse of the full RawOutput still runs after the scan
-        // completes in ProcessScanAsync, so a live-parse miss here has no lasting effect.
+        // Best-effort live finding parse — the authoritative parse of the full output still runs
+        // after the scan completes, so a live-parse miss here has no lasting effect.
         try
         {
             foreach (var finding in parser.Parse(line))
             {
-                await _realtimeNotifier.PushScanFindingAsync(scan.PublicId, finding.Title, finding.SeverityRaw, finding.Endpoint, cancellationToken);
+                await _realtimeNotifier.PushScanFindingAsync(scan.PublicId, finding.Title, finding.SeverityRaw, finding.Endpoint, CancellationToken.None);
             }
         }
         catch
@@ -236,7 +450,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
     //  "requests":"498","rps":"94","startedAt":"...","templates":"10447","total":"18274"}
     // — every value is a string, and "percent" is unique to this stats shape (findings and
     // Naabu's port records never have it), so its presence alone is a safe, cheap discriminator.
-    private async Task TryPushProgressAsync(Scan scan, string line, CancellationToken cancellationToken)
+    private async Task TryPushProgressAsync(Scan scan, string line)
     {
         var trimmed = line.Trim();
         if (trimmed.Length == 0 || trimmed[0] != '{')
@@ -260,7 +474,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
                 ReadLong(root, "rps"),
                 ReadLong(root, "matched"),
                 ReadLong(root, "total"),
-                cancellationToken);
+                CancellationToken.None);
         }
         catch (JsonException)
         {
@@ -275,8 +489,27 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
             : null;
     }
 
-    private async Task PushStatusAsync(Scan scan, CancellationToken cancellationToken)
+    private async Task SafePushStatusAsync(Scan scan)
     {
-        await _realtimeNotifier.PushScanStatusAsync(scan.PublicId, scan.Status.ToString(), cancellationToken);
+        try
+        {
+            await _realtimeNotifier.PushScanStatusAsync(scan.PublicId, scan.Status.ToString(), CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Could not push status for scan {ScanId}.", scan.Id);
+        }
+    }
+
+    private async Task SafePushPhaseAsync(Scan scan, string message)
+    {
+        try
+        {
+            await _realtimeNotifier.PushScanPhaseAsync(scan.PublicId, message, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Could not push phase message for scan {ScanId}.", scan.Id);
+        }
     }
 }

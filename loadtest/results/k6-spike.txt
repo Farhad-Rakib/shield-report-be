@@ -1,0 +1,47 @@
+
+
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✓ 'p(95)<1000' p(95)=156.87ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 116405  1933.956912/s
+    checks_succeeded...: 100.00% 116405 out of 116405
+    checks_failed......: 0.00%   0 out of 116405
+
+    ✓ login ok
+    ✓ /dashboard 200
+    ✓ /engagements 200
+    ✓ /vulnerabilities 200
+    ✓ /scans 200
+
+    CUSTOM
+    ep_dashboard...................: avg=146.63ms min=20.56ms med=145.59ms p(90)=162.88ms p(95)=169.27ms p(99)=195.54ms max=1.5s    
+    ep_engagements.................: avg=19.29ms  min=2.68ms  med=17.74ms  p(90)=24.92ms  p(95)=27.46ms  p(99)=33.42ms  max=849.96ms
+    ep_scans.......................: avg=20.18ms  min=2.42ms  med=18.57ms  p(90)=26.03ms  p(95)=28.75ms  p(99)=35.56ms  max=1.38s   
+    ep_vulnerabilities.............: avg=20.03ms  min=3.25ms  med=18.66ms  p(90)=25.98ms  p(95)=28.7ms   p(99)=35.6ms   max=792.33ms
+
+    HTTP
+    http_req_duration..............: avg=51.53ms  min=2.42ms  med=20.34ms  p(90)=149.03ms p(95)=156.87ms p(99)=172.74ms max=1.5s    
+      { expected_response:true }...: avg=51.53ms  min=2.42ms  med=20.34ms  p(90)=149.03ms p(95)=156.87ms p(99)=172.74ms max=1.5s    
+    http_req_failed................: 0.00%  0 out of 116405
+    http_reqs......................: 116405 1933.956912/s
+
+    EXECUTION
+    iteration_duration.............: avg=206.44ms min=36.43ms med=203.75ms p(90)=224.51ms p(95)=232.84ms p(99)=347.51ms max=2.08s   
+    iterations.....................: 29101  483.485075/s
+    vus............................: 100    min=100         max=100
+    vus_max........................: 100    min=100         max=100
+
+    NETWORK
+    data_received..................: 2.7 GB 46 MB/s
+    data_sent......................: 69 MB  1.2 MB/s
+
+
+

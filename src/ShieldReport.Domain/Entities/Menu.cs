@@ -8,6 +8,8 @@ namespace ShieldReport.Domain.Entities
         public string? Url { get; set; }
         public string? Icon { get; set; }
         public string? RequiredPermission { get; set; }
+        // Display order among siblings (ascending, then Id).
+        public int SortOrder { get; set; }
         public long? ParentMenuId { get; set; }
         public Menu? ParentMenu { get; set; }
         public List<Menu>? Children { get; set; }

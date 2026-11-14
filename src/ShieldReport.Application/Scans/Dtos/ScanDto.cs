@@ -16,4 +16,7 @@ public sealed record ScanDto(
     long RequestedByUserId,
     string? ErrorMessage,
     string? RawOutput,
-    Guid? NextScanPublicId);
+    Guid? NextScanPublicId,
+    // Client-safe tool name (built-in label or the custom tool's client label).
+    string ToolLabel = "",
+    long? CustomToolId = null);

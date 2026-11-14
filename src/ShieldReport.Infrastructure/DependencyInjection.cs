@@ -29,7 +29,13 @@ public static class DependencyInjection
         // IWebHostEnvironment) to load a custom-uploaded template's bytes.
         services.AddScoped<IReportDocxTemplateFiller, OpenXmlReportDocxTemplateFiller>();
         services.AddScoped<IReportPdfConverter, LibreOfficeReportPdfConverter>();
-        services.AddSingleton<IReportEditorAccessTokenService, HmacReportEditorAccessTokenService>();
+        // HTML report engine (PDF via headless Chromium + paged.js, Word via HtmlToOpenXml).
+        services.AddSingleton<ShieldReport.Infrastructure.Reporting.Html.ChromiumBrowserProvider>();
+        services.AddSingleton<ShieldReport.Application.Reports.Rendering.IHtmlReportRenderer, ShieldReport.Infrastructure.Reporting.Html.HtmlReportRenderer>();
+
+        // Durable background jobs (replaces Hangfire) — see BackgroundJobs/BackgroundJobWorkerService.
+        services.AddHostedService<ShieldReport.Infrastructure.BackgroundJobs.BackgroundJobWorkerService>();
+        services.AddHostedService<ShieldReport.Infrastructure.BackgroundJobs.AuditLogRetentionService>();
 
         return services;
     }

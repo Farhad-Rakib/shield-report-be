@@ -33,4 +33,7 @@ public sealed class ScanFindingRaw : BaseEntity
         ProcessedAt = DateTime.UtcNow;
         ResultingVulnerabilityId = resultingVulnerabilityId;
     }
+
+    // The vulnerability this line produced was deleted; the raw line stays as scan history.
+    public void UnlinkVulnerability() => ResultingVulnerabilityId = null;
 }

@@ -1,0 +1,51 @@
+
+
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✓ 'p(95)<1000' p(95)=23.31ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 8323    35.65699/s
+    checks_succeeded...: 100.00% 8323 out of 8323
+    checks_failed......: 0.00%   0 out of 8323
+
+    ✓ login ok
+    ✓ /menu 200
+    ✓ /dashboard 200
+    ✓ /engagements 200
+    ✓ /vulnerabilities 200
+    ✓ /scans 200
+    ✓ /engagements/3/reports 200
+
+    CUSTOM
+    ep_dashboard...................: avg=20.68ms min=8.19ms med=21.42ms p(90)=26.69ms p(95)=28.85ms p(99)=32.37ms max=35.02ms
+    ep_engagements.................: avg=5.45ms  min=1.89ms med=4.81ms  p(90)=8.85ms  p(95)=10.55ms p(99)=12.89ms max=20.51ms
+    ep_menu........................: avg=3.98ms  min=741µs  med=4.17ms  p(90)=6.4ms   p(95)=6.95ms  p(99)=8.11ms  max=13.89ms
+    ep_reports.....................: avg=5.5ms   min=966µs  med=5.39ms  p(90)=9.27ms  p(95)=10.18ms p(99)=11.91ms max=15.61ms
+    ep_scans.......................: avg=9.3ms   min=2.68ms med=9.32ms  p(90)=14.17ms p(95)=15.46ms p(99)=18.14ms max=28.41ms
+    ep_vulnerabilities.............: avg=9.06ms  min=2.78ms med=8.6ms   p(90)=13.96ms p(95)=15.16ms p(99)=18.42ms max=98.35ms
+
+    HTTP
+    http_req_duration..............: avg=9ms     min=741µs  med=6.82ms  p(90)=20.25ms p(95)=23.31ms p(99)=28.4ms  max=98.35ms
+      { expected_response:true }...: avg=9ms     min=741µs  med=6.82ms  p(90)=20.25ms p(95)=23.31ms p(99)=28.4ms  max=98.35ms
+    http_req_failed................: 0.00%  0 out of 8323
+    http_reqs......................: 8323   35.65699/s
+
+    EXECUTION
+    iteration_duration.............: avg=5.05s   min=5.02s  med=5.05s   p(90)=5.07s   p(95)=5.07s   p(99)=5.08s   max=5.14s  
+    iterations.....................: 1387   5.942118/s
+    vus............................: 1      min=0         max=50
+    vus_max........................: 50     min=50        max=50
+
+    NETWORK
+    data_received..................: 136 MB 583 kB/s
+    data_sent......................: 4.9 MB 21 kB/s
+
+
+

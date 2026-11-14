@@ -1,11 +1,11 @@
+using ShieldReport.Application.Reports.Delivery;
+using ShieldReport.Application.Audit;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using ShieldReport.Api.Common;
 using ShieldReport.Application.Common.Exceptions;
 using ShieldReport.Application.Common.Interfaces;
-using ShieldReport.Application.Common.Interfaces.Security;
 using ShieldReport.Application.Reports;
 using ShieldReport.Application.Reports.Dtos;
 using ShieldReport.Application.Security;
@@ -20,32 +20,58 @@ public sealed class ReportsController : ControllerBase
 {
     private readonly IReportService _reportService;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IReportEditorAccessTokenService _editorAccessTokenService;
-    private readonly IConfiguration _configuration;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IAuditLogger _auditLogger;
 
-    public ReportsController(
-        IReportService reportService,
-        ICurrentUserService currentUserService,
-        IReportEditorAccessTokenService editorAccessTokenService,
-        IConfiguration configuration,
-        IHttpClientFactory httpClientFactory)
+    public ReportsController(IReportService reportService, ICurrentUserService currentUserService, IAuditLogger auditLogger)
     {
         _reportService = reportService;
         _currentUserService = currentUserService;
-        _editorAccessTokenService = editorAccessTokenService;
-        _configuration = configuration;
-        _httpClientFactory = httpClientFactory;
+        _auditLogger = auditLogger;
     }
 
     [HttpPost("engagements/{engagementId:long}/reports")]
     [Authorize(Policy = Permissions.VulnerabilityReportsGenerate)]
     [ProducesResponseType(typeof(ApiResponse<ReportDto>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> Generate(long engagementId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Generate(long engagementId, [FromBody] GenerateReportRequestDto? request, CancellationToken cancellationToken)
     {
         var currentUserId = _currentUserService.UserId ?? throw new AppException("User context is missing.", 401);
-        var report = await _reportService.GenerateAsync(engagementId, currentUserId, cancellationToken);
-        return StatusCode(StatusCodes.Status201Created, ApiResponse<ReportDto>.SuccessResponse(report, "Report generated successfully", StatusCodes.Status201Created));
+        var report = await _reportService.GenerateAsync(engagementId, currentUserId, request ?? new GenerateReportRequestDto(), cancellationToken);
+        var message = report.NarrativeStatus == "Drafting"
+            ? "Report generated. The AI is drafting the summary sections in the background."
+            : "Report generated successfully";
+        return StatusCode(StatusCodes.Status201Created, ApiResponse<ReportDto>.SuccessResponse(report, message, StatusCodes.Status201Created));
+    }
+
+    // What Generate would produce with these options (placeholder narrative). Saves nothing.
+    // The HTML is only shown in the frontend's sandboxed preview iframe.
+    [HttpPost("engagements/{engagementId:long}/reports/preview")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsGenerate)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> PreviewNew(long engagementId, [FromBody] ReportPreviewRequestDto? request, CancellationToken cancellationToken)
+    {
+        var currentUserId = _currentUserService.UserId ?? throw new AppException("User context is missing.", 401);
+        var html = await _reportService.PreviewNewAsync(engagementId, currentUserId, request ?? new ReportPreviewRequestDto(), cancellationToken);
+        return Ok(ApiResponse<string>.SuccessResponse(html, "Report preview rendered"));
+    }
+
+    // Templates offered in the Generate Report dialog. Under the Generate permission (not
+    // report-templates.read) so anyone who can generate can choose a template.
+    [HttpGet("reports/template-options")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsGenerate)]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ReportTemplateOptionDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> TemplateOptions(CancellationToken cancellationToken)
+    {
+        var options = await _reportService.GetTemplateOptionsAsync(cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<ReportTemplateOptionDto>>.SuccessResponse(options, "Report templates retrieved successfully"));
+    }
+
+    [HttpPost("reports/{id:long}/draft-narrative")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsGenerate)]
+    [ProducesResponseType(typeof(ApiResponse<ReportDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DraftNarrative(long id, CancellationToken cancellationToken)
+    {
+        var report = await _reportService.RequestNarrativeDraftAsync(id, cancellationToken);
+        return Ok(ApiResponse<ReportDto>.SuccessResponse(report, "AI drafting queued"));
     }
 
     [HttpGet("engagements/{engagementId:long}/reports")]
@@ -73,6 +99,59 @@ public sealed class ReportsController : ControllerBase
     {
         var report = await _reportService.UpdateNarrativeAsync(id, request, cancellationToken);
         return Ok(ApiResponse<ReportDto>.SuccessResponse(report, "Report narrative updated successfully"));
+    }
+
+    [HttpPatch("reports/{id:long}/sections")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsGenerate)]
+    [ProducesResponseType(typeof(ApiResponse<ReportDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateSections(long id, [FromBody] UpdateReportSectionsRequestDto request, CancellationToken cancellationToken)
+    {
+        var report = await _reportService.UpdateSectionsAsync(id, request, cancellationToken);
+        return Ok(ApiResponse<ReportDto>.SuccessResponse(report, "Report sections updated successfully"));
+    }
+
+    // The exact HTML the PDF/Word were produced from. Returned as JSON (not text/html) so it is only
+    // ever displayed inside the frontend's sandboxed preview iframe, never as a page on the API origin.
+    [HttpGet("reports/{id:long}/preview")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsRead)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Preview(long id, CancellationToken cancellationToken)
+    {
+        var html = await _reportService.GetPreviewHtmlAsync(id, cancellationToken)
+            ?? throw new AppException("This report was generated with the legacy Word engine and has no HTML preview. Regenerate it to get one.", 404);
+        return Ok(ApiResponse<string>.SuccessResponse(html, "Report preview retrieved successfully"));
+    }
+
+    // ---- Send to client ----
+
+    [HttpGet("reports/{id:long}/recipient-options")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsSend)]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ReportRecipientOptionDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RecipientOptions(long id, [FromServices] IReportDeliveryService deliveryService, CancellationToken cancellationToken)
+    {
+        var options = await deliveryService.GetRecipientOptionsAsync(id, cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<ReportRecipientOptionDto>>.SuccessResponse(options, "Recipient options retrieved successfully"));
+    }
+
+    // Approved reports only (409 otherwise). Emails go out from a background job; poll deliveries
+    // for the outcome.
+    [HttpPost("reports/{id:long}/send")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsSend)]
+    [ProducesResponseType(typeof(ApiResponse<ReportDeliveryDto>), StatusCodes.Status202Accepted)]
+    public async Task<IActionResult> Send(long id, [FromBody] SendReportRequestDto request, [FromServices] IReportDeliveryService deliveryService, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.UserId ?? throw new AppException("User context is missing.", 401);
+        var delivery = await deliveryService.SendAsync(id, request, userId, cancellationToken);
+        return StatusCode(StatusCodes.Status202Accepted, ApiResponse<ReportDeliveryDto>.SuccessResponse(delivery, "Report queued for sending", StatusCodes.Status202Accepted));
+    }
+
+    [HttpGet("reports/{id:long}/deliveries")]
+    [Authorize(Policy = Permissions.VulnerabilityReportsRead)]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ReportDeliveryDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Deliveries(long id, [FromServices] IReportDeliveryService deliveryService, CancellationToken cancellationToken)
+    {
+        var deliveries = await deliveryService.ListAsync(id, cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<ReportDeliveryDto>>.SuccessResponse(deliveries, "Deliveries retrieved successfully"));
     }
 
     [HttpPost("reports/{id:long}/regenerate")]
@@ -127,6 +206,7 @@ public sealed class ReportsController : ControllerBase
     public async Task<IActionResult> DownloadDraft(long id, CancellationToken cancellationToken)
     {
         var (content, fileName) = await _reportService.GetDraftFileAsync(id, cancellationToken);
+        await _auditLogger.LogAsync(AuditActions.Downloaded, "Report", id.ToString(), new { format = "docx", fileName }, cancellationToken: cancellationToken);
         return File(content, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", fileName);
     }
 
@@ -135,78 +215,7 @@ public sealed class ReportsController : ControllerBase
     public async Task<IActionResult> DownloadPdf(long id, CancellationToken cancellationToken)
     {
         var (content, fileName) = await _reportService.GetPdfFileAsync(id, cancellationToken);
+        await _auditLogger.LogAsync(AuditActions.Downloaded, "Report", id.ToString(), new { format = "pdf", fileName }, cancellationToken: cancellationToken);
         return File(content, "application/pdf", fileName);
-    }
-
-    // ---- In-browser editing (OnlyOffice Document Server) — see the plan's networking note for
-    // why the source/callback endpoints below use a short-lived token instead of the normal
-    // bearer auth: the Document Server fetches/saves from inside its own container, with no
-    // user session to send. ----
-
-    [HttpPost("reports/{id:long}/editor-session")]
-    [Authorize(Policy = Permissions.VulnerabilityReportsGenerate)]
-    [ProducesResponseType(typeof(ApiResponse<ReportEditorSessionDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> StartEditorSession(long id, CancellationToken cancellationToken)
-    {
-        var report = await _reportService.GetByIdAsync(id, cancellationToken);
-        if (!report.DraftAvailable)
-        {
-            throw new AppException("This report has no draft document to edit yet.", 400);
-        }
-
-        var accessToken = _editorAccessTokenService.Issue(id);
-        var session = new ReportEditorSessionDto(
-            _configuration["OnlyOffice:DocumentServerUrl"] ?? throw new InvalidOperationException("OnlyOffice:DocumentServerUrl is not configured."),
-            _configuration["OnlyOffice:ApiHostForContainer"] ?? throw new InvalidOperationException("OnlyOffice:ApiHostForContainer is not configured."),
-            accessToken,
-            Guid.NewGuid().ToString("N"), // fresh every session so the Document Server never serves a stale cached copy
-            $"report-v{report.Version}.docx");
-
-        return Ok(ApiResponse<ReportEditorSessionDto>.SuccessResponse(session, "Editor session started successfully"));
-    }
-
-    [HttpGet("reports/{id:long}/editor-source")]
-    [AllowAnonymous]
-    public async Task<IActionResult> EditorSource(long id, [FromQuery] string accessToken, CancellationToken cancellationToken)
-    {
-        if (!_editorAccessTokenService.TryValidate(accessToken, out var tokenReportId) || tokenReportId != id)
-        {
-            return Unauthorized();
-        }
-
-        var (content, fileName) = await _reportService.GetDraftFileAsync(id, cancellationToken);
-        return File(content, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", fileName);
-    }
-
-    [HttpPost("reports/{id:long}/editor-callback")]
-    [AllowAnonymous]
-    public async Task<IActionResult> EditorCallback(long id, [FromQuery] string accessToken, [FromBody] OnlyOfficeCallbackPayload payload, CancellationToken cancellationToken)
-    {
-        if (!_editorAccessTokenService.TryValidate(accessToken, out var tokenReportId) || tokenReportId != id)
-        {
-            return Unauthorized();
-        }
-
-        // Status 2 = "ready for saving" (editor closed), 6 = force-save while still open —
-        // anything else (1 = still editing, 4 = closed with no changes, ...) needs no action.
-        // Always ack with {"error":0} regardless, per OnlyOffice's callback contract, so a
-        // no-op status doesn't get retried forever.
-        if ((payload.Status == 2 || payload.Status == 6) && !string.IsNullOrWhiteSpace(payload.Url))
-        {
-            var httpClient = _httpClientFactory.CreateClient();
-            var docxBytes = await httpClient.GetByteArrayAsync(payload.Url, cancellationToken);
-            await _reportService.OverwriteDraftAsync(id, docxBytes, cancellationToken);
-        }
-
-        return Ok(new { error = 0 });
-    }
-
-    // Mirrors OnlyOffice's callback JSON shape (see their documentation for the full set of
-    // fields) — only the two fields this integration acts on are declared; System.Text.Json
-    // ignores the rest by default.
-    public sealed class OnlyOfficeCallbackPayload
-    {
-        public int Status { get; set; }
-        public string? Url { get; set; }
     }
 }

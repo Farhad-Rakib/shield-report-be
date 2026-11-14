@@ -19,8 +19,9 @@ namespace ShieldReport.Persistence.Repositories
         {
             return await DbContext.Menus
                 .AsNoTracking()
-                .Include(m => m.Children)
+                .Include(m => m.Children!.OrderBy(c => c.SortOrder).ThenBy(c => c.Id))
                 .Where(m => m.ParentMenuId == null)
+                .OrderBy(m => m.SortOrder).ThenBy(m => m.Id)
                 .ToListAsync(cancellationToken);
         }
 

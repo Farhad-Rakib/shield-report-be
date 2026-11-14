@@ -5,56 +5,94 @@ using ShieldReport.Persistence.Context;
 
 namespace ShieldReport.Persistence.Seeding
 {
+    // The sidebar: top-level entries without a URL are section headings; their children are the
+    // links. Runs on every start and brings existing rows (matched by title, or by a former title)
+    // to this layout, so a renamed or regrouped entry never duplicates.
     public static class DefaultMenuSeeder
     {
+        private static readonly Dictionary<string, string> FormerTitles = new()
+        {
+            ["Configuration"] = "Administration",
+            ["LLM Provider Configuration"] = "Providers & Models",
+            ["Scan Tools"] = "Tool Configuration",
+        };
+
         public static async Task SeedAsync(ApplicationDbContext dbContext)
         {
-            var dashboard = await UpsertMenuAsync(dbContext, "Dashboard", "/dashboard", "dashboard", Permissions.DashboardRead, null);
-            var configuration = await UpsertMenuAsync(dbContext, "Configuration", null, "settings", null, null);
+            foreach (var (oldTitle, newTitle) in FormerTitles)
+            {
+                var old = await dbContext.Menus.FirstOrDefaultAsync(m => m.Title == oldTitle);
+                if (old is not null && !await dbContext.Menus.AnyAsync(m => m.Title == newTitle))
+                {
+                    old.Title = newTitle;
+                }
+            }
 
-            await UpsertMenuAsync(dbContext, "Users", "/users", "users", Permissions.UsersRead, configuration);
-            await UpsertMenuAsync(dbContext, "Roles", "/roles", "roles", Permissions.RolesRead, configuration);
-            await UpsertMenuAsync(dbContext, "Permissions", "/permissions", "permissions", Permissions.PermissionsRead, configuration);
-            await UpsertMenuAsync(dbContext, "User Roles", "/users/roles", "user-roles", Permissions.UserRolesRead, configuration);
-            await UpsertMenuAsync(dbContext, "Role Permissions", "/roles/permissions", "role-permissions", Permissions.RolePermissionsRead, configuration);
-            await UpsertMenuAsync(dbContext, "Registration Invites", "/registration-invites", "user-plus", Permissions.RegistrationInvitesRead, configuration);
-            await UpsertMenuAsync(dbContext, "LLM Provider Configuration", "/llm-providers", "Sparkles", Permissions.LlmProviderConfigurationsRead, configuration);
-            await UpsertMenuAsync(dbContext, "Report Templates", "/report-templates", "FileText", Permissions.ReportTemplatesRead, configuration);
+            await dbContext.SaveChangesAsync();
 
-            // PentestOps — Client Organizations is the org registry; Client Assets links to the
-            // asset registration/scan-launch page; Scans now has its own list page.
-            await UpsertMenuAsync(dbContext, "Client Organizations", "/clients", "Building2", Permissions.ClientsRead, null);
-            await UpsertMenuAsync(dbContext, "Client Assets", "/assets", "Server", Permissions.ClientAssetsRead, null);
-            await UpsertMenuAsync(dbContext, "Scans", "/scans", "Radar", Permissions.ScansRead, null);
-            await UpsertMenuAsync(dbContext, "Vulnerabilities", "/vulnerabilities", "Bug", Permissions.VulnerabilitiesRead, null);
-            await UpsertMenuAsync(dbContext, "Engagements", "/engagements", "Briefcase", Permissions.EngagementsRead, null);
+            var order = 0;
+            await UpsertAsync(dbContext, "Dashboard", "/dashboard", "LayoutDashboard", Permissions.DashboardRead, null, ++order);
+
+            var operations = await UpsertAsync(dbContext, "Operations", null, "Crosshair", null, null, ++order);
+            await UpsertAsync(dbContext, "Engagements", "/engagements", "Briefcase", Permissions.EngagementsRead, operations, 1);
+            await UpsertAsync(dbContext, "Client Organizations", "/clients", "Building2", Permissions.ClientsRead, operations, 2);
+            await UpsertAsync(dbContext, "Client Assets", "/assets", "Server", Permissions.ClientAssetsRead, operations, 3);
+            await UpsertAsync(dbContext, "Scans", "/scans", "Radar", Permissions.ScansRead, operations, 4);
+
+            var findings = await UpsertAsync(dbContext, "Findings", null, "ShieldCheck", null, null, ++order);
+            await UpsertAsync(dbContext, "Vulnerabilities", "/vulnerabilities", "Bug", Permissions.VulnerabilitiesRead, findings, 1);
+
+            var scanning = await UpsertAsync(dbContext, "Scanning", null, "Activity", null, null, ++order);
+            await UpsertAsync(dbContext, "Tool Configuration", "/scan-tools", "Settings2", Permissions.ScanToolsManage, scanning, 1);
+            await UpsertAsync(dbContext, "Custom Tools", "/custom-tools", "Puzzle", Permissions.CustomScanToolsManage, scanning, 2);
+
+            var ai = await UpsertAsync(dbContext, "AI", null, "Bot", null, null, ++order);
+            await UpsertAsync(dbContext, "Providers & Models", "/llm-providers", "Cpu", Permissions.LlmProviderConfigurationsRead, ai, 1);
+            await UpsertAsync(dbContext, "Prompt Library", "/llm-prompts", "ScrollText", Permissions.LlmProviderConfigurationsRead, ai, 2);
+
+            var reporting = await UpsertAsync(dbContext, "Reporting", null, "FileText", null, null, ++order);
+            await UpsertAsync(dbContext, "Report Templates", "/report-templates", "FileCode2", Permissions.ReportTemplatesRead, reporting, 1);
+
+            var admin = await UpsertAsync(dbContext, "Administration", null, "KeyRound", null, null, ++order);
+            await UpsertAsync(dbContext, "Users", "/users", "users", Permissions.UsersRead, admin, 1);
+            await UpsertAsync(dbContext, "Roles", "/roles", "roles", Permissions.RolesRead, admin, 2);
+            await UpsertAsync(dbContext, "Permissions", "/permissions", "permissions", Permissions.PermissionsRead, admin, 3);
+            await UpsertAsync(dbContext, "User Roles", "/users/roles", "user-roles", Permissions.UserRolesRead, admin, 4);
+            await UpsertAsync(dbContext, "Role Permissions", "/roles/permissions", "role-permissions", Permissions.RolePermissionsRead, admin, 5);
+            await UpsertAsync(dbContext, "Registration Invites", "/registration-invites", "user-plus", Permissions.RegistrationInvitesRead, admin, 6);
+            await UpsertAsync(dbContext, "Audit Log", "/audit-logs", "History", Permissions.AuditLogsRead, admin, 7);
 
             await dbContext.SaveChangesAsync();
         }
 
-        private static async Task<Menu> UpsertMenuAsync(
+        private static async Task<Menu> UpsertAsync(
             ApplicationDbContext dbContext,
             string title,
             string? url,
             string? icon,
             string? requiredPermission,
-            Menu? parentMenu)
+            Menu? parentMenu,
+            int sortOrder)
         {
             var menu = await dbContext.Menus.FirstOrDefaultAsync(existing => existing.Title == title);
             if (menu is null)
             {
-                menu = new Menu
-                {
-                    Title = title,
-                    Url = url,
-                    Icon = icon,
-                    RequiredPermission = requiredPermission,
-                    ParentMenu = parentMenu,
-                    ParentMenuId = parentMenu?.Id
-                };
+                menu = new Menu { Title = title };
                 dbContext.Menus.Add(menu);
             }
 
+            menu.Url = url;
+            menu.Icon = icon;
+            menu.RequiredPermission = requiredPermission;
+            menu.ParentMenu = parentMenu;
+            menu.SortOrder = sortOrder;
+            if (parentMenu is null)
+            {
+                menu.ParentMenuId = null;
+            }
+
+            // Parents must have ids before children reference them.
+            await dbContext.SaveChangesAsync();
             return menu;
         }
     }

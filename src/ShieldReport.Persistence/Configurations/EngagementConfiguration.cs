@@ -11,6 +11,7 @@ public sealed class EngagementConfiguration : IEntityTypeConfiguration<Engagemen
         builder.ToTable("engagements");
 
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.TestingType).IsRequired().HasConversion<byte>();
         builder.Property(x => x.Title).IsRequired().HasMaxLength(300);
         builder.Property(x => x.Status).IsRequired().HasConversion<byte>();
 

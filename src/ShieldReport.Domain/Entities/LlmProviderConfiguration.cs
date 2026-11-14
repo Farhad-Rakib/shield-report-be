@@ -27,6 +27,9 @@ public sealed class LlmProviderConfiguration : BaseEntity
         "recommendation" to null rather than guessing.
         """;
 
+    // Admin-chosen label so several configurations of the same provider (e.g. two Gemini models)
+    // can coexist and be told apart.
+    public string Name { get; private set; } = string.Empty;
     public LlmProvider Provider { get; private set; }
     public string ApiKeyEncrypted { get; private set; } = string.Empty;
     public string Model { get; private set; } = string.Empty;
@@ -41,8 +44,9 @@ public sealed class LlmProviderConfiguration : BaseEntity
     {
     }
 
-    public LlmProviderConfiguration(LlmProvider provider, string apiKeyEncrypted, string model, string? baseUrl, decimal temperature, int maxOutputTokens, string promptTemplate)
+    public LlmProviderConfiguration(string name, LlmProvider provider, string apiKeyEncrypted, string model, string? baseUrl, decimal temperature, int maxOutputTokens, string promptTemplate)
     {
+        Name = name;
         Provider = provider;
         ApiKeyEncrypted = apiKeyEncrypted;
         Model = model;
@@ -52,7 +56,7 @@ public sealed class LlmProviderConfiguration : BaseEntity
         PromptTemplate = !string.IsNullOrWhiteSpace(promptTemplate) ? promptTemplate : DefaultPromptTemplate;
     }
 
-    public void UpdateDetails(string? apiKeyEncrypted, string model, string? baseUrl, decimal temperature, int maxOutputTokens, string promptTemplate, long? updatedByUserId)
+    public void UpdateDetails(string name, string? apiKeyEncrypted, string model, string? baseUrl, decimal temperature, int maxOutputTokens, string promptTemplate, long? updatedByUserId)
     {
         // A blank incoming key means "leave the existing one unchanged" (the API never returns
         // the decrypted key for a form to round-trip), so only overwrite when one was supplied.
@@ -61,6 +65,7 @@ public sealed class LlmProviderConfiguration : BaseEntity
             ApiKeyEncrypted = apiKeyEncrypted;
         }
 
+        Name = name;
         Model = model;
         BaseUrl = baseUrl;
         Temperature = temperature;

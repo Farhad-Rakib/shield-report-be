@@ -1,3 +1,5 @@
+using ShieldReport.Application.ScanAuthorizations.Dtos;
+using ShieldReport.Application.ScanAuthorizations;
 using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -90,22 +92,28 @@ public sealed class ClientAssetsController : ControllerBase
         return Ok(ApiResponse.SuccessResponse("Client asset deactivated successfully"));
     }
 
+    // Legacy one-click endpoints, kept for compatibility. They now go through scan authorization
+    // records: "authorize" records one with default window (30 days) and all tools; "revoke"
+    // revokes every open authorization for the asset. Prefer /assets/{id}/scan-authorizations.
     [HttpPost("assets/{id:long}/authorize-for-scanning")]
-    [Authorize(Policy = Permissions.ClientAssetsAuthorizeForScanning)]
+    [Authorize(Policy = Permissions.ScanAuthorizationsManage)]
     [ProducesResponseType(typeof(ApiResponse<ClientAssetDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> AuthorizeForScanning(long id, CancellationToken cancellationToken)
+    public async Task<IActionResult> AuthorizeForScanning(long id, [FromServices] IScanAuthorizationService scanAuthorizationService, CancellationToken cancellationToken)
     {
-        var authorizedByUserId = _currentUserService.UserId ?? throw new AppException("User context is missing.", 401);
-        var asset = await _clientAssetService.AuthorizeForScanningAsync(id, authorizedByUserId, cancellationToken);
+        var userId = _currentUserService.UserId ?? throw new AppException("User context is missing.", 401);
+        await scanAuthorizationService.CreateAsync(id, new CreateScanAuthorizationRequestDto(null, null, null, null, null, null, "Recorded via quick authorize."), userId, cancellationToken);
+        var asset = await _clientAssetService.GetByIdAsync(id, cancellationToken);
         return Ok(ApiResponse<ClientAssetDto>.SuccessResponse(asset, "Client asset authorized for scanning successfully"));
     }
 
     [HttpPost("assets/{id:long}/revoke-scan-authorization")]
-    [Authorize(Policy = Permissions.ClientAssetsAuthorizeForScanning)]
+    [Authorize(Policy = Permissions.ScanAuthorizationsManage)]
     [ProducesResponseType(typeof(ApiResponse<ClientAssetDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> RevokeScanAuthorization(long id, CancellationToken cancellationToken)
+    public async Task<IActionResult> RevokeScanAuthorization(long id, [FromServices] IScanAuthorizationService scanAuthorizationService, CancellationToken cancellationToken)
     {
-        var asset = await _clientAssetService.RevokeScanAuthorizationAsync(id, cancellationToken);
+        var userId = _currentUserService.UserId ?? throw new AppException("User context is missing.", 401);
+        await scanAuthorizationService.RevokeAllForAssetAsync(id, "Revoked via quick revoke.", userId, cancellationToken);
+        var asset = await _clientAssetService.GetByIdAsync(id, cancellationToken);
         return Ok(ApiResponse<ClientAssetDto>.SuccessResponse(asset, "Client asset scan authorization revoked successfully"));
     }
 }

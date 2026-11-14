@@ -65,30 +65,6 @@ public sealed class ClientAssetService : IClientAssetService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<ClientAssetDto> AuthorizeForScanningAsync(long id, long authorizedByUserId, CancellationToken cancellationToken = default)
-    {
-        var asset = await _clientAssetRepository.GetByIdWithDetailsAsync(id, cancellationToken)
-            ?? throw new AppException("Client asset not found.", 404);
-
-        asset.AuthorizeForScanning(authorizedByUserId);
-        _clientAssetRepository.Update(asset);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return ToDto(asset);
-    }
-
-    public async Task<ClientAssetDto> RevokeScanAuthorizationAsync(long id, CancellationToken cancellationToken = default)
-    {
-        var asset = await _clientAssetRepository.GetByIdWithDetailsAsync(id, cancellationToken)
-            ?? throw new AppException("Client asset not found.", 404);
-
-        asset.RevokeScanAuthorization();
-        _clientAssetRepository.Update(asset);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return ToDto(asset);
-    }
-
     private static ClientAssetDto ToDto(ClientAsset asset)
     {
         return new ClientAssetDto(

@@ -1,0 +1,32 @@
+# Single public entry point for ShieldReport (the only service with published ports).
+#
+# SITE_ADDRESS (from .env) decides how TLS works:
+#   shieldreport.example.com  -> automatic Let's Encrypt certificate (DNS must point here, ports 80/443 open)
+#   https://192.168.1.50      -> HTTPS with Caddy's internal CA (browsers warn until the CA is trusted)
+#   http://192.168.1.50 / :80 -> plain HTTP (LAN demo only)
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# API, SignalR hub and health endpoints go to the backend; everything else is the SPA.
+	# Caddy proxies WebSocket upgrades automatically, so SignalR keeps its WebSocket transport.
+	@backend path /api/* /hubs/* /health /health/*
+	handle @backend {
+		reverse_proxy api:8080
+	}
+
+	handle {
+		reverse_proxy fe:80
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

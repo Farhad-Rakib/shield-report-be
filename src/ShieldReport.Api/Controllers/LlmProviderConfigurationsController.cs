@@ -68,4 +68,24 @@ public sealed class LlmProviderConfigurationsController : ControllerBase
         var configuration = await _service.ActivateAsync(id, _currentUserService.UserId, cancellationToken);
         return Ok(ApiResponse<LlmProviderConfigurationDto>.SuccessResponse(configuration, "LLM provider configuration activated successfully"));
     }
+
+    [HttpPost("{id:long}/deactivate")]
+    [Authorize(Policy = Permissions.LlmProviderConfigurationsUpdate)]
+    [ProducesResponseType(typeof(ApiResponse<LlmProviderConfigurationDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Deactivate(long id, CancellationToken cancellationToken)
+    {
+        var configuration = await _service.DeactivateAsync(id, _currentUserService.UserId, cancellationToken);
+        return Ok(ApiResponse<LlmProviderConfigurationDto>.SuccessResponse(configuration, "LLM provider configuration deactivated"));
+    }
+
+    // Sends a tiny prompt with the saved settings. Provider failures come back as Success=false
+    // with the error text (HTTP 200) so the admin sees what went wrong.
+    [HttpPost("{id:long}/test")]
+    [Authorize(Policy = Permissions.LlmProviderConfigurationsUpdate)]
+    [ProducesResponseType(typeof(ApiResponse<LlmProviderTestResultDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Test(long id, CancellationToken cancellationToken)
+    {
+        var result = await _service.TestAsync(id, cancellationToken);
+        return Ok(ApiResponse<LlmProviderTestResultDto>.SuccessResponse(result, result.Success ? "Connection succeeded" : "Connection failed"));
+    }
 }

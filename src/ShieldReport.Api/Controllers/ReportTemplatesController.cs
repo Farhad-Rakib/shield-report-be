@@ -1,3 +1,4 @@
+using ShieldReport.Application.Common.Exceptions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -88,5 +89,65 @@ public sealed class ReportTemplatesController : ControllerBase
     {
         await _reportTemplateService.DeleteAsync(id, cancellationToken);
         return Ok(ApiResponse.SuccessResponse("Report template deleted successfully"));
+    }
+
+    // ---- HTML template (Handlebars) — the engine used for PDF + Word output ----
+
+    [HttpGet("{id:long}/html")]
+    [Authorize(Policy = Permissions.ReportTemplatesRead)]
+    [ProducesResponseType(typeof(ApiResponse<ReportTemplateHtmlDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHtml(long id, CancellationToken cancellationToken)
+    {
+        var html = await _reportTemplateService.GetHtmlAsync(id, cancellationToken);
+        return Ok(ApiResponse<ReportTemplateHtmlDto>.SuccessResponse(html, "Template retrieved successfully"));
+    }
+
+    [HttpPut("{id:long}/html")]
+    [Authorize(Policy = Permissions.ReportTemplatesUpdate)]
+    [ProducesResponseType(typeof(ApiResponse<ReportTemplateHtmlDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateHtml(long id, [FromBody] UpdateReportTemplateHtmlRequestDto request, CancellationToken cancellationToken)
+    {
+        var html = await _reportTemplateService.UpdateHtmlAsync(id, request.HtmlContent, cancellationToken);
+        return Ok(ApiResponse<ReportTemplateHtmlDto>.SuccessResponse(html, "Template saved"));
+    }
+
+    [HttpPost("{id:long}/html-file")]
+    [Authorize(Policy = Permissions.ReportTemplatesUpdate)]
+    [RequestSizeLimit(2_500_000)]
+    public async Task<IActionResult> UploadHtml(long id, IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+        {
+            throw new AppException("Choose a file to upload.", 400);
+        }
+
+        await using var stream = file.OpenReadStream();
+        var html = await _reportTemplateService.UploadHtmlAsync(id, stream, file.FileName, cancellationToken);
+        return Ok(ApiResponse<ReportTemplateHtmlDto>.SuccessResponse(html, "Template uploaded"));
+    }
+
+    [HttpPut("{id:long}/fields")]
+    [Authorize(Policy = Permissions.ReportTemplatesUpdate)]
+    public async Task<IActionResult> UpdateFields(long id, [FromBody] UpdateReportTemplateFieldsRequestDto request, CancellationToken cancellationToken) =>
+        Ok(ApiResponse<ReportTemplateDto>.SuccessResponse(await _reportTemplateService.UpdateFieldsAsync(id, request.Fields, cancellationToken), "Dynamic fields saved"));
+
+    // Sample-data render of the saved or the posted (unsaved) template, for the editor preview.
+    [HttpPost("{id:long}/preview")]
+    [Authorize(Policy = Permissions.ReportTemplatesRead)]
+    public async Task<IActionResult> Preview(long id, [FromBody] PreviewReportTemplateRequestDto? request, CancellationToken cancellationToken) =>
+        Ok(ApiResponse<string>.SuccessResponse(await _reportTemplateService.PreviewAsync(id, request?.HtmlContent, request?.Fields, cancellationToken), "Preview rendered"));
+
+    [HttpGet("variables")]
+    [Authorize(Policy = Permissions.ReportTemplatesRead)]
+    public IActionResult Variables() =>
+        Ok(ApiResponse<IReadOnlyList<ReportTemplateVariable>>.SuccessResponse(ReportTemplateFields.Variables, "Template variables"));
+
+    [HttpDelete("{id:long}/html")]
+    [Authorize(Policy = Permissions.ReportTemplatesUpdate)]
+    [ProducesResponseType(typeof(ApiResponse<ReportTemplateHtmlDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ResetHtml(long id, CancellationToken cancellationToken)
+    {
+        var html = await _reportTemplateService.ResetHtmlAsync(id, cancellationToken);
+        return Ok(ApiResponse<ReportTemplateHtmlDto>.SuccessResponse(html, "Template reset to the built-in default"));
     }
 }

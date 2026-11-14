@@ -18,6 +18,10 @@ public sealed class LlmProviderConfigurationConfiguration : IEntityTypeConfigura
         builder.Property(x => x.Temperature).HasColumnType("decimal(3,2)");
         builder.Property(x => x.PromptTemplate).IsRequired();
 
-        builder.HasIndex(x => x.Provider).IsUnique();
+        builder.Property(x => x.Name).HasMaxLength(100).IsRequired();
+
+        // Several configurations per provider are allowed; names must be unique.
+        builder.HasIndex(x => x.Name).IsUnique();
+        builder.HasIndex(x => x.Provider);
     }
 }

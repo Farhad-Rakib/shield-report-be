@@ -6,6 +6,7 @@ namespace ShieldReport.Application.LlmProviderConfigurations.Dtos;
 // decrypted key. The plaintext key only ever travels one-way, in Create/UpdateLlmProviderConfigurationRequestDto.
 public sealed record LlmProviderConfigurationDto(
     long Id,
+    string Name,
     LlmProvider Provider,
     string ApiKeyMasked,
     string Model,
@@ -15,3 +16,6 @@ public sealed record LlmProviderConfigurationDto(
     string PromptTemplate,
     bool IsActive
 );
+
+// Result of a one-off connection test: never throws for provider errors, so the UI can show them.
+public sealed record LlmProviderTestResultDto(bool Success, long LatencyMs, string? Reply, string? Error);

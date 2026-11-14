@@ -5,4 +5,5 @@ namespace ShieldReport.Application.Common.Interfaces;
 public interface IScanFindingRawRepository : IRepository<ScanFindingRaw>
 {
     Task<IReadOnlyList<ScanFindingRaw>> GetByScanIdAsync(long scanId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ScanFindingRaw>> GetByResultingVulnerabilityIdAsync(long vulnerabilityId, CancellationToken cancellationToken = default);
 }

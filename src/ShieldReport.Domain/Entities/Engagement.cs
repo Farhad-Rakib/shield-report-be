@@ -13,6 +13,7 @@ public sealed class Engagement : BaseEntity
     public DateTime? EndDate { get; private set; }
     public long LeadPentesterId { get; private set; }
     public long CreatedByUserId { get; private set; }
+    public TestingType TestingType { get; private set; } = TestingType.White;
 
     public ClientOrganization ClientOrganization { get; private set; } = null!;
     public User LeadPentester { get; private set; } = null!;
@@ -46,6 +47,11 @@ public sealed class Engagement : BaseEntity
         Scope = scope;
         StartDate = startDate;
         EndDate = endDate;
+    }
+
+    public void SetTestingType(TestingType testingType)
+    {
+        TestingType = testingType;
     }
 
     public void ChangeStatus(EngagementStatus status)

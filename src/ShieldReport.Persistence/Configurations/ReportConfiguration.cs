@@ -9,6 +9,8 @@ public sealed class ReportConfiguration : IEntityTypeConfiguration<Report>
     public void Configure(EntityTypeBuilder<Report> builder)
     {
         builder.ToTable("reports");
+        builder.Property(x => x.NarrativeStatus).HasConversion<byte>();
+        builder.Property(x => x.NarrativeError).HasMaxLength(1000);
 
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Status).IsRequired().HasConversion<byte>();
@@ -18,6 +20,9 @@ public sealed class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.Property(x => x.DraftDocxPath).HasMaxLength(500);
         builder.Property(x => x.FinalPdfPath).HasMaxLength(500);
         builder.Property(x => x.RejectionReason).HasMaxLength(1000);
+        builder.Property(x => x.ProjectGoals).IsRequired();
+        builder.Property(x => x.Limitations).IsRequired();
+        builder.Property(x => x.ScopeStatusesJson).IsRequired().HasMaxLength(4000);
 
         builder.HasIndex(x => x.PublicId).IsUnique();
         builder.HasIndex(x => new { x.EngagementId, x.Version }).IsUnique();

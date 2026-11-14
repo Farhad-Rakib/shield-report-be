@@ -48,6 +48,12 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<LlmProviderConfiguration> LlmProviderConfigurations => Set<LlmProviderConfiguration>();
     public DbSet<ReportTemplate> ReportTemplates => Set<ReportTemplate>();
     public DbSet<Report> Reports => Set<Report>();
+    public DbSet<BackgroundJob> BackgroundJobs => Set<BackgroundJob>();
+    public DbSet<ScanAuthorization> ScanAuthorizations => Set<ScanAuthorization>();
+    public DbSet<ScanToolSetting> ScanToolSettings => Set<ScanToolSetting>();
+    public DbSet<CustomScanTool> CustomScanTools => Set<CustomScanTool>();
+    public DbSet<LlmPrompt> LlmPrompts => Set<LlmPrompt>();
+    public DbSet<ReportDelivery> ReportDeliveries => Set<ReportDelivery>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

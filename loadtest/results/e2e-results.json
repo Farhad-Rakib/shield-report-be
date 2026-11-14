@@ -1,0 +1,1691 @@
+{
+  "config": {
+    "configFile": "/Users/farhadrakib/Selise Projects/shield-report/shield-report-fe/playwright.config.ts",
+    "rootDir": "/Users/farhadrakib/Selise Projects/shield-report/shield-report-fe/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/farhadrakib/Selise Projects/shield-report/shield-report-fe/e2e/global-setup.ts",
+    "globalTeardown": "/Users/farhadrakib/Selise Projects/shield-report/shield-report-fe/e2e/global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 3
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "e2e-results/results.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "e2e-results/html",
+          "open": "never"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 15000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/farhadrakib/Selise Projects/shield-report/shield-report-fe/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/farhadrakib/Selise Projects/shield-report/shield-report-fe/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "version": "1.48.2",
+    "workers": 3,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "auth",
+          "file": "auth.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "unauthenticated visit redirects to login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 653,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:51.176Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-10364e7bcd448f3b55b4",
+              "file": "auth.spec.ts",
+              "line": 8,
+              "column": 3
+            },
+            {
+              "title": "bad password shows an error and stays on login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 580,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:51.934Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-98bbf3d006fc2b22770c",
+              "file": "auth.spec.ts",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "login, then logout",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 3833,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:52.518Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-ab1331ef6e551d41da34",
+              "file": "auth.spec.ts",
+              "line": 24,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "llm-prompts.spec.ts",
+      "file": "llm-prompts.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AI prompt library",
+          "file": "llm-prompts.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "both prompts are listed and selectable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 719,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:51.176Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "10f7a96dd794d37a3545-37154c5ca3661590983c",
+              "file": "llm-prompts.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "edit, validation, placeholder insert, save, test, reset",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 2102,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:52.090Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "10f7a96dd794d37a3545-2b130e468d4489601736",
+              "file": "llm-prompts.spec.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "second prompt: missing JSON field blocks save; switching prompts keeps each text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 638,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:54.195Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "10f7a96dd794d37a3545-cde7392c1cf8b33c88e2",
+              "file": "llm-prompts.spec.ts",
+              "line": 96,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "llm-providers.spec.ts",
+      "file": "llm-providers.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AI providers & models",
+          "file": "llm-providers.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "form is provider-aware",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 921,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:51.177Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e6d196fafd07e27fdf5-e8751d884533344e4d8b",
+              "file": "llm-providers.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "add an OpenAI-compatible provider; Test reports the failure instead of crashing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 1027,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:52.294Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e6d196fafd07e27fdf5-37e22b0c10a2efb4f1b2",
+              "file": "llm-providers.spec.ts",
+              "line": 56,
+              "column": 3
+            },
+            {
+              "title": "edit the provider",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 879,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:53.323Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e6d196fafd07e27fdf5-8c242320ea563d446d42",
+              "file": "llm-providers.spec.ts",
+              "line": 86,
+              "column": 3
+            },
+            {
+              "title": "activate, deactivate, then restore the original active provider",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 997,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:54.204Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e6d196fafd07e27fdf5-492e3580cfce8cdc0982",
+              "file": "llm-providers.spec.ts",
+              "line": 102,
+              "column": 3
+            },
+            {
+              "title": "delete the provider",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 629,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:55.204Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e6d196fafd07e27fdf5-e04804a14e0063c3c2c2",
+              "file": "llm-providers.spec.ts",
+              "line": 124,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "modals.spec.ts",
+      "file": "modals.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "modals close on Escape",
+          "file": "modals.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Add Provider modal closes on Escape, also with focus in an input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 791,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:54.890Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "14871cc0e612d74b2236-5eb59ea71b60e03ab6b0",
+              "file": "modals.spec.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "confirm dialog closes on Escape without confirming",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 649,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:55.683Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "14871cc0e612d74b2236-4a4a7ca040780045cf16",
+              "file": "modals.spec.ts",
+              "line": 25,
+              "column": 3
+            },
+            {
+              "title": "Add Report Template and Add custom tool modals close on Escape",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 614,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:56.335Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "14871cc0e612d74b2236-f49ae7305af3edc88f75",
+              "file": "modals.spec.ts",
+              "line": 37,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "navigation.spec.ts",
+      "file": "navigation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "navigation smoke",
+          "file": "navigation.spec.ts",
+          "line": 45,
+          "column": 6,
+          "specs": [
+            {
+              "title": "sidebar shows every section heading in order",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 2483,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:55.883Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-c2b56089acab2d53e11f",
+              "file": "navigation.spec.ts",
+              "line": 46,
+              "column": 3
+            },
+            {
+              "title": "collapsing a section hides its links and expanding restores them",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 613,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:58.368Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-843ca2e11cd71f02bb97",
+              "file": "navigation.spec.ts",
+              "line": 54,
+              "column": 3
+            },
+            {
+              "title": "every Operations page renders without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 5242,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Engagements",
+                          "duration": 1672
+                        },
+                        {
+                          "title": "Client Organizations",
+                          "duration": 1067
+                        },
+                        {
+                          "title": "Client Assets",
+                          "duration": 1044
+                        },
+                        {
+                          "title": "Scans",
+                          "duration": 1033
+                        }
+                      ],
+                      "startTime": "2026-11-14T15:53:58.983Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-9bf67cabaddc78d5812f",
+              "file": "navigation.spec.ts",
+              "line": 66,
+              "column": 5
+            },
+            {
+              "title": "every Findings page renders without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 2154,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Vulnerabilities",
+                          "duration": 1695
+                        }
+                      ],
+                      "startTime": "2026-11-14T15:54:04.227Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-311f79459cc350670be6",
+              "file": "navigation.spec.ts",
+              "line": 66,
+              "column": 5
+            },
+            {
+              "title": "every Scanning page renders without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 3274,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Tool Configuration",
+                          "duration": 1722
+                        },
+                        {
+                          "title": "Custom Tools",
+                          "duration": 1060
+                        }
+                      ],
+                      "startTime": "2026-11-14T15:54:06.384Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-d53360990bea1311d7b3",
+              "file": "navigation.spec.ts",
+              "line": 66,
+              "column": 5
+            },
+            {
+              "title": "every AI page renders without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 3186,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Providers & Models",
+                          "duration": 1679
+                        },
+                        {
+                          "title": "Prompt Library",
+                          "duration": 1059
+                        }
+                      ],
+                      "startTime": "2026-11-14T15:54:09.660Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-84bb5657c3971e009462",
+              "file": "navigation.spec.ts",
+              "line": 66,
+              "column": 5
+            },
+            {
+              "title": "every Reporting page renders without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 2140,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Report Templates",
+                          "duration": 1704
+                        }
+                      ],
+                      "startTime": "2026-11-14T15:54:12.849Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-b719102bf99403a92b51",
+              "file": "navigation.spec.ts",
+              "line": 66,
+              "column": 5
+            },
+            {
+              "title": "every Administration page renders without errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 8476,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Users",
+                          "duration": 1720
+                        },
+                        {
+                          "title": "Roles",
+                          "duration": 1048
+                        },
+                        {
+                          "title": "Permissions",
+                          "duration": 1048
+                        },
+                        {
+                          "title": "User Roles",
+                          "duration": 1055
+                        },
+                        {
+                          "title": "Role Permissions",
+                          "duration": 1039
+                        },
+                        {
+                          "title": "Registration Invites",
+                          "duration": 1051
+                        },
+                        {
+                          "title": "Audit Log",
+                          "duration": 1053
+                        }
+                      ],
+                      "startTime": "2026-11-14T15:54:14.991Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-655fcc73e016cbf446c9",
+              "file": "navigation.spec.ts",
+              "line": 66,
+              "column": 5
+            },
+            {
+              "title": "every page also works as a deep link / on refresh",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 963,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "/engagements",
+                          "duration": 302
+                        },
+                        {
+                          "title": "/clients",
+                          "duration": 47
+                        },
+                        {
+                          "title": "/assets",
+                          "duration": 40
+                        },
+                        {
+                          "title": "/scans",
+                          "duration": 26
+                        },
+                        {
+                          "title": "/vulnerabilities",
+                          "duration": 30
+                        },
+                        {
+                          "title": "/scan-tools",
+                          "duration": 27
+                        },
+                        {
+                          "title": "/custom-tools",
+                          "duration": 27
+                        },
+                        {
+                          "title": "/llm-providers",
+                          "duration": 29
+                        },
+                        {
+                          "title": "/llm-prompts",
+                          "duration": 26
+                        },
+                        {
+                          "title": "/report-templates",
+                          "duration": 24
+                        },
+                        {
+                          "title": "/users",
+                          "duration": 28
+                        },
+                        {
+                          "title": "/roles",
+                          "duration": 24
+                        },
+                        {
+                          "title": "/permissions",
+                          "duration": 26
+                        },
+                        {
+                          "title": "/users/roles",
+                          "duration": 24
+                        },
+                        {
+                          "title": "/roles/permissions",
+                          "duration": 27
+                        },
+                        {
+                          "title": "/registration-invites",
+                          "duration": 29
+                        },
+                        {
+                          "title": "/audit-logs",
+                          "duration": 26
+                        }
+                      ],
+                      "startTime": "2026-11-14T15:54:23.470Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-581e362b05a1e0a317a5",
+              "file": "navigation.spec.ts",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "deep link to an unknown route shows the 404 page inside the app",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "passed",
+                      "duration": 620,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:24.435Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d2868f7d23420c27cca-9c40ed1640431f2d00f9",
+              "file": "navigation.spec.ts",
+              "line": 99,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "operational-flow.spec.ts",
+      "file": "operational-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "operational flow",
+          "file": "operational-flow.spec.ts",
+          "line": 60,
+          "column": 6,
+          "specs": [
+            {
+              "title": "register harmless custom tools and pull their image",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 420000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1635,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:56.362Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-756a98b1afbd030407a5",
+              "file": "operational-flow.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "register client organization and asset",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1441,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:58.206Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-15d4cdaa3ab1dece7272",
+              "file": "operational-flow.spec.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "record a scan authorization covering Custom Check",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1037,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:59.650Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-85c202446ae86d6b21ad",
+              "file": "operational-flow.spec.ts",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "create an engagement for the client",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 2410,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:00.688Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-4f11455f77eab412a27f",
+              "file": "operational-flow.spec.ts",
+              "line": 148,
+              "column": 3
+            },
+            {
+              "title": "app stays navigable while scan output streams",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [
+                    {
+                      "type": "navigation-ms-while-streaming",
+                      "description": "38, 42"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 26611,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:03.101Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-4bf02691b9141daac74b",
+              "file": "operational-flow.spec.ts",
+              "line": 184,
+              "column": 3
+            },
+            {
+              "title": "scan with the finding tool completes and its finding is listed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1490,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:29.715Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-107d705ae1015dffbe23",
+              "file": "operational-flow.spec.ts",
+              "line": 221,
+              "column": 3
+            },
+            {
+              "title": "generate a report from the engagement with the dialog",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [
+                    {
+                      "type": "generate-report-ms",
+                      "description": "1897"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 3730,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:31.207Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-8b88ff20cb3a34c81d0c",
+              "file": "operational-flow.spec.ts",
+              "line": 242,
+              "column": 3
+            },
+            {
+              "title": "edit sections: required dynamic field blocks saving; preview shows the edits",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 150000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 3314,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:34.940Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-0c942997b99a6ee94776",
+              "file": "operational-flow.spec.ts",
+              "line": 276,
+              "column": 3
+            },
+            {
+              "title": "approve and download PDF and Word",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [
+                    {
+                      "type": "pdf-download",
+                      "description": "report-v1.pdf 604915 bytes"
+                    },
+                    {
+                      "type": "docx-download",
+                      "description": "report-v1.docx 4573164 bytes"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1684,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:38.255Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-caa68ad62c6c322aceb0",
+              "file": "operational-flow.spec.ts",
+              "line": 311,
+              "column": 3
+            },
+            {
+              "title": "a scan-created finding can be deleted; its raw scan line is kept",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 507,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:39.942Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bb919bd44ae7a7fab1da-0d5c3a22b242a52bebd4",
+              "file": "operational-flow.spec.ts",
+              "line": 346,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "report-templates.spec.ts",
+      "file": "report-templates.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "report template studio",
+          "file": "report-templates.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "create a template",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 868,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:56.954Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4ae0265daa6f411f7962-b166865b75498b20dcbf",
+              "file": "report-templates.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "add a dynamic field and save it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 960,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:57.823Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4ae0265daa6f411f7962-e21fb965aca415615887",
+              "file": "report-templates.spec.ts",
+              "line": 41,
+              "column": 3
+            },
+            {
+              "title": "HTML tab: insert a variable and the dynamic field, save",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 1026,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:58.785Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4ae0265daa6f411f7962-335c4c51b9659d5d360c",
+              "file": "report-templates.spec.ts",
+              "line": 63,
+              "column": 3
+            },
+            {
+              "title": "invalid HTML is rejected on save",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 874,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:53:59.813Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4ae0265daa6f411f7962-893b1573294554e39b84",
+              "file": "report-templates.spec.ts",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "upload a .hbs file and preview it with sample data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 1158,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:00.690Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4ae0265daa6f411f7962-773515fa79423fe364a3",
+              "file": "report-templates.spec.ts",
+              "line": 101,
+              "column": 3
+            },
+            {
+              "title": "delete the template",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 639,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:01.850Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4ae0265daa6f411f7962-c321bc672b2e1e308d9a",
+              "file": "report-templates.spec.ts",
+              "line": 118,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "scan-tools.spec.ts",
+      "file": "scan-tools.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "scan tool configuration",
+          "file": "scan-tools.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "reconnaissance module checkboxes save, persist and restore",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 1324,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T15:54:02.552Z",
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4c96c8ec7267467ac54c-b9a1ac05dd060541fd9f",
+              "file": "scan-tools.spec.ts",
+              "line": 23,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-14T15:53:49.447Z",
+    "duration": 51363.583,
+    "expected": 41,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
