@@ -106,6 +106,11 @@ public sealed class FindingsReportRepository : IFindingsReportRepository
             query = query.Where(s => s.ClientAssetId == filter.ClientAssetId.Value);
         }
 
+        if (filter.EngagementId.HasValue)
+        {
+            query = query.Where(s => s.EngagementId == filter.EngagementId.Value);
+        }
+
         if (filter.From.HasValue)
         {
             var from = filter.From.Value.Date;
@@ -132,6 +137,11 @@ public sealed class FindingsReportRepository : IFindingsReportRepository
         if (filter.ClientAssetId.HasValue)
         {
             query = query.Where(v => v.ClientAssetId == filter.ClientAssetId.Value);
+        }
+
+        if (filter.EngagementId.HasValue)
+        {
+            query = query.Where(v => v.EngagementId == filter.EngagementId.Value);
         }
 
         if (filter.From.HasValue)

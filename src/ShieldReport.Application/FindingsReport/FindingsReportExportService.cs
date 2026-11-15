@@ -27,6 +27,7 @@ public sealed class FindingsReportExportService : IFindingsReportExportService
     private readonly IReportTemplateRepository _templateRepository;
     private readonly IClientOrganizationRepository _clientRepository;
     private readonly IClientAssetRepository _assetRepository;
+    private readonly IEngagementRepository _engagementRepository;
     private readonly ICurrentUserService _currentUser;
     private readonly IHtmlReportRenderer _renderer;
 
@@ -35,6 +36,7 @@ public sealed class FindingsReportExportService : IFindingsReportExportService
         IReportTemplateRepository templateRepository,
         IClientOrganizationRepository clientRepository,
         IClientAssetRepository assetRepository,
+        IEngagementRepository engagementRepository,
         ICurrentUserService currentUser,
         IHtmlReportRenderer renderer)
     {
@@ -42,6 +44,7 @@ public sealed class FindingsReportExportService : IFindingsReportExportService
         _templateRepository = templateRepository;
         _clientRepository = clientRepository;
         _assetRepository = assetRepository;
+        _engagementRepository = engagementRepository;
         _currentUser = currentUser;
         _renderer = renderer;
     }
@@ -124,7 +127,7 @@ public sealed class FindingsReportExportService : IFindingsReportExportService
             string.IsNullOrWhiteSpace(companyDisplayName) ? "Selise Digital" : companyDisplayName,
             report.GeneratedAt,
             _currentUser.Email ?? string.Empty,
-            string.Join(" · ", filters.Client, filters.Asset, filters.Period, filters.Severity, filters.Status),
+            string.Join(" · ", filters.Client, filters.Asset, filters.Engagement, filters.Period, filters.Severity, filters.Status),
             filters,
             new FindingsSummaryTotals(summary.ClientCount, summary.AssetsTested, summary.TotalVulnerabilities, summary.OpenVulnerabilities, summary.ClosedVulnerabilities),
             ToCounts(summary.BySeverity),
@@ -155,6 +158,15 @@ public sealed class FindingsReportExportService : IFindingsReportExportService
                 ?? $"Asset #{assetId}";
         }
 
+        var engagement = "All engagements";
+        if (filter.EngagementId is long engagementId)
+        {
+            engagement = report.Clients.SelectMany(c => c.Assets).SelectMany(a => a.Vulnerabilities)
+                    .FirstOrDefault(v => v.EngagementId == engagementId)?.EngagementTitle
+                ?? (await _engagementRepository.GetByIdWithDetailsAsync(engagementId, cancellationToken))?.Title
+                ?? $"Engagement #{engagementId}";
+        }
+
         DateTime? from = filter.From?.Date, to = filter.To?.Date;
         if (from > to) (from, to) = (to, from);
         static string D(DateTime d) => d.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
@@ -168,7 +180,7 @@ public sealed class FindingsReportExportService : IFindingsReportExportService
 
         var severity = filter.Severity?.ToString() ?? "All severities";
         var status = filter.PatchStatus is { } ps ? StatusLabel(ps) : "All statuses";
-        return new FindingsSummaryFilters(client, asset, period, severity, status);
+        return new FindingsSummaryFilters(client, asset, period, severity, status, engagement);
     }
 
     private static ReportRenderCounts ToCounts(SeverityCountsDto c) => new(c.Critical, c.High, c.Medium, c.Low, c.Informational);

@@ -33,6 +33,7 @@ public sealed class FindingsReportController : ControllerBase
     public async Task<IActionResult> Get(
         [FromQuery] long? clientOrganizationId,
         [FromQuery] long? clientAssetId,
+        [FromQuery] long? engagementId,
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
         [FromQuery] Severity? severity,
@@ -40,7 +41,7 @@ public sealed class FindingsReportController : ControllerBase
         CancellationToken cancellationToken)
     {
         var report = await _service.GetReportAsync(
-            new FindingsReportFilter(clientOrganizationId, clientAssetId, from, to, severity, patchStatus),
+            new FindingsReportFilter(clientOrganizationId, clientAssetId, from, to, severity, patchStatus, engagementId),
             cancellationToken);
         return Ok(ApiResponse<FindingsReportDto>.SuccessResponse(report, "Findings report retrieved successfully"));
     }

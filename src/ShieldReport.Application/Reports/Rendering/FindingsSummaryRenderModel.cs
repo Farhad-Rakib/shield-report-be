@@ -19,7 +19,7 @@ public sealed record FindingsSummaryRenderModel(
     IReadOnlyDictionary<string, string>? Custom = null);
 
 // Human-readable filter values ("All clients", "01/01/2026 – 31/03/2026", "High", "Open" …).
-public sealed record FindingsSummaryFilters(string Client, string Asset, string Period, string Severity, string Status);
+public sealed record FindingsSummaryFilters(string Client, string Asset, string Period, string Severity, string Status, string Engagement = "All engagements");
 
 public sealed record FindingsSummaryTotals(int ClientCount, int AssetsTested, int TotalVulnerabilities, int OpenVulnerabilities, int ClosedVulnerabilities);
 

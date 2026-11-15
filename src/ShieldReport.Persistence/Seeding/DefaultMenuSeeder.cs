@@ -34,9 +34,10 @@ namespace ShieldReport.Persistence.Seeding
             await UpsertAsync(dbContext, "Dashboard", "/dashboard", "LayoutDashboard", Permissions.DashboardRead, null, ++order);
 
             var operations = await UpsertAsync(dbContext, "Operations", null, "Crosshair", null, null, ++order);
-            await UpsertAsync(dbContext, "Engagements", "/engagements", "Briefcase", Permissions.EngagementsRead, operations, 1);
-            await UpsertAsync(dbContext, "Client Organizations", "/clients", "Building2", Permissions.ClientsRead, operations, 2);
-            await UpsertAsync(dbContext, "Client Assets", "/assets", "Server", Permissions.ClientAssetsRead, operations, 3);
+            // Order follows the onboarding flow: organization -> its assets -> engagement -> scans.
+            await UpsertAsync(dbContext, "Client Organizations", "/clients", "Building2", Permissions.ClientsRead, operations, 1);
+            await UpsertAsync(dbContext, "Client Assets", "/assets", "Server", Permissions.ClientAssetsRead, operations, 2);
+            await UpsertAsync(dbContext, "Engagements", "/engagements", "Briefcase", Permissions.EngagementsRead, operations, 3);
             await UpsertAsync(dbContext, "Scans", "/scans", "Radar", Permissions.ScansRead, operations, 4);
 
             var findings = await UpsertAsync(dbContext, "Findings", null, "ShieldCheck", null, null, ++order);

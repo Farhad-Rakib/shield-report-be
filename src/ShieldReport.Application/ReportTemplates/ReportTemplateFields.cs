@@ -114,7 +114,7 @@ public static partial class ReportTemplateFields
         new("{{formatDate GeneratedAt}}", "Export date", "General"),
         new("{{GeneratedBy}}", "User who exported the report", "General"),
         new("{{FilterDescription}}", "All filters in one line", "Filters"),
-        new("{{Filters.Client}}", "Also Filters.Asset, Filters.Period, Filters.Severity, Filters.Status (\"All clients\" … when not filtered)", "Filters"),
+        new("{{Filters.Client}}", "Also Filters.Asset, Filters.Engagement, Filters.Period, Filters.Severity, Filters.Status (\"All clients\" … when not filtered)", "Filters"),
         new("{{Summary.ClientCount}}", "Also AssetsTested, TotalVulnerabilities, OpenVulnerabilities, ClosedVulnerabilities", "Summary"),
         new("{{Counts.Critical}}", "Also High, Medium, Low, Informational, Total", "Summary"),
         new("{{severityBreakdown Counts}}", "\"2 critical, 3 high …\" sentence", "Summary"),

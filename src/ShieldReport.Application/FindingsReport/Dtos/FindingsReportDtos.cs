@@ -14,7 +14,9 @@ public sealed record FindingsReportFilter(
     DateTime? From,
     DateTime? To,
     Severity? Severity,
-    PatchStatus? PatchStatus);
+    PatchStatus? PatchStatus,
+    // Only scans and vulnerabilities of this engagement (and so the assets tested in it).
+    long? EngagementId = null);
 
 public sealed record SeverityCountsDto(int Critical, int High, int Medium, int Low, int Informational)
 {

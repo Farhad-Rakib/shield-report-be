@@ -5,8 +5,9 @@ using ShieldReport.Domain.Enums;
 namespace ShieldReport.Persistence.Seeding;
 
 // Ensures the built-in template rows exist: one Engagement template per testing type (White /
-// Gray / Black Box) and one Findings summary template (Reporting -> Findings Report export). Each
-// row starts with HtmlContent = null, i.e. it renders the matching built-in Handlebars template
+// Gray / Black Box). No Findings summary row is seeded (removed 2026-11-15 on request): admins
+// create Findings summary templates themselves, starting from the built-in findings-summary HTML.
+// Each row starts with HtmlContent = null, i.e. it renders the matching built-in Handlebars template
 // until an admin edits it. There is no default template; users always pick one. Idempotent:
 // existing rows are matched by kind + BuiltInTestingType, then by name; an admin's HTML, custom
 // fields and name are never touched.
@@ -18,8 +19,6 @@ public static class DefaultReportTemplateSeeder
         (TestingType.Gray, "Gray Box Testing — Selise Standard"),
         (TestingType.Black, "Black Box Testing — Selise Standard"),
     ];
-
-    private const string FindingsSummaryName = "Findings Summary — Selise Standard";
 
     public static async Task SeedAsync(DbContext dbContext)
     {
@@ -49,12 +48,6 @@ public static class DefaultReportTemplateSeeder
             changed = true;
         }
 
-        if (!existing.Any(t => t.Kind == ReportTemplateKind.FindingsSummary && string.Equals(t.Name, FindingsSummaryName, StringComparison.OrdinalIgnoreCase))
-            && !existing.Any(t => t.Kind == ReportTemplateKind.FindingsSummary && t.HtmlContent is null))
-        {
-            reportTemplates.Add(new ReportTemplate(FindingsSummaryName, "Selise Digital", ReportTemplateKind.FindingsSummary));
-            changed = true;
-        }
 
         if (changed)
         {
