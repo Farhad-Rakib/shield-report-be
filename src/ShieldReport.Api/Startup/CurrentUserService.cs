@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using ShieldReport.Application.Common.Interfaces;
+using ShieldReport.Application.Security;
+using ShieldReport.Domain.Enums;
 
 namespace ShieldReport.Api.Startup;
 
@@ -37,6 +39,13 @@ public sealed class CurrentUserService : ICurrentUserService
     }
 
     public bool IsClientPortalUser => _user?.FindFirst("isClientPortalUser")?.Value == "true";
+
+    public bool IsRestrictedToAssignedEngagements =>
+        _user?.Identity?.IsAuthenticated == true
+        && UserId is not null
+        && !IsClientPortalUser
+        && !_user.IsInRole(SystemRoles.SuperAdmin)
+        && !_user.FindAll("permission").Any(c => string.Equals(c.Value, Permissions.DataViewAll, StringComparison.OrdinalIgnoreCase));
 
     public IReadOnlyCollection<string> Roles =>
         _user?.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray() ?? Array.Empty<string>();

@@ -15,5 +15,6 @@ public sealed class ReportTemplateConfiguration : IEntityTypeConfiguration<Repor
         builder.Property(x => x.CompanyDisplayName).HasMaxLength(300);
         builder.Property(x => x.DocxTemplatePath).HasMaxLength(500);
         builder.Property(x => x.DocxTemplateFileName).HasMaxLength(300);
+        builder.Property(x => x.BuiltInTestingType).HasConversion<byte?>();
     }
 }

@@ -24,6 +24,9 @@ public sealed class ClientAssetRepository : BaseRepository<ClientAsset>, IClient
         int pageSize,
         string? search,
         long? clientOrganizationId,
+        long? clientAssetId,
+        DateTime? from,
+        DateTime? to,
         CancellationToken cancellationToken = default)
     {
         var query = DbSet.Include(x => x.ClientOrganization).AsQueryable();
@@ -31,6 +34,25 @@ public sealed class ClientAssetRepository : BaseRepository<ClientAsset>, IClient
         if (clientOrganizationId.HasValue)
         {
             query = query.Where(x => x.ClientOrganizationId == clientOrganizationId.Value);
+        }
+
+        if (clientAssetId.HasValue)
+        {
+            query = query.Where(x => x.Id == clientAssetId.Value);
+        }
+
+        // Date-only range; `to` is inclusive (whole end day).
+        var fromDate = from?.Date;
+        var toExclusive = to?.Date.AddDays(1);
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(x => x.CreatedAt >= fromDate.Value);
+        }
+
+        if (toExclusive.HasValue)
+        {
+            query = query.Where(x => x.CreatedAt < toExclusive.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(search))

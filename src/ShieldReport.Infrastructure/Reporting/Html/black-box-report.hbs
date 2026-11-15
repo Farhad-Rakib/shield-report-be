@@ -1,0 +1,276 @@
+{{!--
+  ShieldReport built-in Black Box report template, converted from the SELISE "Black Box Testing.docx"
+  sample (the White, Gray and Black Box templates are separate files with their own sections and
+  wording). Rendered with Handlebars.Net, then:
+    PDF  — headless Chromium + paged.js (page numbers, running header, table of contents numbers)
+    Word — CSS inlined (PreMailer) and converted with HtmlToOpenXml onto the template .docx (styles,
+           header/footer); the [data-word-toc] list becomes a real Word TOC field.
+  Variables are documented in ReportRenderModel (Application/Reports/Rendering). Text from users or
+  the LLM goes through {{{text ...}}}, which HTML-escapes it — never insert user text with raw {{{x}}}.
+  TestingType / IsWhite / IsGray / IsBlack still hold the engagement's testing type, but this
+  template's wording is fixed to Black Box testing.
+--}}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Security Assessment Report — {{Client.Name}}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 24mm 18mm 20mm 18mm;
+    @top-right { content: element(runningHeader); }
+    {{!-- No user-supplied text inside CSS strings (a quote would break the stylesheet). --}}
+    @bottom-left { content: "Confidential · Security Assessment Report v{{Report.Version}}{{#if Report.IsDraft}} · DRAFT{{/if}}"; font-size: 8pt; color: #777; }
+    @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #777; }
+  }
+  @page cover { margin: 0; @top-right { content: none; } @bottom-left { content: none; } @bottom-right { content: none; } }
+
+  body { font-family: "Calibri", "Carlito", "Liberation Sans", Arial, sans-serif; font-size: 10.5pt; line-height: 1.4; color: #222; }
+  .running-header { position: running(runningHeader); }
+  .running-header img { height: 28px; }
+
+  .cover { page: cover; height: 296mm; overflow: hidden; background: #0b3d6b; color: #ffffff; break-after: page; page-break-after: always; }
+  .cover img.photo { width: 100%; height: 140mm; object-fit: cover; display: block; }
+  .cover .inner { padding: 14mm 18mm; }
+  .cover .title { font-size: 30pt; font-weight: bold; margin: 0 0 3mm; color: #ffffff; }
+  .cover .subtitle { font-size: 17pt; margin: 0 0 8mm; color: #ffffff; }
+  .cover .meta { font-size: 11pt; margin: 0 0 1mm; color: #ffffff; }
+  .cover .company { font-size: 9pt; margin-top: 18mm; color: #cfe0f1; }
+
+  h1 { color: #0b5394; font-size: 16pt; border-bottom: 2px solid #0b5394; padding-bottom: 2mm; margin: 0 0 4mm; break-before: page; page-break-before: always; }
+  h1.continue { break-before: auto; page-break-before: auto; margin-top: 8mm; }
+  h2 { color: #0b5394; font-size: 13pt; margin: 6mm 0 2mm; }
+  h3 { color: #1c4587; font-size: 11pt; margin: 4mm 0 1mm; }
+  h4 { color: #333333; font-size: 10.5pt; margin: 3mm 0 1mm; }
+  p { margin: 0 0 2.5mm; text-align: justify; }
+  ul { margin: 0 0 2.5mm; padding-left: 6mm; }
+  li { margin: 0 0 1mm; }
+  table { border-collapse: collapse; width: 100%; margin: 2mm 0 4mm; }
+  th, td { border: 1px solid #b7b7b7; padding: 4px 6px; text-align: left; vertical-align: top; font-size: 9.5pt; }
+  th { background: #0b5394; color: #ffffff; font-weight: bold; }
+  td.label { background: #dce6f1; font-weight: bold; width: 30%; }
+  .figure { text-align: center; margin: 3mm 0 4mm; break-inside: avoid; }
+  .figure img { max-height: 200mm; object-fit: contain; }
+  .caption { font-size: 8.5pt; color: #666666; text-align: center; margin-top: 1mm; }
+  .note { font-size: 9pt; color: #555555; }
+  pre, .code { font-family: "Consolas", "Courier New", monospace; font-size: 8.5pt; background: #f3f3f3; padding: 3mm; white-space: pre-wrap; word-break: break-all; }
+  .finding { break-inside: auto; }
+  h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+  tr { break-inside: avoid; }
+  .keep-together { break-inside: avoid; }
+  .finding h2 { break-after: avoid; page-break-after: avoid; }
+
+  .sev-Critical { background: #c00000; color: #ffffff; font-weight: bold; }
+  .sev-High { background: #ff0000; color: #ffffff; font-weight: bold; }
+  .sev-Medium { background: #ffc000; color: #222222; font-weight: bold; }
+  .sev-Low { background: #00b050; color: #ffffff; font-weight: bold; }
+  .sev-Informational { background: #5b9bd5; color: #ffffff; font-weight: bold; }
+
+  .toc { list-style: none; padding-left: 0; }
+  .toc li { margin: 1.2mm 0; }
+  .toc li.sub { padding-left: 6mm; font-size: 10pt; }
+  .toc a { color: #222222; text-decoration: none; display: flex; }
+  .toc a::after { content: target-counter(attr(href url), page); margin-left: auto; padding-left: 4mm; }
+
+  .offices td { border: none; padding: 2px 6px 6px 0; font-size: 8.5pt; color: #444444; width: 33%; }
+  .offices .city { font-weight: bold; color: #0b5394; }
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <img class="photo" src="{{asset "cover.jpg"}}" alt="" data-word-width="600">
+  <div class="inner">
+    <p class="title">Security Assessment Report</p>
+    <p class="subtitle">Black Box Testing</p>
+    <p class="meta"><strong>{{Client.Name}}</strong></p>
+    <p class="meta">{{Engagement.Title}}</p>
+    <p class="meta">Version {{Report.Version}}.0 · {{formatDate Report.GeneratedAt}}{{#if Report.IsDraft}} · Draft{{/if}}</p>
+    <p class="company">{{CompanyName}} · Secure Link Services BD Ltd · Midas Center, H-5, R-16, Dhanmondi, Dhaka-1209, Bangladesh · +88 02 9104556 · www.selise.ch</p>
+  </div>
+</section>
+
+<div class="running-header"><img src="{{asset "logo.png"}}" alt="SELISE" data-word-width="110"></div>
+
+<!-- ======================== VERSION / ACRONYMS ===================== -->
+<h1 id="version-control" class="continue">Version Control</h1>
+<table>
+  <tr><th>S.N.</th><th>Version</th><th>Date</th><th>Prepared by</th><th>Reviewed by</th><th>Comment</th></tr>
+  {{#each Versions}}
+  <tr><td>{{Number}}</td><td>{{Version}}</td><td>{{formatDate Date}}</td><td>{{PreparedBy}}</td><td>{{ReviewedBy}}</td><td>{{Comment}}</td></tr>
+  {{/each}}
+</table>
+
+<h1 id="acronyms" class="continue">Acronyms</h1>
+<table>
+  <tr><td class="label">AJAX</td><td>Asynchronous JavaScript and XML</td></tr>
+  <tr><td class="label">API</td><td>Application Programming Interface</td></tr>
+  <tr><td class="label">CIA</td><td>Confidentiality, Integrity, and Availability</td></tr>
+  <tr><td class="label">CSP</td><td>Content Security Policy</td></tr>
+  <tr><td class="label">CSRF</td><td>Cross-Site Request Forgery</td></tr>
+  <tr><td class="label">CSS</td><td>Cascading Style Sheets</td></tr>
+  <tr><td class="label">CVSS</td><td>Common Vulnerability Scoring System</td></tr>
+  <tr><td class="label">DOM</td><td>Document Object Model</td></tr>
+  <tr><td class="label">HSTS</td><td>HTTP Strict Transport Security</td></tr>
+  <tr><td class="label">HTML</td><td>Hypertext Markup Language</td></tr>
+  <tr><td class="label">HTTP</td><td>Hypertext Transfer Protocol</td></tr>
+  <tr><td class="label">HTTPS</td><td>Hypertext Transfer Protocol Secure</td></tr>
+  <tr><td class="label">IDOR</td><td>Insecure Direct Object Reference</td></tr>
+  <tr><td class="label">IP</td><td>Internet Protocol</td></tr>
+  <tr><td class="label">IT</td><td>Information Technology</td></tr>
+  <tr><td class="label">JSON</td><td>JavaScript Object Notation</td></tr>
+  <tr><td class="label">JWT</td><td>JSON Web Token</td></tr>
+  <tr><td class="label">MitM</td><td>Man in the Middle Attack</td></tr>
+  <tr><td class="label">OTP</td><td>One-Time Password</td></tr>
+  <tr><td class="label">OWASP</td><td>Open Worldwide Application Security Project</td></tr>
+  <tr><td class="label">SOAP</td><td>Simple Object Access Protocol</td></tr>
+  <tr><td class="label">SQL</td><td>Structured Query Language</td></tr>
+  <tr><td class="label">SSL</td><td>Secure Sockets Layer</td></tr>
+  <tr><td class="label">SVG</td><td>Scalable Vector Graphics</td></tr>
+  <tr><td class="label">TLS</td><td>Transport Layer Security</td></tr>
+  <tr><td class="label">UI/UX</td><td>User Interface / User Experience</td></tr>
+  <tr><td class="label">URL</td><td>Uniform Resource Locator</td></tr>
+  <tr><td class="label">VAPT</td><td>Vulnerability Assessment and Penetration Testing</td></tr>
+  <tr><td class="label">XML</td><td>eXtensible Markup Language</td></tr>
+  <tr><td class="label">XSL</td><td>eXtensible Stylesheet Language</td></tr>
+  <tr><td class="label">XSS</td><td>Cross-Site Scripting</td></tr>
+  <tr><td class="label">ZAP</td><td>Zed Attack Proxy (by OWASP)</td></tr>
+</table>
+
+<!-- ======================== TABLE OF CONTENTS ====================== -->
+<h1 id="contents">Table of Contents</h1>
+<ul class="toc" data-word-toc>
+  <li><a href="#executive-summary">Executive Summary</a></li>
+  <li><a href="#summary-of-findings">Summary of Findings</a></li>
+  <li><a href="#key-findings">Key Findings</a></li>
+  <li><a href="#key-recommendations">Key Recommendations</a></li>
+  <li class="sub"><a href="#scope">Scope of Engagement</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li class="sub"><a href="#methodology">Methodology for Security Assessment</a></li>
+  <li class="sub"><a href="#limitations">Limitations</a></li>
+  <li class="sub"><a href="#discovered-vulnerabilities">Discovered Vulnerabilities</a></li>
+  <li><a href="#detailed-findings">Detailed Findings</a></li>
+  {{#each Findings}}<li class="sub"><a href="#{{Anchor}}">{{Id}} — {{Title}}</a></li>{{/each}}
+  <li><a href="#annexure">Annexure</a></li>
+</ul>
+
+<!-- ======================== EXECUTIVE SUMMARY ====================== -->
+<h1 id="executive-summary">Executive Summary</h1>
+<p>{{Client.Name}} engaged {{CompanyName}} to conduct a Black Box Vulnerability Assessment and Penetration Testing (VAPT) of its application{{#if Engagement.Title}} ({{Engagement.Title}}){{/if}}.
+This security assessment was performed from an external attacker's perspective, without prior knowledge of the application's internal architecture, source code, or credentials.</p>
+<p>The engagement was carried out from {{formatDate Engagement.StartDate}} to {{formatDate Engagement.EndDate}}. The primary objective was to evaluate the current security posture of {{Client.Name}} and identify externally exploitable security vulnerabilities.</p>
+{{{text Report.ExecutiveSummary}}}
+
+<h1 id="summary-of-findings" class="continue">Summary of Findings</h1>
+<p>The assessment identified a total of {{numberWords Counts.Total}} distinct vulnerabilities across all assessed areas of {{Client.Name}}'s application.{{#if Counts.Total}} The chart below shows the vulnerabilities and their severity found within the application infrastructure.{{/if}}</p>
+{{#if Counts.Total}}
+<p>Among the various types of vulnerabilities found in the systems and services, {{severityBreakdown Counts}} during our test{{#if Engagement.Title}} within the {{Engagement.Title}} application{{/if}}.</p>
+<div class="figure"><img src="{{SeverityChart}}" alt="Vulnerabilities by Severity" style="width:150mm" data-word-width="560"></div>
+{{/if}}
+
+<h1 id="key-findings" class="continue">Key Findings</h1>
+{{{text Report.KeyFindings}}}
+
+<h1 id="key-recommendations" class="continue">Key Recommendations</h1>
+{{{text Report.KeyRecommendations}}}
+
+
+<!-- Scope of Engagement sits under Key Recommendations, as in the SELISE Black Box sample. -->
+<div class="keep-together">
+<h2 id="scope">Scope of Engagement</h2>
+<h3>Detailed Scope of Work</h3>
+<table>
+  <tr><th>Application</th><th>Attack Vector</th><th>URL / Target</th><th>Status</th></tr>
+  {{#each Scope}}
+  <tr><td>{{Application}}</td><td>{{AttackVector}}</td><td>{{Url}}</td><td>{{Status}}</td></tr>
+  {{else}}
+  <tr><td colspan="4">{{#if ../Engagement.Scope}}{{../Engagement.Scope}}{{else}}Scope as agreed with the client.{{/if}}</td></tr>
+  {{/each}}
+</table>
+</div>
+
+<!-- ========================== INTRODUCTION ========================= -->
+<h1 id="introduction">Introduction</h1>
+
+<h2 id="methodology">Methodology for Security Assessment</h2>
+<div class="figure"><img src="{{asset "black-flow.png"}}" alt="Black Box assessment flow" style="width:165mm" data-word-width="600"></div>
+<p>At {{CompanyName}}, our Black Box Security Assessment methodology is designed to evaluate the security posture of an application from an external attacker perspective. The assessment is conducted without prior knowledge of the application's internal architecture, source code, or credentials, simulating real-world attack scenarios. This approach helps identify externally exploitable vulnerabilities, security misconfigurations, and weaknesses that could be leveraged by malicious actors to compromise the application.</p>
+
+<h2 id="limitations">Limitations</h2>
+{{{text Report.Limitations}}}
+
+<h2 id="discovered-vulnerabilities">Discovered Vulnerabilities</h2>
+<p>The assessment identified a total of {{numberWords Counts.Total}} distinct vulnerabilities.{{#if Counts.Total}} Among these, {{severityBreakdown Counts}}.{{/if}} The list of vulnerabilities is as follows:</p>
+<table>
+  <tr><th>Vulnerability</th><th>Severity</th><th>Vulnerable Systems</th><th>Status</th></tr>
+  {{#each Findings}}
+  <tr><td>{{Title}}</td><td class="sev-{{Severity}}">{{Severity}}</td><td>{{Occurrences}}</td><td>{{Status}}</td></tr>
+  {{else}}
+  <tr><td colspan="4">No vulnerabilities were identified within the assessed scope.</td></tr>
+  {{/each}}
+</table>
+
+<!-- ======================== DETAILED FINDINGS ====================== -->
+<h1 id="detailed-findings">Detailed Findings</h1>
+{{#each Findings}}
+<div class="finding">
+  <h2 id="{{Anchor}}">{{Id}} — {{Title}}</h2>
+  <table>
+    <tr><td class="label">Finding ID</td><td>{{Id}}</td></tr>
+    <tr><td class="label">Severity</td><td class="sev-{{Severity}}">{{upper Severity}}</td></tr>
+    <tr><td class="label">CVSS Score</td><td>{{#if CvssScore}}{{CvssScore}}{{#if CvssVector}} ({{CvssVector}}){{/if}}{{else}}—{{/if}}</td></tr>
+    <tr><td class="label">Affected System</td><td>{{AffectedSystem}}</td></tr>
+    <tr><td class="label">Vulnerable Endpoint</td><td>{{Endpoint}}</td></tr>
+    <tr><td class="label">Tools Used</td><td>{{ToolsUsed}}</td></tr>
+    <tr><td class="label">References</td><td>{{#each References}}{{this}}<br>{{else}}—{{/each}}</td></tr>
+    <tr><td class="label">Status</td><td>{{Status}}</td></tr>
+  </table>
+  <h3>Description</h3>
+  {{{text Description}}}
+  {{#if AiExplanation}}{{{text AiExplanation}}}{{/if}}
+  {{#if Impact}}<h3>Impact</h3>{{{text Impact}}}{{/if}}
+  <h3>Recommendations</h3>
+  {{#if Recommendation}}{{{text Recommendation}}}{{else}}<p>Remediate according to vendor guidance and secure coding best practices.</p>{{/if}}
+  {{#if ProofOfConcept}}<h3>Proof of Concept</h3><div class="code">{{ProofOfConcept}}</div>{{/if}}
+  {{#each Screenshots}}
+  <div class="figure"><img src="{{DataUri}}" alt="Evidence" style="max-width:165mm" data-word-width="600">{{#if Caption}}<p class="caption">{{Caption}}</p>{{/if}}</div>
+  {{/each}}
+  {{#if StepsToReproduce}}<h3>Steps of Reproduction</h3>{{{text StepsToReproduce}}}{{/if}}
+</div>
+{{else}}
+<p>No vulnerabilities were identified within the assessed scope.</p>
+{{/each}}
+
+<!-- ============================ ANNEXURE =========================== -->
+<h1 id="annexure">Annexure</h1>
+<h2>Vulnerability Scoring</h2>
+<h3>Risk Scoring Methodology</h3>
+<p>To ensure a consistent and standardized assessment of identified vulnerabilities, risk ratings are based on the Common Vulnerability Scoring System (CVSS) v3.1. CVSS evaluates the severity of vulnerabilities by considering factors such as exploitability, potential impact, and environmental context, providing a reliable framework for prioritizing remediation efforts.</p>
+<p>The CVSS scoring system is categorized as follows:</p>
+<table>
+  <tr><th>CVSS (v3.1) Score</th><th>Severity Level</th><th>Description</th></tr>
+  <tr><td>0.0</td><td class="sev-Informational">Informational</td><td>No security risk, but may indicate misconfigurations, best practices, or system information leakage.</td></tr>
+  <tr><td>0.1 – 3.9</td><td class="sev-Low">Low</td><td>Minimal impact; requires high privileges or user interaction.</td></tr>
+  <tr><td>4.0 – 6.9</td><td class="sev-Medium">Medium</td><td>Potential data leakage or privilege escalation, limited scope.</td></tr>
+  <tr><td>7.0 – 8.9</td><td class="sev-High">High</td><td>Unauthorized access, remote exploitation, or system compromise.</td></tr>
+  <tr><td>9.0 – 10.0</td><td class="sev-Critical">Critical</td><td>Full system compromise, remote execution, or widespread impact.</td></tr>
+</table>
+
+<h2>Our Offices</h2>
+<table class="offices">
+  <tr>
+    <td><span class="city">Zürich</span><br>SELISE Group AG<br>The Circle 37<br>8058 Zürich-Flughafen, Switzerland<br>+41 (0) 448058044</td>
+    <td><span class="city">Dhaka</span><br>Secure Link Services BD Ltd<br>Midas Centre, H-05, R-16 (New) Dhanmondi<br>Dhaka-1209, Bangladesh<br>+88 02 9104556</td>
+    <td><span class="city">Thimphu</span><br>Secure Link Services BT Pvt. Ltd<br>Bhutan Innovation Tech Center, Babesa<br>P.O. Box 63, Thimphu, Bhutan<br>+975-2-350-106</td>
+  </tr>
+  <tr>
+    <td><span class="city">Dubai</span><br>Secure Link Services FZ-LLC<br>Building 03, Dubai Design District<br>PO Box 345858, Dubai, UAE<br>+97143794110</td>
+    <td><span class="city">Munich</span><br>SELISE Deutschland GmbH<br>Tal 44, 80331 München, Germany<br>+49 89 5419 6883</td>
+    <td><span class="city">Pristina</span><br>SELISE Kosovo SH.P.K.<br>Rruga Ali Aliu-Kelmendi, 10000 Prishtine, Kosovo<br>+41 44 805 8044</td>
+  </tr>
+</table>
+
+</body>
+</html>

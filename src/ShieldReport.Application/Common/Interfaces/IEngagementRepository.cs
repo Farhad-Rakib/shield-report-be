@@ -11,5 +11,8 @@ public interface IEngagementRepository : IRepository<Engagement>
         int pageSize,
         string? search,
         long? clientOrganizationId,
+        long? clientAssetId,
+        DateTime? from,
+        DateTime? to,
         CancellationToken cancellationToken = default);
 }

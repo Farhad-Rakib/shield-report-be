@@ -10,5 +10,9 @@ public interface IClientOrganizationRepository : IRepository<ClientOrganization>
         int page,
         int pageSize,
         string? search,
+        long? clientOrganizationId,
+        long? clientAssetId,
+        DateTime? from,
+        DateTime? to,
         CancellationToken cancellationToken = default);
 }

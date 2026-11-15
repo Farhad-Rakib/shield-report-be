@@ -33,9 +33,15 @@ public sealed class ClientOrganizationsController : ControllerBase
     [HttpGet]
     [Authorize(Policy = Permissions.ClientsRead)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ClientOrganizationDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> List([FromQuery] PagedRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> List(
+        [FromQuery] PagedRequest request,
+        [FromQuery] long? clientOrganizationId,
+        [FromQuery] long? clientAssetId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
     {
-        var organizations = await _clientOrganizationService.ListAsync(request, cancellationToken);
+        var organizations = await _clientOrganizationService.ListAsync(request, clientOrganizationId, clientAssetId, from, to, cancellationToken);
         return Ok(ApiResponse<PagedResult<ClientOrganizationDto>>.SuccessResponse(organizations, "Client organizations retrieved successfully"));
     }
 

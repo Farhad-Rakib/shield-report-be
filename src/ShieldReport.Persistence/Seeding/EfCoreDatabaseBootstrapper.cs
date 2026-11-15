@@ -57,6 +57,7 @@ public sealed class EfCoreDatabaseBootstrapper : IDatabaseBootstrapper
 
         _logger?.Log(LogLevel.Debug, "Seeding default report template...");
         await DefaultReportTemplateSeeder.SeedAsync(_dbContext);
+        await DefaultLlmProviderCatalogSeeder.SeedAsync(_dbContext);
         _logger?.Log(LogLevel.Debug, "Report template seeding complete.");
     }
 }

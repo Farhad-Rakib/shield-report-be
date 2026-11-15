@@ -10,6 +10,7 @@ using HandlebarsDotNet;
 using HtmlToOpenXml;
 using PuppeteerSharp;
 using ShieldReport.Application.Reports.Rendering;
+using ShieldReport.Domain.Enums;
 
 namespace ShieldReport.Infrastructure.Reporting.Html;
 
@@ -34,7 +35,10 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
         """;
 
     private static readonly Assembly ThisAssembly = typeof(HtmlReportRenderer).Assembly;
-    private static readonly Lazy<string> DefaultTemplate = new(() => ReadText("default-report.hbs"));
+    // Built-in templates, one per testing type, each following its SELISE Word sample.
+    private static readonly Lazy<string> WhiteTemplate = new(() => ReadText("white-box-report.hbs"));
+    private static readonly Lazy<string> GrayTemplate = new(() => ReadText("gray-box-report.hbs"));
+    private static readonly Lazy<string> BlackTemplate = new(() => ReadText("black-box-report.hbs"));
     private static readonly Lazy<string> PagedJs = new(() => ReadText("paged.polyfill.js"));
     private static readonly Dictionary<string, string> AssetCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly string[] NumberWords =
@@ -50,12 +54,19 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
         _handlebars = CreateHandlebars();
     }
 
-    public string GetDefaultTemplate() => DefaultTemplate.Value;
+    public string GetBuiltInTemplate(TestingType testingType) => testingType switch
+    {
+        TestingType.Gray => GrayTemplate.Value,
+        TestingType.Black => BlackTemplate.Value,
+        _ => WhiteTemplate.Value,
+    };
 
     public async Task<string> RenderHtmlAsync(ReportRenderModel model, string? customTemplate, CancellationToken cancellationToken = default)
     {
         var chart = await RenderSeverityChartAsync(model.Counts, cancellationToken);
-        var template = _handlebars.Compile(string.IsNullOrWhiteSpace(customTemplate) ? DefaultTemplate.Value : customTemplate);
+        var template = _handlebars.Compile(string.IsNullOrWhiteSpace(customTemplate)
+            ? GetBuiltInTemplate(Enum.TryParse<TestingType>(model.TestingType, out var type) ? type : TestingType.White)
+            : customTemplate);
         return template(model with { SeverityChart = chart });
     }
 
@@ -63,7 +74,12 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
     {
         try
         {
-            _handlebars.Compile(template)(SampleModel());
+            // Sample data of every testing type, so a branch that only runs for one type is checked too.
+            var compiled = _handlebars.Compile(template);
+            foreach (var type in Enum.GetValues<TestingType>())
+            {
+                compiled(SampleModel(type));
+            }
             return Task.FromResult<string?>(null);
         }
         catch (Exception ex)
@@ -72,8 +88,8 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
         }
     }
 
-    public Task<string> RenderSampleAsync(string? template, IReadOnlyDictionary<string, string> custom, CancellationToken cancellationToken = default) =>
-        RenderHtmlAsync(SampleModel() with { Custom = custom }, template, cancellationToken);
+    public Task<string> RenderSampleAsync(string? template, IReadOnlyDictionary<string, string> custom, TestingType testingType = TestingType.White, CancellationToken cancellationToken = default) =>
+        RenderHtmlAsync(SampleModel(testingType) with { Custom = custom }, template, cancellationToken);
 
     public Task<byte[]> RenderPdfAsync(string html, CancellationToken cancellationToken = default)
     {
@@ -383,8 +399,8 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
         return (0, 0);
     }
 
-    private static ReportRenderModel SampleModel() => new(
-        "White", true, false, false, false, "Selise Digital",
+    private static ReportRenderModel SampleModel(TestingType testingType = TestingType.White) => new(
+        testingType.ToString(), testingType == TestingType.White, testingType == TestingType.Gray, testingType == TestingType.Black, false, "Selise Digital",
         new ReportRenderClient("Sample Client"),
         new ReportRenderEngagement("Sample Engagement", "Sample scope", DateTime.UtcNow.AddDays(-7), DateTime.UtcNow),
         new ReportRenderReport(1, DateTime.UtcNow, true, "Summary", "- Finding", "- Recommendation", "Goals", "Limitations"),

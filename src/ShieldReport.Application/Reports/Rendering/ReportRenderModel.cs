@@ -1,3 +1,6 @@
+using ShieldReport.Domain.Entities;
+using ShieldReport.Domain.Enums;
+
 namespace ShieldReport.Application.Reports.Rendering;
 
 // Everything a report template can use — this IS the documented variable list for custom
@@ -71,7 +74,8 @@ public sealed record ReportRenderScreenshot(string DataUri, string? Caption);
 // the template .docx). Implemented in Infrastructure.
 public interface IHtmlReportRenderer
 {
-    // customTemplate null = built-in default template.
+    // customTemplate null = the built-in template for the model's testing type. Callers normally
+    // pass the result of ResolveTemplateHtml (which honours the row's BuiltInTestingType).
     Task<string> RenderHtmlAsync(ReportRenderModel model, string? customTemplate, CancellationToken cancellationToken = default);
     Task<byte[]> RenderPdfAsync(string html, CancellationToken cancellationToken = default);
     Task<byte[]> RenderDocxAsync(string html, CancellationToken cancellationToken = default);
@@ -79,8 +83,20 @@ public interface IHtmlReportRenderer
     // Validates a custom template (syntax) by rendering it against sample data; returns the error or null.
     Task<string?> ValidateTemplateAsync(string template, CancellationToken cancellationToken = default);
 
-    // Renders a template (null = built-in) against sample data, with the given custom field values.
-    Task<string> RenderSampleAsync(string? template, IReadOnlyDictionary<string, string> custom, CancellationToken cancellationToken = default);
+    // Renders a template (null = built-in for testingType) against sample data of that testing
+    // type, with the given custom field values.
+    Task<string> RenderSampleAsync(string? template, IReadOnlyDictionary<string, string> custom, TestingType testingType = TestingType.White, CancellationToken cancellationToken = default);
 
-    string GetDefaultTemplate();
+    // The built-in White / Gray / Black Box Handlebars template (converted from the SELISE samples).
+    string GetBuiltInTemplate(TestingType testingType);
+}
+
+public static class HtmlReportRendererExtensions
+{
+    // The HTML a template row renders with: its own HtmlContent, else the built-in template of its
+    // BuiltInTestingType, else (user-created rows) the built-in matching the engagement's type.
+    public static string ResolveTemplateHtml(this IHtmlReportRenderer renderer, ReportTemplate template, TestingType engagementTestingType) =>
+        string.IsNullOrWhiteSpace(template.HtmlContent)
+            ? renderer.GetBuiltInTemplate(template.BuiltInTestingType ?? engagementTestingType)
+            : template.HtmlContent;
 }

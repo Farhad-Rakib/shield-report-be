@@ -80,7 +80,7 @@ public sealed class RbacSeeder : IRbacSeeder
 
         // NOTE: SuperAdmin bypasses permission checks at runtime; do NOT assign explicit permissions here.
 
-        foreach (var permission in persistedPermissions.Where(p => p.Name is not Permissions.UsersDelete and not Permissions.RolesDelete and not Permissions.PermissionsDelete and not Permissions.UserRolesDelete and not Permissions.RolePermissionsDelete and not Permissions.ClientsDelete and not Permissions.EngagementsDelete and not Permissions.FindingsDelete and not Permissions.EvidenceDelete and not Permissions.ClientAssetsDelete and not Permissions.VulnerabilitiesDelete and not Permissions.LlmProviderConfigurationsDelete and not Permissions.VulnerabilityReportsApprove and not Permissions.VulnerabilityReportsDelete and not Permissions.CustomScanToolsManage))
+        foreach (var permission in persistedPermissions.Where(p => p.Name is not Permissions.UsersDelete and not Permissions.RolesDelete and not Permissions.PermissionsDelete and not Permissions.UserRolesDelete and not Permissions.RolePermissionsDelete and not Permissions.ClientsDelete and not Permissions.EngagementsDelete and not Permissions.FindingsDelete and not Permissions.EvidenceDelete and not Permissions.ClientAssetsDelete and not Permissions.VulnerabilitiesDelete and not Permissions.LlmProviderConfigurationsDelete and not Permissions.VulnerabilityReportsApprove and not Permissions.VulnerabilityReportsDelete and not Permissions.CustomScanToolsManage and not Permissions.DataViewAll))
         {
             if (existingSet.Add((admin.Id, permission.Id)))
             {
@@ -114,7 +114,8 @@ public sealed class RbacSeeder : IRbacSeeder
             Permissions.VulnerabilitiesRead, Permissions.VulnerabilitiesCreate, Permissions.VulnerabilitiesUpdate,
             Permissions.VulnerabilityAttachmentsRead, Permissions.VulnerabilityAttachmentsUpload, Permissions.VulnerabilityAttachmentsDelete,
             Permissions.VulnerabilityRemarksRead, Permissions.VulnerabilityRemarksCreate,
-            Permissions.RetestRequestsRead, Permissions.RetestRequestsResolve
+            Permissions.RetestRequestsRead, Permissions.RetestRequestsResolve,
+            Permissions.FindingsReportRead
         });
 
         // CLIENT_ADMIN — manages their own org's assets, triggers scans on already-authorized

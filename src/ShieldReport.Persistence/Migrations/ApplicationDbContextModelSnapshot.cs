@@ -582,6 +582,43 @@ namespace ShieldReport.Persistence.Migrations
                     b.ToTable("llm_prompts", (string)null);
                 });
 
+            modelBuilder.Entity("ShieldReport.Domain.Entities.LlmProviderCatalogItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("llm_providers", (string)null);
+                });
+
             modelBuilder.Entity("ShieldReport.Domain.Entities.LlmProviderConfiguration", b =>
                 {
                     b.Property<long>("Id")
@@ -1280,6 +1317,9 @@ namespace ShieldReport.Persistence.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<byte?>("BuiltInTestingType")
+                        .HasColumnType("tinyint");
 
                     b.Property<string>("CompanyDisplayName")
                         .IsRequired()

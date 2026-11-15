@@ -1,11 +1,14 @@
 {{!--
-  ShieldReport default report template (White / Gray / Black Box), converted from the SELISE Word
-  templates. Rendered with Handlebars.Net, then:
+  ShieldReport built-in Gray Box report template, converted from the SELISE "Gray Box Testing.docx"
+  sample (the White, Gray and Black Box templates are separate files with their own sections and
+  wording). Rendered with Handlebars.Net, then:
     PDF  — headless Chromium + paged.js (page numbers, running header, table of contents numbers)
     Word — CSS inlined (PreMailer) and converted with HtmlToOpenXml onto the template .docx (styles,
            header/footer); the [data-word-toc] list becomes a real Word TOC field.
   Variables are documented in ReportRenderModel (Application/Reports/Rendering). Text from users or
   the LLM goes through {{{text ...}}}, which HTML-escapes it — never insert user text with raw {{{x}}}.
+  TestingType / IsWhite / IsGray / IsBlack still hold the engagement's testing type, but this
+  template's wording is fixed to Gray Box testing.
 --}}
 <!doctype html>
 <html lang="en">
@@ -81,7 +84,7 @@
   <img class="photo" src="{{asset "cover.jpg"}}" alt="" data-word-width="600">
   <div class="inner">
     <p class="title">Security Assessment Report</p>
-    <p class="subtitle">{{TestingType}} Box Testing</p>
+    <p class="subtitle">Gray Box Testing</p>
     <p class="meta"><strong>{{Client.Name}}</strong></p>
     <p class="meta">{{Engagement.Title}}</p>
     <p class="meta">Version {{Report.Version}}.0 · {{formatDate Report.GeneratedAt}}{{#if Report.IsDraft}} · Draft{{/if}}</p>
@@ -134,8 +137,6 @@
   <tr><td class="label">VAPT</td><td>Vulnerability Assessment and Penetration Testing</td></tr>
   <tr><td class="label">XML</td><td>eXtensible Markup Language</td></tr>
   <tr><td class="label">XSL</td><td>eXtensible Stylesheet Language</td></tr>
-  <tr><td class="label">XSS</td><td>Cross-Site Scripting</td></tr>
-  <tr><td class="label">ZAP</td><td>Zed Attack Proxy (by OWASP)</td></tr>
 </table>
 
 <!-- ======================== TABLE OF CONTENTS ====================== -->
@@ -145,7 +146,7 @@
   <li><a href="#summary-of-findings">Summary of Findings</a></li>
   <li><a href="#key-findings">Key Findings</a></li>
   <li><a href="#key-recommendations">Key Recommendations</a></li>
-  {{#unless IsBlack}}<li><a href="#project-overview">Project Overview</a></li>{{/unless}}
+  <li><a href="#project-overview">Project Overview</a></li>
   <li class="sub"><a href="#scope">Scope of Engagement</a></li>
   <li><a href="#introduction">Introduction</a></li>
   <li class="sub"><a href="#methodology">Methodology for Security Assessment</a></li>
@@ -158,16 +159,16 @@
 
 <!-- ======================== EXECUTIVE SUMMARY ====================== -->
 <h1 id="executive-summary">Executive Summary</h1>
-<p>{{Client.Name}} engaged {{CompanyName}} to conduct a {{TestingType}} Box Vulnerability Assessment and Penetration Testing (VAPT) of its application{{#if Engagement.Title}} ({{Engagement.Title}}){{/if}}.
-{{#if IsWhite}}This comprehensive security assessment included source code review, configuration analysis, and security testing of the application within the defined scope.{{/if}}
-{{#if IsGray}}This security assessment included authenticated testing with the provided user roles, configuration analysis, and security testing of the application within the defined scope.{{/if}}
-{{#if IsBlack}}This security assessment was performed from an external attacker's perspective, without prior knowledge of the application's internal architecture, source code, or credentials.{{/if}}</p>
-<p>The engagement was carried out from {{formatDate Engagement.StartDate}} to {{formatDate Engagement.EndDate}}. The primary objective was to evaluate the current security posture of {{Client.Name}} and identify potential security vulnerabilities{{#if IsWhite}} across code, architecture, and configuration layers{{/if}}.</p>
+<p>{{Client.Name}} engaged {{CompanyName}} to conduct a Gray Box Vulnerability Assessment and Penetration Testing (VAPT) of its application{{#if Engagement.Title}} ({{Engagement.Title}}){{/if}}.
+This security assessment included authenticated testing with the provided user roles, configuration analysis, and security testing of the application within the defined scope.
+</p>
+<p>The engagement was carried out from {{formatDate Engagement.StartDate}} to {{formatDate Engagement.EndDate}}. The primary objective was to evaluate the current security posture of {{Client.Name}} and identify potential security vulnerabilities.</p>
 {{{text Report.ExecutiveSummary}}}
 
 <h1 id="summary-of-findings" class="continue">Summary of Findings</h1>
-<p>The assessment identified a total of {{numberWords Counts.Total}} distinct vulnerabilities across all assessed areas.{{#if Counts.Total}} Among them, {{severityBreakdown Counts}}.{{/if}}</p>
+<p>The assessment identified a total of {{numberWords Counts.Total}} distinct vulnerabilities across all assessed areas of {{Client.Name}}'s application.{{#if Counts.Total}} The chart below shows the vulnerabilities and their severity found within the application infrastructure.{{/if}}</p>
 {{#if Counts.Total}}
+<p>Among the various types of vulnerabilities found in the systems and services, {{severityBreakdown Counts}} during our test{{#if Engagement.Title}} within the {{Engagement.Title}} application{{/if}}.</p>
 <div class="figure"><img src="{{SeverityChart}}" alt="Vulnerabilities by Severity" style="width:150mm" data-word-width="560"></div>
 {{/if}}
 
@@ -178,11 +179,9 @@
 {{{text Report.KeyRecommendations}}}
 
 <!-- ======================== PROJECT OVERVIEW ======================= -->
-{{#unless IsBlack}}
 <h1 id="project-overview">Project Overview</h1>
 <h2>Project Goals and Objectives</h2>
 {{{text Report.ProjectGoals}}}
-{{/unless}}
 
 <div class="keep-together">
 <h2 id="scope">Scope of Engagement</h2>
@@ -199,7 +198,6 @@
 
 <!-- ========================== INTRODUCTION ========================= -->
 <h1 id="introduction">Introduction</h1>
-{{#unless IsBlack}}
 <h2>Security Assessment</h2>
 <h3>Vulnerability Assessment and Penetration Testing</h3>
 <p>Vulnerability Assessment and Penetration Testing (VAPT) is a structured approach used to identify, evaluate, and mitigate security vulnerabilities within an organization's IT infrastructure, including applications, networks, and systems. In today's evolving threat landscape, VAPT plays a critical role in strengthening an organization's cybersecurity posture.</p>
@@ -210,14 +208,11 @@
 
 <h3>Methodologies for Conducting VAPT Assessment</h3>
 <div class="figure"><img src="{{asset "vapt-cycle.png"}}" alt="VAPT cycle" style="width:95mm" data-word-width="360"></div>
-{{#if IsWhite}}<p>White-box Testing is followed during this VAPT assessment. White-box Testing is the combination of Black-box testing, Gray-box testing and White-box testing along with full information on the system.</p>
-<div class="figure"><img src="{{asset "scope-white.png"}}" alt="White Box target scope" style="width:165mm" data-word-width="600"></div>{{/if}}
-{{#if IsGray}}<p>Gray-box Testing is followed during this VAPT assessment. Gray-box Testing is the combination of Black-box testing and authenticated testing.</p>
-<div class="figure"><img src="{{asset "scope-gray.png"}}" alt="White, Black and Gray Box" style="width:160mm" data-word-width="600"></div>{{/if}}
+<p>Gray-box Testing is followed during this VAPT assessment. Gray-box Testing is the combination of Black-box testing and the authenticated testing.</p>
+<div class="figure"><img src="{{asset "scope-gray.png"}}" alt="White, Black and Gray Box" style="width:160mm" data-word-width="600"></div>
 
 <h3>Methodology</h3>
-{{#if IsWhite}}<p>The assessment was conducted using a White Box Penetration Testing approach, where full access to the application was provided, including source code, architecture details, configurations, and APIs.</p>{{/if}}
-{{#if IsGray}}<p>The assessment was conducted using a Gray Box Penetration Testing approach, where full user access to the application was provided, including different existing user roles and APIs.</p>{{/if}}
+<p>The assessment was conducted using a Gray Box Penetration Testing approach, where full user access to the application was provided, including different existing user roles and APIs.</p>
 <p>This method allows for a comprehensive security evaluation through both manual review and penetration testing techniques. It helps identify vulnerabilities in application design, implementation, and configuration that may not be visible through external testing alone, providing a deeper and more accurate assessment of the overall security posture.</p>
 
 <h3>Tools Used for VAPT</h3>
@@ -263,14 +258,9 @@
   {{#if ShowToolNames}}<li><strong>Metasploit:</strong> For post-exploitation activities, including privilege escalation and lateral movement within the network.</li>{{else}}<li><strong>Exploitation frameworks:</strong> For post-exploitation activities, including privilege escalation and lateral movement within the network.</li>{{/if}}
   <li><strong>Custom Scripts:</strong> For targeted exploitation and validation of specific vulnerabilities.</li>
 </ul>
-<p class="note">Note: The tools listed above are commonly used during the assessment; however, the tools utilized are not limited to this list. A variety of industry-standard tools and methodologies are utilized that are tailored to the specific scope and requirements of the engagement.</p>
-{{/unless}}
+<p class="note">Note: The tools listed above are commonly used during the assessment; however, the tools utilized are not limited to this list. A variety of industry-standard tools and methodologies are utilized that are tailored to the specific scope and requirements of the engagement. This ensures a comprehensive and accurate evaluation of your IT infrastructure.</p>
 
 <h2 id="methodology">Methodology for Security Assessment</h2>
-{{#if IsBlack}}
-<div class="figure"><img src="{{asset "black-flow.png"}}" alt="Black Box assessment flow" style="width:165mm" data-word-width="600"></div>
-<p>At {{CompanyName}}, our Black Box Security Assessment methodology is designed to evaluate the security posture of an application from an external attacker perspective. The assessment is conducted without prior knowledge of the application's internal architecture, source code, or credentials, simulating real-world attack scenarios. This approach helps identify externally exploitable vulnerabilities, security misconfigurations, and weaknesses that could be leveraged by malicious actors to compromise the application.</p>
-{{else}}
 <div class="figure"><img src="{{asset "assessment-flow.png"}}" alt="Assessment flow" style="width:165mm" data-word-width="600"></div>
 <p>At {{CompanyName}}, our Security Assessment Methodology is designed to provide a holistic evaluation of your organization's security posture. While Vulnerability Assessment and Penetration Testing (VAPT) is a critical component, our approach extends beyond VAPT to encompass a comprehensive review of your IT infrastructure, policies, and processes. This methodology ensures that all potential risks are identified, assessed, and mitigated effectively.</p>
 <h3>Key Phases of Security Assessment</h3>
@@ -302,7 +292,6 @@
   <tr><td>Using Components with Known Vulnerabilities</td><td>Identifying outdated or vulnerable components.</td></tr>
   <tr><td>Privilege Escalation</td><td>Testing for vulnerabilities that allow privilege escalation.</td></tr>
 </table>
-{{/if}}
 
 <h2 id="limitations">Limitations</h2>
 {{{text Report.Limitations}}}
@@ -352,10 +341,6 @@
 <!-- ============================ ANNEXURE =========================== -->
 <h1 id="annexure">Annexure</h1>
 <h2>Vulnerability Scoring</h2>
-{{#if IsBlack}}
-<h3>Risk Scoring Methodology</h3>
-<p>To ensure a consistent and standardized assessment of identified vulnerabilities, risk ratings are based on the Common Vulnerability Scoring System (CVSS) v3.1. CVSS evaluates the severity of vulnerabilities by considering factors such as exploitability, potential impact, and environmental context, providing a reliable framework for prioritizing remediation efforts.</p>
-{{else}}
 <p>To ensure a standardized and consistent approach in assessing vulnerabilities, the following risk scoring methodologies are used:</p>
 <h3>Common Vulnerability Scoring System (CVSS) v3.1</h3>
 <p>The CVSS Score is a widely accepted standard for measuring the severity of security vulnerabilities. It considers various factors such as exploitability, impact, and environmental adjustments.</p>
@@ -364,7 +349,6 @@
   <li><strong>Temporal Score:</strong> Adjusts the score based on current exploitability and mitigation measures.</li>
   <li><strong>Environmental Score:</strong> Customizable based on the organization's security posture.</li>
 </ul>
-{{/if}}
 <p>The CVSS scoring system is categorized as follows:</p>
 <table>
   <tr><th>CVSS (v3.1) Score</th><th>Severity Level</th><th>Description</th></tr>

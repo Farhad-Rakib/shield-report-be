@@ -5,7 +5,7 @@ namespace ShieldReport.Application.ClientOrganizations;
 
 public interface IClientOrganizationService
 {
-    Task<PagedResult<ClientOrganizationDto>> ListAsync(PagedRequest request, CancellationToken cancellationToken = default);
+    Task<PagedResult<ClientOrganizationDto>> ListAsync(PagedRequest request, long? clientOrganizationId, long? clientAssetId, DateTime? from, DateTime? to, CancellationToken cancellationToken = default);
     Task<ClientOrganizationDto> GetByIdAsync(long id, CancellationToken cancellationToken = default);
     Task<ClientOrganizationDto> CreateAsync(CreateClientOrganizationRequestDto request, CancellationToken cancellationToken = default);
     Task<ClientOrganizationDto> UpdateAsync(long id, UpdateClientOrganizationRequestDto request, CancellationToken cancellationToken = default);

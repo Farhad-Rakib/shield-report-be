@@ -27,9 +27,9 @@ public sealed class EngagementService : IEngagementService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PagedResult<EngagementDto>> ListEngagementsAsync(PagedRequest request, long? clientOrganizationId, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<EngagementDto>> ListEngagementsAsync(PagedRequest request, long? clientOrganizationId, long? clientAssetId, DateTime? from, DateTime? to, CancellationToken cancellationToken = default)
     {
-        var (items, total) = await _engagementRepository.GetPagedAsync(request.Page, request.PageSize, request.Search, clientOrganizationId, cancellationToken);
+        var (items, total) = await _engagementRepository.GetPagedAsync(request.Page, request.PageSize, request.Search, clientOrganizationId, clientAssetId, from, to, cancellationToken);
         return PagedResult<EngagementDto>.Create(items.Select(ToDto).ToList(), total, request.Page, request.PageSize);
     }
 

@@ -36,5 +36,7 @@ public interface IScanRepository : IRepository<Scan>
         long? clientAssetId,
         long? engagementId,
         ScanStatus? status,
+        DateTime? from,
+        DateTime? to,
         CancellationToken cancellationToken = default);
 }

@@ -34,6 +34,7 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
         public long? ClientOrganizationId => null;
         public bool IsClientPortalUser => false;
         public IReadOnlyCollection<string> Roles => Array.Empty<string>();
+        public bool IsRestrictedToAssignedEngagements => false;
         public string? IpAddress => null;
     }
 }

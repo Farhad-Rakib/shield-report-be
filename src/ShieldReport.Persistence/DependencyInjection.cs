@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IDashboardLayoutRepository, DashboardLayoutRepository>();
+        services.AddScoped<IFindingsReportRepository, FindingsReportRepository>();
         services.AddScoped<IEngagementRepository, EngagementRepository>();
         services.AddScoped<IEngagementTaskRepository, EngagementTaskRepository>();
         services.AddScoped<IClientAssetRepository, ClientAssetRepository>();

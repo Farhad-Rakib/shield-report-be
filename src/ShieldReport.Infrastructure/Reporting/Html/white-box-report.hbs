@@ -1,0 +1,377 @@
+{{!--
+  ShieldReport built-in White Box report template, converted from the SELISE "White Box Testing.docx"
+  sample (the White, Gray and Black Box templates are separate files with their own sections and
+  wording). Rendered with Handlebars.Net, then:
+    PDF  — headless Chromium + paged.js (page numbers, running header, table of contents numbers)
+    Word — CSS inlined (PreMailer) and converted with HtmlToOpenXml onto the template .docx (styles,
+           header/footer); the [data-word-toc] list becomes a real Word TOC field.
+  Variables are documented in ReportRenderModel (Application/Reports/Rendering). Text from users or
+  the LLM goes through {{{text ...}}}, which HTML-escapes it — never insert user text with raw {{{x}}}.
+  TestingType / IsWhite / IsGray / IsBlack still hold the engagement's testing type, but this
+  template's wording is fixed to White Box testing.
+--}}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Security Assessment Report — {{Client.Name}}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 24mm 18mm 20mm 18mm;
+    @top-right { content: element(runningHeader); }
+    {{!-- No user-supplied text inside CSS strings (a quote would break the stylesheet). --}}
+    @bottom-left { content: "Confidential · Security Assessment Report v{{Report.Version}}{{#if Report.IsDraft}} · DRAFT{{/if}}"; font-size: 8pt; color: #777; }
+    @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #777; }
+  }
+  @page cover { margin: 0; @top-right { content: none; } @bottom-left { content: none; } @bottom-right { content: none; } }
+
+  body { font-family: "Calibri", "Carlito", "Liberation Sans", Arial, sans-serif; font-size: 10.5pt; line-height: 1.4; color: #222; }
+  .running-header { position: running(runningHeader); }
+  .running-header img { height: 28px; }
+
+  .cover { page: cover; height: 296mm; overflow: hidden; background: #0b3d6b; color: #ffffff; break-after: page; page-break-after: always; }
+  .cover img.photo { width: 100%; height: 140mm; object-fit: cover; display: block; }
+  .cover .inner { padding: 14mm 18mm; }
+  .cover .title { font-size: 30pt; font-weight: bold; margin: 0 0 3mm; color: #ffffff; }
+  .cover .subtitle { font-size: 17pt; margin: 0 0 8mm; color: #ffffff; }
+  .cover .meta { font-size: 11pt; margin: 0 0 1mm; color: #ffffff; }
+  .cover .company { font-size: 9pt; margin-top: 18mm; color: #cfe0f1; }
+
+  h1 { color: #0b5394; font-size: 16pt; border-bottom: 2px solid #0b5394; padding-bottom: 2mm; margin: 0 0 4mm; break-before: page; page-break-before: always; }
+  h1.continue { break-before: auto; page-break-before: auto; margin-top: 8mm; }
+  h2 { color: #0b5394; font-size: 13pt; margin: 6mm 0 2mm; }
+  h3 { color: #1c4587; font-size: 11pt; margin: 4mm 0 1mm; }
+  h4 { color: #333333; font-size: 10.5pt; margin: 3mm 0 1mm; }
+  p { margin: 0 0 2.5mm; text-align: justify; }
+  ul { margin: 0 0 2.5mm; padding-left: 6mm; }
+  li { margin: 0 0 1mm; }
+  table { border-collapse: collapse; width: 100%; margin: 2mm 0 4mm; }
+  th, td { border: 1px solid #b7b7b7; padding: 4px 6px; text-align: left; vertical-align: top; font-size: 9.5pt; }
+  th { background: #0b5394; color: #ffffff; font-weight: bold; }
+  td.label { background: #dce6f1; font-weight: bold; width: 30%; }
+  .figure { text-align: center; margin: 3mm 0 4mm; break-inside: avoid; }
+  .figure img { max-height: 200mm; object-fit: contain; }
+  .caption { font-size: 8.5pt; color: #666666; text-align: center; margin-top: 1mm; }
+  .note { font-size: 9pt; color: #555555; }
+  pre, .code { font-family: "Consolas", "Courier New", monospace; font-size: 8.5pt; background: #f3f3f3; padding: 3mm; white-space: pre-wrap; word-break: break-all; }
+  .finding { break-inside: auto; }
+  h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+  tr { break-inside: avoid; }
+  .keep-together { break-inside: avoid; }
+  .finding h2 { break-after: avoid; page-break-after: avoid; }
+
+  .sev-Critical { background: #c00000; color: #ffffff; font-weight: bold; }
+  .sev-High { background: #ff0000; color: #ffffff; font-weight: bold; }
+  .sev-Medium { background: #ffc000; color: #222222; font-weight: bold; }
+  .sev-Low { background: #00b050; color: #ffffff; font-weight: bold; }
+  .sev-Informational { background: #5b9bd5; color: #ffffff; font-weight: bold; }
+
+  .toc { list-style: none; padding-left: 0; }
+  .toc li { margin: 1.2mm 0; }
+  .toc li.sub { padding-left: 6mm; font-size: 10pt; }
+  .toc a { color: #222222; text-decoration: none; display: flex; }
+  .toc a::after { content: target-counter(attr(href url), page); margin-left: auto; padding-left: 4mm; }
+
+  .offices td { border: none; padding: 2px 6px 6px 0; font-size: 8.5pt; color: #444444; width: 33%; }
+  .offices .city { font-weight: bold; color: #0b5394; }
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <img class="photo" src="{{asset "cover.jpg"}}" alt="" data-word-width="600">
+  <div class="inner">
+    <p class="title">Security Assessment Report</p>
+    <p class="subtitle">White Box Testing</p>
+    <p class="meta"><strong>{{Client.Name}}</strong></p>
+    <p class="meta">{{Engagement.Title}}</p>
+    <p class="meta">Version {{Report.Version}}.0 · {{formatDate Report.GeneratedAt}}{{#if Report.IsDraft}} · Draft{{/if}}</p>
+    <p class="company">{{CompanyName}} · Secure Link Services BD Ltd · Midas Center, H-5, R-16, Dhanmondi, Dhaka-1209, Bangladesh · +88 02 9104556 · www.selise.ch</p>
+  </div>
+</section>
+
+<div class="running-header"><img src="{{asset "logo.png"}}" alt="SELISE" data-word-width="110"></div>
+
+<!-- ======================== VERSION / ACRONYMS ===================== -->
+<h1 id="version-control" class="continue">Version Control</h1>
+<table>
+  <tr><th>S.N.</th><th>Version</th><th>Date</th><th>Prepared by</th><th>Reviewed by</th><th>Comment</th></tr>
+  {{#each Versions}}
+  <tr><td>{{Number}}</td><td>{{Version}}</td><td>{{formatDate Date}}</td><td>{{PreparedBy}}</td><td>{{ReviewedBy}}</td><td>{{Comment}}</td></tr>
+  {{/each}}
+</table>
+
+<h1 id="acronyms" class="continue">Acronyms</h1>
+<table>
+  <tr><td class="label">AJAX</td><td>Asynchronous JavaScript and XML</td></tr>
+  <tr><td class="label">API</td><td>Application Programming Interface</td></tr>
+  <tr><td class="label">CA</td><td>Certificate Authority</td></tr>
+  <tr><td class="label">CIA</td><td>Confidentiality, Integrity, and Availability</td></tr>
+  <tr><td class="label">CSP</td><td>Content Security Policy</td></tr>
+  <tr><td class="label">CSRF</td><td>Cross-Site Request Forgery</td></tr>
+  <tr><td class="label">CSS</td><td>Cascading Style Sheets</td></tr>
+  <tr><td class="label">CVSS</td><td>Common Vulnerability Scoring System</td></tr>
+  <tr><td class="label">DOM</td><td>Document Object Model</td></tr>
+  <tr><td class="label">HSTS</td><td>HTTP Strict Transport Security</td></tr>
+  <tr><td class="label">HTML</td><td>Hypertext Markup Language</td></tr>
+  <tr><td class="label">HTTP</td><td>Hypertext Transfer Protocol</td></tr>
+  <tr><td class="label">HTTPS</td><td>Hypertext Transfer Protocol Secure</td></tr>
+  <tr><td class="label">IDOR</td><td>Insecure Direct Object Reference</td></tr>
+  <tr><td class="label">IP</td><td>Internet Protocol</td></tr>
+  <tr><td class="label">IT</td><td>Information Technology</td></tr>
+  <tr><td class="label">JSON</td><td>JavaScript Object Notation</td></tr>
+  <tr><td class="label">JWT</td><td>JSON Web Token</td></tr>
+  <tr><td class="label">MitM</td><td>Man in the Middle Attack</td></tr>
+  <tr><td class="label">OTP</td><td>One-Time Password</td></tr>
+  <tr><td class="label">OWASP</td><td>Open Worldwide Application Security Project</td></tr>
+  <tr><td class="label">SOAP</td><td>Simple Object Access Protocol</td></tr>
+  <tr><td class="label">SQL</td><td>Structured Query Language</td></tr>
+  <tr><td class="label">SSL</td><td>Secure Sockets Layer</td></tr>
+  <tr><td class="label">SVG</td><td>Scalable Vector Graphics</td></tr>
+  <tr><td class="label">TLS</td><td>Transport Layer Security</td></tr>
+  <tr><td class="label">UI/UX</td><td>User Interface / User Experience</td></tr>
+  <tr><td class="label">URL</td><td>Uniform Resource Locator</td></tr>
+  <tr><td class="label">VAPT</td><td>Vulnerability Assessment and Penetration Testing</td></tr>
+  <tr><td class="label">XML</td><td>eXtensible Markup Language</td></tr>
+  <tr><td class="label">XSL</td><td>eXtensible Stylesheet Language</td></tr>
+  <tr><td class="label">XSS</td><td>Cross-Site Scripting</td></tr>
+  <tr><td class="label">ZAP</td><td>Zed Attack Proxy (by OWASP)</td></tr>
+</table>
+
+<!-- ======================== TABLE OF CONTENTS ====================== -->
+<h1 id="contents">Table of Contents</h1>
+<ul class="toc" data-word-toc>
+  <li><a href="#executive-summary">Executive Summary</a></li>
+  <li><a href="#summary-of-findings">Summary of Findings</a></li>
+  <li><a href="#key-findings">Key Findings</a></li>
+  <li><a href="#key-recommendations">Key Recommendations</a></li>
+  <li><a href="#project-overview">Project Overview</a></li>
+  <li class="sub"><a href="#scope">Scope of Engagement</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li class="sub"><a href="#methodology">Methodology for Security Assessment</a></li>
+  <li class="sub"><a href="#limitations">Limitations</a></li>
+  <li class="sub"><a href="#discovered-vulnerabilities">Discovered Vulnerabilities</a></li>
+  <li><a href="#detailed-findings">Detailed Findings</a></li>
+  {{#each Findings}}<li class="sub"><a href="#{{Anchor}}">{{Id}} — {{Title}}</a></li>{{/each}}
+  <li><a href="#annexure">Annexure</a></li>
+</ul>
+
+<!-- ======================== EXECUTIVE SUMMARY ====================== -->
+<h1 id="executive-summary">Executive Summary</h1>
+<p>{{Client.Name}} engaged {{CompanyName}} to conduct a White Box Vulnerability Assessment and Penetration Testing (VAPT) of its application{{#if Engagement.Title}} ({{Engagement.Title}}){{/if}}.
+This comprehensive security assessment included source code review, configuration analysis, and security testing of the application within the defined scope.</p>
+<p>The engagement was carried out from {{formatDate Engagement.StartDate}} to {{formatDate Engagement.EndDate}}. The primary objective was to evaluate the current security posture of {{Client.Name}} and identify potential security vulnerabilities across code, architecture, and configuration layers.</p>
+{{{text Report.ExecutiveSummary}}}
+
+<h1 id="summary-of-findings" class="continue">Summary of Findings</h1>
+<p>The assessment identified a total of {{numberWords Counts.Total}} distinct vulnerabilities across all assessed areas of {{Client.Name}}'s application.{{#if Counts.Total}} The chart below shows the vulnerabilities and their severity found within the application infrastructure.{{/if}}</p>
+{{#if Counts.Total}}
+<p>Among the various types of vulnerabilities found in the systems and services, {{severityBreakdown Counts}} during our test{{#if Engagement.Title}} within the {{Engagement.Title}} application{{/if}}.</p>
+<div class="figure"><img src="{{SeverityChart}}" alt="Vulnerabilities by Severity" style="width:150mm" data-word-width="560"></div>
+{{/if}}
+
+<h1 id="key-findings" class="continue">Key Findings</h1>
+{{{text Report.KeyFindings}}}
+
+<h1 id="key-recommendations" class="continue">Key Recommendations</h1>
+{{{text Report.KeyRecommendations}}}
+
+<!-- ======================== PROJECT OVERVIEW ======================= -->
+<h1 id="project-overview">Project Overview</h1>
+<h2>Project Goals and Objectives</h2>
+{{{text Report.ProjectGoals}}}
+
+<div class="keep-together">
+<h2 id="scope">Scope of Engagement</h2>
+<h3>Detailed Scope of Work</h3>
+<table>
+  <tr><th>Application</th><th>Attack Vector</th><th>URL / Target</th><th>Status</th></tr>
+  {{#each Scope}}
+  <tr><td>{{Application}}</td><td>{{AttackVector}}</td><td>{{Url}}</td><td>{{Status}}</td></tr>
+  {{else}}
+  <tr><td colspan="4">{{#if ../Engagement.Scope}}{{../Engagement.Scope}}{{else}}Scope as agreed with the client.{{/if}}</td></tr>
+  {{/each}}
+</table>
+</div>
+
+<!-- ========================== INTRODUCTION ========================= -->
+<h1 id="introduction">Introduction</h1>
+<h2>Security Assessment</h2>
+<h3>Vulnerability Assessment and Penetration Testing</h3>
+<p>Vulnerability Assessment and Penetration Testing (VAPT) is a structured approach used to identify, evaluate, and mitigate security vulnerabilities within an organization's IT infrastructure, including applications, networks, and systems. In today's evolving threat landscape, VAPT plays a critical role in strengthening an organization's cybersecurity posture.</p>
+<p>VAPT involves two key processes:</p>
+<p><strong>Vulnerability Assessment (VA):</strong> This process involves systematically identifying security weaknesses within systems, applications, and network infrastructure using a combination of automated tools and manual techniques. It helps uncover issues such as misconfigurations, outdated components, and weak security controls, providing an overview of potential security risks and their severity.</p>
+<p><strong>Penetration Testing (PT):</strong> Penetration testing simulates real-world cyberattacks to evaluate how effectively security controls can withstand exploitation. Ethical hackers use controlled attack techniques to identify whether vulnerabilities can be actively exploited to gain unauthorized access or compromise sensitive data.</p>
+<p>Together, these approaches provide a comprehensive understanding of an organization's security posture. While vulnerability assessment focuses on identifying and prioritizing risks, penetration testing demonstrates the real-world impact of those vulnerabilities and helps validate the effectiveness of existing security controls.</p>
+
+<h3>Methodologies for Conducting VAPT Assessment</h3>
+<div class="figure"><img src="{{asset "vapt-cycle.png"}}" alt="VAPT cycle" style="width:95mm" data-word-width="360"></div>
+<p>White-box Testing is followed during this VAPT assessment. White-box Testing is the combination of Black-box testing, Gray-box testing and White-box testing along with full information on the system.</p>
+<div class="figure"><img src="{{asset "scope-white.png"}}" alt="White Box target scope" style="width:165mm" data-word-width="600"></div>
+
+<h3>Methodology</h3>
+<p>The assessment was conducted using a White Box Penetration Testing approach, where full access to the application was provided, including source code, architecture details, configurations, and APIs.</p>
+<p>This method allows for a comprehensive security evaluation through both manual code review and penetration testing techniques. It helps identify vulnerabilities in application design, implementation, and configuration that may not be visible through external testing alone, providing a deeper and more accurate assessment of the overall security posture.</p>
+
+<h3>Tools Used for VAPT</h3>
+<p>To ensure a comprehensive and accurate assessment of vulnerabilities, {{CompanyName}} utilizes a combination of industry-leading tools and manual verification techniques. Our approach is designed to identify, validate, and exploit vulnerabilities while minimizing false positives and ensuring a thorough evaluation of your IT infrastructure.</p>
+<h4>Vulnerability Assessment Phase</h4>
+{{#if ShowToolNames}}
+<p>During this phase, all nodes within the scope are scanned using advanced vulnerability scanning tools. The tools used include:</p>
+<ul>
+  <li><strong>Nuclei:</strong> A web application scanner that identifies CVE vulnerabilities and misconfigurations.</li>
+  <li><strong>Nikto:</strong> A web server scanner that identifies vulnerabilities in web applications and servers.</li>
+  <li><strong>Sqlmap:</strong> An automated tool for detecting and exploiting SQL injection vulnerabilities in web applications.</li>
+</ul>
+{{else}}
+<p>During this phase, all nodes within the scope are scanned using industry-standard automated vulnerability scanners that identify known CVEs, misconfigurations, web server weaknesses, and injection flaws.</p>
+{{/if}}
+<h4>Manual Verification of Reports</h4>
+{{#if ShowToolNames}}
+<p>To ensure the accuracy of the findings, reports generated by automated tools (e.g., Nuclei, Nikto, Sqlmap) are manually verified using the following tools:</p>
+<ul>
+  <li><strong>Nmap:</strong> A network scanning tool used to discover hosts and services on a network, as well as identify open ports and potential vulnerabilities.</li>
+  <li><strong>Metasploit:</strong> A penetration testing framework used to validate vulnerabilities and simulate real-world attacks.</li>
+  <li><strong>Burp Suite:</strong> A web vulnerability scanner and proxy tool used for manual testing of web applications.</li>
+  <li><strong>Custom Scripts:</strong> Specific vulnerability scanner scripts tailored to the client's environment for targeted testing.</li>
+</ul>
+{{else}}
+<p>To ensure the accuracy of the findings, results from automated tools are manually verified using network discovery tools, penetration testing frameworks, intercepting proxies, and custom scripts tailored to the client's environment.</p>
+{{/if}}
+<h4>Penetration Testing Phase</h4>
+{{#if ShowToolNames}}
+<p>During this phase, real-world attacks are simulated to identify exploitable vulnerabilities. Web application penetration testing tools used include:</p>
+<ul>
+  <li><strong>Burp Suite:</strong> For manual testing of web application vulnerabilities, including SQL injection, XSS, and CSRF.</li>
+  <li><strong>Sqlmap:</strong> For automated detection and exploitation of SQL injection vulnerabilities.</li>
+  <li><strong>Dirsearch:</strong> A tool for brute-forcing directories and files on web servers to identify hidden resources.</li>
+</ul>
+{{else}}
+<p>During this phase, real-world attacks are simulated to identify exploitable vulnerabilities, using manual testing through an intercepting proxy, automated injection testing, and content discovery tools.</p>
+{{/if}}
+<h4>Post-Exploitation Phase</h4>
+<p>During this phase, further analysis is conducted to understand the impact of exploited vulnerabilities. The tools and techniques used include:</p>
+<ul>
+  <li><strong>Vulnerability Scanning and Penetration Testing in Cycle:</strong> Repeated scanning and testing to ensure all vulnerabilities are identified and validated.</li>
+  {{#if ShowToolNames}}<li><strong>Metasploit:</strong> For post-exploitation activities, including privilege escalation and lateral movement within the network.</li>{{else}}<li><strong>Exploitation frameworks:</strong> For post-exploitation activities, including privilege escalation and lateral movement within the network.</li>{{/if}}
+  <li><strong>Custom Scripts:</strong> For targeted exploitation and validation of specific vulnerabilities.</li>
+</ul>
+<p class="note">Note: The tools listed above are commonly used during the assessment; however, the tools utilized are not limited to this list. A variety of industry-standard tools and methodologies are utilized that are tailored to the specific scope and requirements of the engagement. This ensures a comprehensive and accurate evaluation of your IT infrastructure.</p>
+
+<h2 id="methodology">Methodology for Security Assessment</h2>
+<div class="figure"><img src="{{asset "assessment-flow.png"}}" alt="Assessment flow" style="width:165mm" data-word-width="600"></div>
+<p>At {{CompanyName}}, our Security Assessment Methodology is designed to provide a holistic evaluation of your organization's security posture. While Vulnerability Assessment and Penetration Testing (VAPT) is a critical component, our approach extends beyond VAPT to encompass a comprehensive review of your IT infrastructure, policies, and processes. This methodology ensures that all potential risks are identified, assessed, and mitigated effectively.</p>
+<h3>Key Phases of Security Assessment</h3>
+<ul>
+  <li><strong>Information Gathering:</strong> Collect data about the target system, network, or application to understand its structure and potential vulnerabilities.</li>
+  <li><strong>Scanning &amp; Enumeration:</strong> Use automated tools to identify security flaws, misconfigurations, and weak points in the system.</li>
+  <li><strong>Vulnerability Assessment:</strong> Analyze identified vulnerabilities, categorize them based on risk levels, and determine potential impact.</li>
+  <li><strong>Exploitation &amp; Penetration Testing:</strong> Simulate real-world attacks to validate security weaknesses and assess their exploitability.</li>
+  <li><strong>Reporting &amp; Remediation:</strong> Provide a detailed report outlining vulnerabilities, risks, and actionable recommendations for mitigation.</li>
+</ul>
+
+<h2>Security Testing Components</h2>
+<table>
+  <tr><th>Category</th><th>Test Vectors</th><th>Description</th></tr>
+  <tr><td class="label" rowspan="16">Web Application Security</td><td>Input Validation</td><td>Testing for improper input validation.</td></tr>
+  <tr><td>Injection</td><td>Checking for SQL, XSL, and other injection vulnerabilities.</td></tr>
+  <tr><td>Cross-Site Scripting (XSS)</td><td>Identifying XSS vulnerabilities.</td></tr>
+  <tr><td>Cookie Modification</td><td>Testing for insecure cookie handling.</td></tr>
+  <tr><td>Code Execution</td><td>Identifying vulnerabilities that allow arbitrary code execution.</td></tr>
+  <tr><td>Buffer Overflow</td><td>Testing for buffer overflow vulnerabilities.</td></tr>
+  <tr><td>URL Manipulation</td><td>Assessing the security of URL parameters.</td></tr>
+  <tr><td>Weak Authentication and Session Management</td><td>Testing for weak authentication mechanisms and session hijacking.</td></tr>
+  <tr><td>File Upload Vulnerabilities</td><td>Identifying insecure file upload mechanisms.</td></tr>
+  <tr><td>Insecure Direct Object References (IDOR)</td><td>Testing for insecure references to internal objects.</td></tr>
+  <tr><td>Sensitive Data Exposure</td><td>Ensuring sensitive data is not exposed.</td></tr>
+  <tr><td>Missing Functional Level Access Control</td><td>Testing for missing access controls.</td></tr>
+  <tr><td>Secure Implementation of Features</td><td>Evaluating features like password policies, CAPTCHA, and password mechanisms.</td></tr>
+  <tr><td>Cross-Site Request Forgery (CSRF)</td><td>Testing for CSRF vulnerabilities.</td></tr>
+  <tr><td>Using Components with Known Vulnerabilities</td><td>Identifying outdated or vulnerable components.</td></tr>
+  <tr><td>Privilege Escalation</td><td>Testing for vulnerabilities that allow privilege escalation.</td></tr>
+</table>
+
+<h2 id="limitations">Limitations</h2>
+{{{text Report.Limitations}}}
+
+<h2 id="discovered-vulnerabilities">Discovered Vulnerabilities</h2>
+<p>The assessment identified a total of {{numberWords Counts.Total}} distinct vulnerabilities.{{#if Counts.Total}} Among these, {{severityBreakdown Counts}}.{{/if}} The list of vulnerabilities is as follows:</p>
+<table>
+  <tr><th>Vulnerability</th><th>Severity</th><th>Vulnerable Systems</th><th>Status</th></tr>
+  {{#each Findings}}
+  <tr><td>{{Title}}</td><td class="sev-{{Severity}}">{{Severity}}</td><td>{{Occurrences}}</td><td>{{Status}}</td></tr>
+  {{else}}
+  <tr><td colspan="4">No vulnerabilities were identified within the assessed scope.</td></tr>
+  {{/each}}
+</table>
+
+<!-- ======================== DETAILED FINDINGS ====================== -->
+<h1 id="detailed-findings">Detailed Findings</h1>
+{{#each Findings}}
+<div class="finding">
+  <h2 id="{{Anchor}}">{{Id}} — {{Title}}</h2>
+  <table>
+    <tr><td class="label">Finding ID</td><td>{{Id}}</td></tr>
+    <tr><td class="label">Severity</td><td class="sev-{{Severity}}">{{upper Severity}}</td></tr>
+    <tr><td class="label">CVSS Score</td><td>{{#if CvssScore}}{{CvssScore}}{{#if CvssVector}} ({{CvssVector}}){{/if}}{{else}}—{{/if}}</td></tr>
+    <tr><td class="label">Affected System</td><td>{{AffectedSystem}}</td></tr>
+    <tr><td class="label">Vulnerable Endpoint</td><td>{{Endpoint}}</td></tr>
+    <tr><td class="label">Tools Used</td><td>{{ToolsUsed}}</td></tr>
+    <tr><td class="label">References</td><td>{{#each References}}{{this}}<br>{{else}}—{{/each}}</td></tr>
+    <tr><td class="label">Status</td><td>{{Status}}</td></tr>
+  </table>
+  <h3>Description</h3>
+  {{{text Description}}}
+  {{#if AiExplanation}}{{{text AiExplanation}}}{{/if}}
+  {{#if Impact}}<h3>Impact</h3>{{{text Impact}}}{{/if}}
+  <h3>Recommendations</h3>
+  {{#if Recommendation}}{{{text Recommendation}}}{{else}}<p>Remediate according to vendor guidance and secure coding best practices.</p>{{/if}}
+  {{#if ProofOfConcept}}<h3>Proof of Concept</h3><div class="code">{{ProofOfConcept}}</div>{{/if}}
+  {{#each Screenshots}}
+  <div class="figure"><img src="{{DataUri}}" alt="Evidence" style="max-width:165mm" data-word-width="600">{{#if Caption}}<p class="caption">{{Caption}}</p>{{/if}}</div>
+  {{/each}}
+  {{#if StepsToReproduce}}<h3>Steps of Reproduction</h3>{{{text StepsToReproduce}}}{{/if}}
+</div>
+{{else}}
+<p>No vulnerabilities were identified within the assessed scope.</p>
+{{/each}}
+
+<!-- ============================ ANNEXURE =========================== -->
+<h1 id="annexure">Annexure</h1>
+<h2>Vulnerability Scoring</h2>
+<p>To ensure a standardized and consistent approach in assessing vulnerabilities, the following risk scoring methodologies are used:</p>
+<h3>Common Vulnerability Scoring System (CVSS) v3.1</h3>
+<p>The CVSS Score is a widely accepted standard for measuring the severity of security vulnerabilities. It considers various factors such as exploitability, impact, and environmental adjustments.</p>
+<ul>
+  <li><strong>Base Score:</strong> Measures the inherent severity of a vulnerability.</li>
+  <li><strong>Temporal Score:</strong> Adjusts the score based on current exploitability and mitigation measures.</li>
+  <li><strong>Environmental Score:</strong> Customizable based on the organization's security posture.</li>
+</ul>
+<p>The CVSS scoring system is categorized as follows:</p>
+<table>
+  <tr><th>CVSS (v3.1) Score</th><th>Severity Level</th><th>Description</th></tr>
+  <tr><td>0.0</td><td class="sev-Informational">Informational</td><td>No security risk, but may indicate misconfigurations, best practices, or system information leakage.</td></tr>
+  <tr><td>0.1 – 3.9</td><td class="sev-Low">Low</td><td>Minimal impact; requires high privileges or user interaction.</td></tr>
+  <tr><td>4.0 – 6.9</td><td class="sev-Medium">Medium</td><td>Potential data leakage or privilege escalation, limited scope.</td></tr>
+  <tr><td>7.0 – 8.9</td><td class="sev-High">High</td><td>Unauthorized access, remote exploitation, or system compromise.</td></tr>
+  <tr><td>9.0 – 10.0</td><td class="sev-Critical">Critical</td><td>Full system compromise, remote execution, or widespread impact.</td></tr>
+</table>
+
+<h2>Our Offices</h2>
+<table class="offices">
+  <tr>
+    <td><span class="city">Zürich</span><br>SELISE Group AG<br>The Circle 37<br>8058 Zürich-Flughafen, Switzerland<br>+41 (0) 448058044</td>
+    <td><span class="city">Dhaka</span><br>Secure Link Services BD Ltd<br>Midas Centre, H-05, R-16 (New) Dhanmondi<br>Dhaka-1209, Bangladesh<br>+88 02 9104556</td>
+    <td><span class="city">Thimphu</span><br>Secure Link Services BT Pvt. Ltd<br>Bhutan Innovation Tech Center, Babesa<br>P.O. Box 63, Thimphu, Bhutan<br>+975-2-350-106</td>
+  </tr>
+  <tr>
+    <td><span class="city">Dubai</span><br>Secure Link Services FZ-LLC<br>Building 03, Dubai Design District<br>PO Box 345858, Dubai, UAE<br>+97143794110</td>
+    <td><span class="city">Munich</span><br>SELISE Deutschland GmbH<br>Tal 44, 80331 München, Germany<br>+49 89 5419 6883</td>
+    <td><span class="city">Pristina</span><br>SELISE Kosovo SH.P.K.<br>Rruga Ali Aliu-Kelmendi, 10000 Prishtine, Kosovo<br>+41 44 805 8044</td>
+  </tr>
+</table>
+
+</body>
+</html>

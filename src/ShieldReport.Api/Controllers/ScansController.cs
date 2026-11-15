@@ -33,9 +33,17 @@ public sealed class ScansController : ControllerBase
     [HttpGet("scans")]
     [Authorize(Policy = Permissions.ScansRead)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ScanDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> List([FromQuery] PagedRequest request, [FromQuery] long? clientOrganizationId, [FromQuery] long? clientAssetId, [FromQuery] long? engagementId, [FromQuery] ScanStatus? status, CancellationToken cancellationToken)
+    public async Task<IActionResult> List(
+        [FromQuery] PagedRequest request,
+        [FromQuery] long? clientOrganizationId,
+        [FromQuery] long? clientAssetId,
+        [FromQuery] long? engagementId,
+        [FromQuery] ScanStatus? status,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
     {
-        var scans = await _scanService.ListAsync(request, clientOrganizationId, clientAssetId, engagementId, status, _currentUserService.IsClientPortalUser, _currentUserService.ClientOrganizationId, cancellationToken);
+        var scans = await _scanService.ListAsync(request, clientOrganizationId, clientAssetId, engagementId, status, from, to, _currentUserService.IsClientPortalUser, _currentUserService.ClientOrganizationId, cancellationToken);
         return Ok(ApiResponse<PagedResult<ScanDto>>.SuccessResponse(scans, "Scans retrieved successfully"));
     }
 

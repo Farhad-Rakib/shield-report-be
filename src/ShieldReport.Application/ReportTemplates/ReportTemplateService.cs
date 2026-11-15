@@ -2,7 +2,9 @@ using ShieldReport.Application.Common.Exceptions;
 using ShieldReport.Application.Common.Interfaces;
 using ShieldReport.Application.Common.Interfaces.Services;
 using ShieldReport.Application.ReportTemplates.Dtos;
+using ShieldReport.Application.Reports.Rendering;
 using ShieldReport.Domain.Entities;
+using ShieldReport.Domain.Enums;
 
 namespace ShieldReport.Application.ReportTemplates;
 
@@ -125,13 +127,13 @@ public sealed class ReportTemplateService : IReportTemplateService
     }
 
     private static ReportTemplateDto MapToDto(ReportTemplate template)
-        => new(template.Id, template.Name, template.CompanyDisplayName, template.IsDefault, template.DocxTemplatePath is not null, template.DocxTemplateFileName, template.HtmlContent is not null, ReportTemplateFields.Parse(template.CustomFieldsJson));
+        => new(template.Id, template.Name, template.CompanyDisplayName, template.IsDefault, template.DocxTemplatePath is not null, template.DocxTemplateFileName, template.HtmlContent is not null, ReportTemplateFields.Parse(template.CustomFieldsJson), template.BuiltInTestingType);
 
     public async Task<ReportTemplateHtmlDto> GetHtmlAsync(long id, CancellationToken cancellationToken = default)
     {
         var template = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new AppException("Report template not found.", 404);
-        return new ReportTemplateHtmlDto(template.Id, template.HtmlContent is not null, template.HtmlContent ?? _htmlRenderer.GetDefaultTemplate());
+        return new ReportTemplateHtmlDto(template.Id, template.HtmlContent is not null, _htmlRenderer.ResolveTemplateHtml(template, SampleTestingType(template)));
     }
 
     // Saves a custom Handlebars template after checking it compiles and renders against sample data.
@@ -186,12 +188,13 @@ public sealed class ReportTemplateService : IReportTemplateService
     {
         var template = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new AppException("Report template not found.", 404);
-        var html = string.IsNullOrWhiteSpace(htmlContent) ? template.HtmlContent : htmlContent;
+        var testingType = SampleTestingType(template);
+        var html = string.IsNullOrWhiteSpace(htmlContent) ? _htmlRenderer.ResolveTemplateHtml(template, testingType) : htmlContent;
         var effectiveFields = fields is null ? ReportTemplateFields.Parse(template.CustomFieldsJson) : ReportTemplateFields.Validate(fields);
         var sample = effectiveFields.ToDictionary(f => f.Key, f => string.IsNullOrEmpty(f.DefaultValue) ? $"[{f.Label}]" : f.DefaultValue);
         try
         {
-            return await _htmlRenderer.RenderSampleAsync(html, sample, cancellationToken);
+            return await _htmlRenderer.RenderSampleAsync(html, sample, testingType, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -207,6 +210,10 @@ public sealed class ReportTemplateService : IReportTemplateService
         template.SetHtmlContent(null);
         _repository.Update(template);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return new ReportTemplateHtmlDto(template.Id, false, _htmlRenderer.GetDefaultTemplate());
+        return new ReportTemplateHtmlDto(template.Id, false, _htmlRenderer.ResolveTemplateHtml(template, SampleTestingType(template)));
     }
+
+    // Testing type used for the editor's built-in fallback and sample data: the row's built-in type,
+    // or White for a user-created template (no engagement is known in the template studio).
+    private static TestingType SampleTestingType(ReportTemplate template) => template.BuiltInTestingType ?? TestingType.White;
 }

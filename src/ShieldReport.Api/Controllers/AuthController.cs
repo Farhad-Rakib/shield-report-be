@@ -19,7 +19,6 @@ public sealed class AuthController : ControllerBase
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
     private readonly IValidator<LoginRequestDto> _loginValidator;
-    private readonly IValidator<RegisterUserRequestDto> _registerValidator;
     private readonly IValidator<RefreshTokenRequestDto> _refreshTokenValidator;
     private readonly IValidator<RevokeRefreshTokenRequestDto> _revokeRefreshTokenValidator;
     private readonly IValidator<ForgotPasswordRequestDto> _forgotPasswordValidator;
@@ -31,7 +30,6 @@ public sealed class AuthController : ControllerBase
         IWebHostEnvironment environment,
         IConfiguration configuration,
         IValidator<LoginRequestDto> loginValidator,
-        IValidator<RegisterUserRequestDto> registerValidator,
         IValidator<RefreshTokenRequestDto> refreshTokenValidator,
         IValidator<RevokeRefreshTokenRequestDto> revokeRefreshTokenValidator,
         IValidator<ForgotPasswordRequestDto> forgotPasswordValidator,
@@ -42,7 +40,6 @@ public sealed class AuthController : ControllerBase
         _environment = environment;
         _configuration = configuration;
         _loginValidator = loginValidator;
-        _registerValidator = registerValidator;
         _refreshTokenValidator = refreshTokenValidator;
         _revokeRefreshTokenValidator = revokeRefreshTokenValidator;
         _forgotPasswordValidator = forgotPasswordValidator;
@@ -72,16 +69,9 @@ public sealed class AuthController : ControllerBase
         return Ok(ApiResponse<AuthTokenResponseDto>.SuccessResponse(response, "Login successful", StatusCodes.Status200OK));
     }
 
-    [AllowAnonymous]
-    [HttpPost("register")]
-    [ProducesResponseType(typeof(ApiResponse<dynamic>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> Register([FromBody] RegisterUserRequestDto request, CancellationToken cancellationToken)
-    {
-        await _registerValidator.ValidateAndThrowAsync(request, cancellationToken);
-        var result = await _authService.RegisterAsync(request, cancellationToken);
-
-        return CreatedAtAction(nameof(Register), new { id = result.User.Id }, ApiResponse<dynamic>.SuccessResponse(result, "User registered successfully", StatusCodes.Status201Created));
-    }
+    // POST /Auth/register (anonymous, with caller-chosen roles) was removed on 2026-11-15: anyone
+    // could register as SuperAdmin. Staff create users with POST /Users (users.create); everyone
+    // else joins through a registration invite.
 
     [AllowAnonymous]
     [HttpPost("refresh")]

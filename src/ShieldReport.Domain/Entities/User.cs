@@ -55,9 +55,16 @@ public sealed class User : BaseEntity
         IsClientPortalUser = false;
     }
 
+    // Users are never deleted (their name stays on engagements, findings, reports and the audit
+    // log); they are deactivated instead. Login and token refresh reject inactive users.
     public void Disable()
     {
         IsActive = false;
+    }
+
+    public void Activate()
+    {
+        IsActive = true;
     }
 
     public void UpdateProfile(string fullName, string email, string? profileImageUrl = null)

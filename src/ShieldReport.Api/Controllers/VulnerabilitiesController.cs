@@ -50,9 +50,12 @@ public sealed class VulnerabilitiesController : ControllerBase
         [FromQuery] long? scanId,
         [FromQuery] Severity? severity,
         [FromQuery] PatchStatus? patchStatus,
+        [FromQuery] long? clientAssetId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
         CancellationToken cancellationToken)
     {
-        var vulnerabilities = await _vulnerabilityService.ListAsync(request, clientOrganizationId, engagementId, scanId, severity, patchStatus, cancellationToken);
+        var vulnerabilities = await _vulnerabilityService.ListAsync(request, clientOrganizationId, engagementId, scanId, severity, patchStatus, clientAssetId, from, to, cancellationToken);
         return Ok(ApiResponse<PagedResult<VulnerabilityDto>>.SuccessResponse(vulnerabilities, "Vulnerabilities retrieved successfully"));
     }
 

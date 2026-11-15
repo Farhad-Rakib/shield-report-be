@@ -27,9 +27,39 @@ public sealed class ClientOrganizationRepository : BaseRepository<ClientOrganiza
         int page,
         int pageSize,
         string? search,
+        long? clientOrganizationId,
+        long? clientAssetId,
+        DateTime? from,
+        DateTime? to,
         CancellationToken cancellationToken = default)
     {
         var query = DbSet.AsQueryable();
+
+        if (clientOrganizationId.HasValue)
+        {
+            query = query.Where(x => x.Id == clientOrganizationId.Value);
+        }
+
+        // The organization that owns the asset.
+        if (clientAssetId.HasValue)
+        {
+            var assetId = clientAssetId.Value;
+            query = query.Where(x => DbContext.ClientAssets.Any(a => a.Id == assetId && a.ClientOrganizationId == x.Id));
+        }
+
+        // Date-only range; `to` is inclusive (whole end day).
+        var fromDate = from?.Date;
+        var toExclusive = to?.Date.AddDays(1);
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(x => x.CreatedAt >= fromDate.Value);
+        }
+
+        if (toExclusive.HasValue)
+        {
+            query = query.Where(x => x.CreatedAt < toExclusive.Value);
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {

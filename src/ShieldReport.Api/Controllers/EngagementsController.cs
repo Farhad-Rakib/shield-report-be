@@ -50,9 +50,15 @@ public sealed class EngagementsController : ControllerBase
     [HttpGet]
     [Authorize(Policy = Permissions.EngagementsRead)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<EngagementDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> List([FromQuery] PagedRequest request, [FromQuery] long? clientOrganizationId, CancellationToken cancellationToken)
+    public async Task<IActionResult> List(
+        [FromQuery] PagedRequest request,
+        [FromQuery] long? clientOrganizationId,
+        [FromQuery] long? clientAssetId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
     {
-        var engagements = await _engagementService.ListEngagementsAsync(request, clientOrganizationId, cancellationToken);
+        var engagements = await _engagementService.ListEngagementsAsync(request, clientOrganizationId, clientAssetId, from, to, cancellationToken);
         return Ok(ApiResponse<PagedResult<EngagementDto>>.SuccessResponse(engagements, "Engagements retrieved successfully"));
     }
 

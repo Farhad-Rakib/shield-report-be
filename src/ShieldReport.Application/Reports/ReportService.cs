@@ -72,7 +72,7 @@ public sealed class ReportService : IReportService
     {
         var engagement = await _engagementRepository.GetByIdWithDetailsAsync(engagementId, cancellationToken)
             ?? throw new AppException("Engagement not found.", 404);
-        var template = await ResolveTemplateAsync(request.TemplateId, cancellationToken);
+        var template = await ResolveTemplateAsync(request.TemplateId, request.TestingType ?? engagement.TestingType, cancellationToken);
 
         if (request.TestingType is { } testingType && testingType != engagement.TestingType)
         {
@@ -125,13 +125,13 @@ public sealed class ReportService : IReportService
     {
         var engagement = await _engagementRepository.GetByIdWithDetailsAsync(engagementId, cancellationToken)
             ?? throw new AppException("Engagement not found.", 404);
-        var template = await ResolveTemplateAsync(request.TemplateId, cancellationToken);
+        var testingType = request.TestingType ?? engagement.TestingType;
+        var template = await ResolveTemplateAsync(request.TemplateId, testingType, cancellationToken);
         if (UsesLegacyDocxEngine(template))
         {
             throw new AppException($"\"{template.Name}\" is a legacy Word template and has no HTML preview. Generate the report and download the Word file instead.", 400);
         }
 
-        var testingType = request.TestingType ?? engagement.TestingType;
         var includedFindings = await _vulnerabilityRepository.GetReportIncludedByEngagementIdAsync(engagementId, cancellationToken);
         var nextVersion = await _reportRepository.GetLatestVersionAsync(engagementId, cancellationToken) + 1;
 
@@ -145,7 +145,7 @@ public sealed class ReportService : IReportService
             request.ShowToolNames);
 
         var model = await BuildRenderModelAsync(report, engagement, template, includedFindings, cancellationToken, testingType);
-        return await _htmlRenderer.RenderHtmlAsync(model, template.HtmlContent, cancellationToken);
+        return await _htmlRenderer.RenderHtmlAsync(model, _htmlRenderer.ResolveTemplateHtml(template, testingType), cancellationToken);
     }
 
     public async Task<ReportDto> RequestNarrativeDraftAsync(long id, CancellationToken cancellationToken = default)
@@ -242,11 +242,13 @@ public sealed class ReportService : IReportService
         var templates = await _reportTemplateRepository.GetAllAsync(cancellationToken);
         return templates
             .OrderByDescending(t => t.IsDefault).ThenBy(t => t.Name)
-            .Select(t => new ReportTemplateOptionDto(t.Id, t.Name, t.IsDefault, UsesLegacyDocxEngine(t) ? "Word" : "Html", !string.IsNullOrWhiteSpace(t.HtmlContent)))
+            .Select(t => new ReportTemplateOptionDto(t.Id, t.Name, t.IsDefault, UsesLegacyDocxEngine(t) ? "Word" : "Html", !string.IsNullOrWhiteSpace(t.HtmlContent), t.BuiltInTestingType))
             .ToList();
     }
 
-    private async Task<ReportTemplate> ResolveTemplateAsync(long? templateId, CancellationToken cancellationToken)
+    // No explicit template: the built-in template of the engagement's testing type, then the
+    // default one (the Generate dialog preselects the same way).
+    private async Task<ReportTemplate> ResolveTemplateAsync(long? templateId, TestingType testingType, CancellationToken cancellationToken)
     {
         if (templateId is { } id)
         {
@@ -254,7 +256,9 @@ public sealed class ReportService : IReportService
                 ?? throw new AppException("Report template not found.", 404);
         }
 
-        return await _reportTemplateRepository.GetDefaultAsync(cancellationToken)
+        var templates = await _reportTemplateRepository.GetAllAsync(cancellationToken);
+        return templates.Where(t => t.BuiltInTestingType == testingType).OrderBy(t => t.Id).FirstOrDefault()
+            ?? templates.FirstOrDefault(t => t.IsDefault)
             ?? throw new AppException("No report template is configured.", 400);
     }
 
@@ -466,7 +470,7 @@ public sealed class ReportService : IReportService
     private async Task RenderHtmlEngineAsync(Report report, Engagement engagement, ReportTemplate template, IReadOnlyList<Vulnerability> findings, CancellationToken cancellationToken)
     {
         var model = await BuildRenderModelAsync(report, engagement, template, findings, cancellationToken);
-        var html = await _htmlRenderer.RenderHtmlAsync(model, template.HtmlContent, cancellationToken);
+        var html = await _htmlRenderer.RenderHtmlAsync(model, _htmlRenderer.ResolveTemplateHtml(template, engagement.TestingType), cancellationToken);
         var pdf = await _htmlRenderer.RenderPdfAsync(html, cancellationToken);
         var docx = await _htmlRenderer.RenderDocxAsync(html, cancellationToken);
 

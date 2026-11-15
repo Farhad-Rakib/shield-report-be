@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IMenuService, MenuService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IDashboardLayoutService, DashboardLayoutService>();
+        services.AddScoped<ShieldReport.Application.FindingsReport.IFindingsReportService, ShieldReport.Application.FindingsReport.FindingsReportService>();
         services.AddScoped<IRegistrationInviteService, RegistrationInviteService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IEngagementService, EngagementService>();
@@ -63,6 +64,7 @@ public static class DependencyInjection
         services.AddScoped<IReportNarrativeDraftingService, ReportNarrativeDraftingService>();
         services.AddScoped<ShieldReport.Application.CustomScanTools.ICustomScanToolService, ShieldReport.Application.CustomScanTools.CustomScanToolService>();
         services.AddScoped<ShieldReport.Application.LlmPrompts.ILlmPromptService, ShieldReport.Application.LlmPrompts.LlmPromptService>();
+        services.AddScoped<ShieldReport.Application.LlmProviderCatalog.ILlmProviderCatalogService, ShieldReport.Application.LlmProviderCatalog.LlmProviderCatalogService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 

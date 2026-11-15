@@ -6,7 +6,7 @@ namespace ShieldReport.Application.Engagements;
 
 public interface IEngagementService
 {
-    Task<PagedResult<EngagementDto>> ListEngagementsAsync(PagedRequest request, long? clientOrganizationId, CancellationToken cancellationToken = default);
+    Task<PagedResult<EngagementDto>> ListEngagementsAsync(PagedRequest request, long? clientOrganizationId, long? clientAssetId, DateTime? from, DateTime? to, CancellationToken cancellationToken = default);
     Task<EngagementDto> GetByIdAsync(long id, CancellationToken cancellationToken = default);
     Task<EngagementDto> CreateAsync(CreateEngagementRequestDto request, long createdByUserId, CancellationToken cancellationToken = default);
     Task<EngagementDto> UpdateAsync(long id, UpdateEngagementRequestDto request, CancellationToken cancellationToken = default);

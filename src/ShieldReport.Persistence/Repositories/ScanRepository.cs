@@ -106,9 +106,26 @@ public sealed class ScanRepository : BaseRepository<Scan>, IScanRepository
         long? clientAssetId,
         long? engagementId,
         ScanStatus? status,
+        DateTime? from,
+        DateTime? to,
         CancellationToken cancellationToken = default)
     {
         var query = DbSet.Include(x => x.ClientAsset).Include(x => x.NextScan).AsQueryable();
+
+        // Date-only range; `to` is inclusive (whole end day).
+        var fromDate = from?.Date;
+        var toExclusive = to?.Date.AddDays(1);
+
+        // Date range is on when the scan was queued (its creation time).
+        if (fromDate.HasValue)
+        {
+            query = query.Where(x => x.QueuedAt >= fromDate.Value);
+        }
+
+        if (toExclusive.HasValue)
+        {
+            query = query.Where(x => x.QueuedAt < toExclusive.Value);
+        }
 
         if (clientOrganizationId.HasValue)
         {

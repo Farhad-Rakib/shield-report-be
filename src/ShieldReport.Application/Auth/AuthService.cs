@@ -142,37 +142,6 @@ public sealed class AuthService : IAuthService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<UserRegistrationResult> RegisterAsync(RegisterUserRequestDto request, CancellationToken cancellationToken = default)
-    {
-        var existing = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
-        if (existing is not null)
-        {
-            throw new AppException("Email is already registered.");
-        }
-
-        var hashedPassword = _passwordHasher.Hash(request.Password);
-        var user = new User(request.FullName, request.Email, hashedPassword);
-
-        var roles = await _roleRepository.GetByNamesAsync(request.Roles, cancellationToken);
-        user.SetRoles(roles.Select(role => new UserRole
-        {
-            UserId = user.Id,
-            RoleId = role.Id,
-            User = user,
-            Role = role
-        }));
-
-        await _userRepository.AddAsync(user, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return new UserRegistrationResult(new UserDto(
-            user.Id,
-            user.FullName,
-            user.Email,
-            user.IsActive,
-            roles.Select(r => r.Name).ToList()));
-    }
-
     public async Task<ForgotPasswordResponseDto> ForgotPasswordAsync(Dtos.ForgotPasswordRequestDto request, CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);

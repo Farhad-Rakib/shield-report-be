@@ -42,9 +42,32 @@ public sealed class ClientAssetsController : ControllerBase
     [ClientScope]
     [Authorize(Policy = Permissions.ClientAssetsRead)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ClientAssetDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListForClient(long clientId, [FromQuery] PagedRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> ListForClient(
+        long clientId,
+        [FromQuery] PagedRequest request,
+        [FromQuery] long? clientAssetId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
     {
-        var assets = await _clientAssetService.ListAsync(request, clientId, cancellationToken);
+        var assets = await _clientAssetService.ListAsync(request, clientId, clientAssetId, from, to, cancellationToken);
+        return Ok(ApiResponse<PagedResult<ClientAssetDto>>.SuccessResponse(assets, "Client assets retrieved successfully"));
+    }
+
+    // All-clients asset list for staff list pages. No route clientId, so [ClientScope] can't apply;
+    // the ClientAsset query filter still limits client-portal callers to their own org.
+    [HttpGet("assets")]
+    [Authorize(Policy = Permissions.ClientAssetsRead)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<ClientAssetDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> List(
+        [FromQuery] PagedRequest request,
+        [FromQuery] long? clientOrganizationId,
+        [FromQuery] long? clientAssetId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
+    {
+        var assets = await _clientAssetService.ListAsync(request, clientOrganizationId, clientAssetId, from, to, cancellationToken);
         return Ok(ApiResponse<PagedResult<ClientAssetDto>>.SuccessResponse(assets, "Client assets retrieved successfully"));
     }
 

@@ -17,9 +17,9 @@ public sealed class ClientAssetService : IClientAssetService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PagedResult<ClientAssetDto>> ListAsync(PagedRequest request, long? clientOrganizationId, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<ClientAssetDto>> ListAsync(PagedRequest request, long? clientOrganizationId, long? clientAssetId, DateTime? from, DateTime? to, CancellationToken cancellationToken = default)
     {
-        var (items, total) = await _clientAssetRepository.GetPagedAsync(request.Page, request.PageSize, request.Search, clientOrganizationId, cancellationToken);
+        var (items, total) = await _clientAssetRepository.GetPagedAsync(request.Page, request.PageSize, request.Search, clientOrganizationId, clientAssetId, from, to, cancellationToken);
         return PagedResult<ClientAssetDto>.Create(items.Select(ToDto).ToList(), total, request.Page, request.PageSize);
     }
 

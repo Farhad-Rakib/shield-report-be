@@ -1,5 +1,8 @@
 
+using ShieldReport.Application.Common.Exceptions;
 using ShieldReport.Application.Common.Interfaces;
+using ShieldReport.Application.Common.Interfaces.Security;
+using ShieldReport.Domain.Enums;
 using ShieldReport.Application.Roles.Dtos;
 using ShieldReport.Application.Users.Dtos;
 using ShieldReport.Domain.Entities;
@@ -11,12 +14,48 @@ public sealed class UserService : IUserService
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IUnitOfWork unitOfWork)
+    // Client-portal roles need an organization, which only the registration-invite flow sets.
+    private static readonly HashSet<string> ClientRoles = [SystemRoles.ClientAdmin, SystemRoles.ClientUser];
+
+    public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;
         _unitOfWork = unitOfWork;
+        _passwordHasher = passwordHasher;
+    }
+
+    public async Task<UserDto> CreateAsync(CreateUserRequestDto request, bool actingIsSuperAdmin, CancellationToken cancellationToken = default)
+    {
+        if (await _userRepository.GetByEmailAsync(request.Email, cancellationToken) is not null)
+        {
+            throw new AppException("A user with this email already exists.", 409);
+        }
+
+        var roles = new List<Role>();
+        foreach (var roleId in request.RoleIds.Distinct())
+        {
+            roles.Add(await _roleRepository.GetByIdWithPermissionsAsync(roleId, cancellationToken)
+                ?? throw new AppException($"Role {roleId} not found."));
+        }
+
+        if (roles.Any(r => ClientRoles.Contains(r.Name)))
+        {
+            throw new AppException("Client users must be invited (Administration -> Registration Invites) so they are linked to their organization.");
+        }
+
+        if (!actingIsSuperAdmin && roles.Any(r => r.Name == SystemRoles.SuperAdmin))
+        {
+            throw new AppException("Only a SuperAdmin can create another SuperAdmin.", 403);
+        }
+
+        var user = new User(request.FullName, request.Email, _passwordHasher.Hash(request.Password));
+        user.SetRoles(roles.Select(role => new UserRole { UserId = user.Id, RoleId = role.Id, User = user, Role = role }));
+        await _userRepository.AddAsync(user, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return await MapUserAsync(user.Id, cancellationToken);
     }
 
     public async Task<IReadOnlyList<UserDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -158,6 +197,52 @@ public sealed class UserService : IUserService
         _userRepository.Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        return await MapUserAsync(user.Id, cancellationToken);
+    }
+
+    public async Task<UserDto> SetActiveAsync(long userId, bool isActive, long? actingUserId, bool actingIsSuperAdmin, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdWithRolesAsync(userId, cancellationToken)
+            ?? throw new AppException("User not found.", 404);
+
+        if (user.IsActive == isActive)
+        {
+            return await MapUserAsync(user.Id, cancellationToken);
+        }
+
+        if (!isActive && actingUserId == user.Id)
+        {
+            throw new AppException("You can't deactivate your own account.");
+        }
+
+        var targetIsSuperAdmin = user.UserRoles.Any(ur => ur.Role.Name == SystemRoles.SuperAdmin);
+        if (targetIsSuperAdmin && !actingIsSuperAdmin)
+        {
+            throw new AppException("Only a SuperAdmin can change a SuperAdmin's status.", 403);
+        }
+
+        if (!isActive && targetIsSuperAdmin)
+        {
+            var activeSuperAdmins = (await _userRepository.GetAllAsync(cancellationToken))
+                .Count(u => u.IsActive && u.UserRoles.Any(ur => ur.Role.Name == SystemRoles.SuperAdmin));
+            if (activeSuperAdmins <= 1)
+            {
+                throw new AppException("The last active SuperAdmin can't be deactivated.");
+            }
+        }
+
+        if (isActive)
+        {
+            user.Activate();
+        }
+        else
+        {
+            user.Disable();
+        }
+
+        user.UpdatedAt = DateTime.UtcNow;
+        _userRepository.Update(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return await MapUserAsync(user.Id, cancellationToken);
     }
 

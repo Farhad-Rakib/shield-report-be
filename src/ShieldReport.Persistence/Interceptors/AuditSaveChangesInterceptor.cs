@@ -90,6 +90,18 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
         }
 
         context.ChangeTracker.DetectChanges();
+
+        // Stamp the creator on new rows (BaseEntity.CreatedBy was never filled before). Used by the
+        // per-user data visibility filters: a restricted user still sees the clients and assets
+        // they created themselves. 0 = system/background work or rows created before this.
+        if (_currentUserService.UserId is { } creatorId)
+        {
+            foreach (var added in context.ChangeTracker.Entries<BaseEntity>().Where(e => e.State == EntityState.Added && e.Entity.CreatedBy == 0))
+            {
+                added.Entity.CreatedBy = creatorId;
+            }
+        }
+
         var pending = new List<PendingAudit>();
 
         foreach (var entry in context.ChangeTracker.Entries())

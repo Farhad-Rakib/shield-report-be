@@ -49,9 +49,11 @@ namespace ShieldReport.Persistence.Seeding
             var ai = await UpsertAsync(dbContext, "AI", null, "Bot", null, null, ++order);
             await UpsertAsync(dbContext, "Providers & Models", "/llm-providers", "Cpu", Permissions.LlmProviderConfigurationsRead, ai, 1);
             await UpsertAsync(dbContext, "Prompt Library", "/llm-prompts", "ScrollText", Permissions.LlmProviderConfigurationsRead, ai, 2);
+            await UpsertAsync(dbContext, "Provider List", "/llm-provider-catalog", "ListTree", Permissions.LlmProviderConfigurationsRead, ai, 3);
 
             var reporting = await UpsertAsync(dbContext, "Reporting", null, "FileText", null, null, ++order);
             await UpsertAsync(dbContext, "Report Templates", "/report-templates", "FileCode2", Permissions.ReportTemplatesRead, reporting, 1);
+            await UpsertAsync(dbContext, "Findings Report", "/findings-report", "ClipboardList", Permissions.FindingsReportRead, reporting, 2);
 
             var admin = await UpsertAsync(dbContext, "Administration", null, "KeyRound", null, null, ++order);
             await UpsertAsync(dbContext, "Users", "/users", "users", Permissions.UsersRead, admin, 1);

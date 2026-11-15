@@ -45,4 +45,4 @@ public sealed record UpdateReportSectionsRequestDto(
     Dictionary<string, string>? CustomFieldValues = null);
 
 // Engine: "Html" (preview available) or "Word" (legacy uploaded .docx, no preview).
-public sealed record ReportTemplateOptionDto(long Id, string Name, bool IsDefault, string Engine, bool IsCustomHtml);
+public sealed record ReportTemplateOptionDto(long Id, string Name, bool IsDefault, string Engine, bool IsCustomHtml, ShieldReport.Domain.Enums.TestingType? BuiltInTestingType = null);

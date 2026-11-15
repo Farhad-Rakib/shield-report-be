@@ -1,3 +1,5 @@
+using ShieldReport.Domain.Enums;
+
 namespace ShieldReport.Domain.Entities;
 
 // One row with DocxTemplatePath == null (the seeded default) always fills the embedded, byte-
@@ -18,6 +20,12 @@ public sealed class ReportTemplate : BaseEntity
     // Admin-defined dynamic fields ([{key,label,type,defaultValue,help}]), filled per report and
     // available to the template as {{Custom.<key>}} (escape user text with {{{text Custom.<key>}}}).
     public string CustomFieldsJson { get; private set; } = "[]";
+    // Which built-in HTML template this row falls back to while HtmlContent is null (White, Gray
+    // or Black Box). Null = a user-created template, which falls back to the template matching
+    // the engagement's testing type. Also used to pick the default template for an engagement.
+    public TestingType? BuiltInTestingType { get; private set; }
+
+    public void SetBuiltInTestingType(TestingType? testingType) => BuiltInTestingType = testingType;
 
     public void SetCustomFields(string customFieldsJson)
     {

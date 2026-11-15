@@ -159,6 +159,18 @@ public static class Permissions
     public const string ReportTemplatesUpdate = "report-templates.update";
     public const string ReportTemplatesDelete = "report-templates.delete";
 
+    // Cross-project findings report (Reporting -> Findings Report): clients, assets tested and
+    // vulnerabilities grouped client -> asset, filtered by client/asset/date range.
+    public const string FindingsReportRead = "findings-report.read";
+
+    // Data visibility. Staff users WITHOUT this permission only see engagements where they are
+    // the lead pentester or an assignee, and the clients, assets, scans, vulnerabilities and
+    // reports that belong to those engagements (EF query filters in ApplicationDbContext).
+    // SuperAdmin always sees everything. Deliberately NOT auto-granted to Admin by RbacSeeder
+    // (the seeder re-adds missing grants on every start, so a revoke would not stick): grant it
+    // per role on the Role Permissions page.
+    public const string DataViewAll = "data.view-all";
+
     public static readonly string[] All =
     [
         UsersRead,
@@ -263,6 +275,8 @@ public static class Permissions
         ReportTemplatesRead,
         ReportTemplatesCreate,
         ReportTemplatesUpdate,
-        ReportTemplatesDelete
+        ReportTemplatesDelete,
+        FindingsReportRead,
+        DataViewAll
     ];
 }

@@ -11,5 +11,8 @@ public interface IClientAssetRepository : IRepository<ClientAsset>
         int pageSize,
         string? search,
         long? clientOrganizationId,
+        long? clientAssetId,
+        DateTime? from,
+        DateTime? to,
         CancellationToken cancellationToken = default);
 }

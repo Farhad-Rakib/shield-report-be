@@ -2,7 +2,10 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShieldReport.Api.Common;
+using FluentValidation;
+using ShieldReport.Application.Common.Interfaces;
 using ShieldReport.Application.Security;
+using ShieldReport.Domain.Enums;
 using ShieldReport.Application.Roles.Dtos;
 using ShieldReport.Application.Users;
 using ShieldReport.Application.Users.Dtos;
@@ -16,10 +19,41 @@ namespace ShieldReport.Api.Controllers;
 public sealed class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IValidator<CreateUserRequestDto> _createValidator;
 
-    public UsersController(IUserService userService)
+    public UsersController(IUserService userService, ICurrentUserService currentUserService, IValidator<CreateUserRequestDto> createValidator)
     {
         _userService = userService;
+        _currentUserService = currentUserService;
+        _createValidator = createValidator;
+    }
+
+    /// <summary>
+    /// Create a staff user (replaces the removed anonymous POST /Auth/register). Client-portal users
+    /// are invited instead; only a SuperAdmin can create a SuperAdmin.
+    /// </summary>
+    [HttpPost]
+    [Authorize(Policy = Permissions.UsersCreate)]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Create([FromBody] CreateUserRequestDto request, CancellationToken cancellationToken)
+    {
+        await _createValidator.ValidateAndThrowAsync(request, cancellationToken);
+        var user = await _userService.CreateAsync(request, User.IsInRole(SystemRoles.SuperAdmin), cancellationToken);
+        return Ok(ApiResponse<UserDto>.SuccessResponse(user, "User created successfully"));
+    }
+
+    /// <summary>
+    /// Activate or deactivate a user. Users are never deleted; a deactivated user can't sign in or
+    /// refresh a session (an access token already issued stays valid until it expires).
+    /// </summary>
+    [HttpPut("{id:long}/status")]
+    [Authorize(Policy = Permissions.UsersUpdate)]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SetStatus(long id, [FromBody] SetUserStatusRequestDto request, CancellationToken cancellationToken)
+    {
+        var user = await _userService.SetActiveAsync(id, request.IsActive, _currentUserService.UserId, User.IsInRole(SystemRoles.SuperAdmin), cancellationToken);
+        return Ok(ApiResponse<UserDto>.SuccessResponse(user, request.IsActive ? "User activated" : "User deactivated"));
     }
 
     [HttpGet]
