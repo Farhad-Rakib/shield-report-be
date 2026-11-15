@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IDashboardLayoutService, DashboardLayoutService>();
         services.AddScoped<ShieldReport.Application.FindingsReport.IFindingsReportService, ShieldReport.Application.FindingsReport.FindingsReportService>();
+        services.AddScoped<ShieldReport.Application.FindingsReport.IFindingsReportExportService, ShieldReport.Application.FindingsReport.FindingsReportExportService>();
         services.AddScoped<IRegistrationInviteService, RegistrationInviteService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IEngagementService, EngagementService>();

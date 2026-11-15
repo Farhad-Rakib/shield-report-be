@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ShieldReport.Application.Common.Exceptions;
+using ShieldReport.Domain.Enums;
 
 namespace ShieldReport.Application.ReportTemplates;
 
@@ -105,4 +106,28 @@ public static partial class ReportTemplateFields
         new("{{asset \"logo.png\"}}", "Built-in images: logo.png, cover.png, vapt-cycle.png, scope-white.png, scope-gray.png, assessment-flow.png, black-flow.png", "Helpers"),
         new("{{Custom.yourKey}}", "Your dynamic fields (defined on this template, filled per report), inline and escaped. Multiline fields: {{{text Custom.yourKey}}} (paragraphs and bullets, use outside <p>)", "Custom fields"),
     ];
+
+    // Variables of a Findings summary template (FindingsSummaryRenderModel).
+    public static readonly IReadOnlyList<ReportTemplateVariable> FindingsSummaryVariables =
+    [
+        new("{{CompanyName}}", "Your company name (template setting)", "General"),
+        new("{{formatDate GeneratedAt}}", "Export date", "General"),
+        new("{{GeneratedBy}}", "User who exported the report", "General"),
+        new("{{FilterDescription}}", "All filters in one line", "Filters"),
+        new("{{Filters.Client}}", "Also Filters.Asset, Filters.Period, Filters.Severity, Filters.Status (\"All clients\" … when not filtered)", "Filters"),
+        new("{{Summary.ClientCount}}", "Also AssetsTested, TotalVulnerabilities, OpenVulnerabilities, ClosedVulnerabilities", "Summary"),
+        new("{{Counts.Critical}}", "Also High, Medium, Low, Informational, Total", "Summary"),
+        new("{{severityBreakdown Counts}}", "\"2 critical, 3 high …\" sentence", "Summary"),
+        new("<img src=\"{{SeverityChart}}\">", "Severity chart image (empty when there are no findings)", "Summary"),
+        new("{{#if Truncated}}…{{/if}}", "True when more than {{VulnerabilityLimit}} rows matched (counts stay complete)", "Summary"),
+        new("{{#each Clients}}…{{/each}}", "Each client: Name, Anchor, AssetsTested, OpenVulnerabilities, Counts, Assets", "Clients"),
+        new("{{#each Assets}}…{{/each}}", "Inside a client: Name, Anchor, Identifier, AssetType, LastScannedAt, ScanCount, OpenVulnerabilities, Counts, Vulnerabilities", "Clients"),
+        new("{{#each Vulnerabilities}}…{{/each}}", "Inside an asset: Id, Title, Severity, CvssScore, Status, Endpoint, Engagement, FirstSeen, ClosedAt", "Clients"),
+        new("{{upper Severity}}", "Helpers: upper, formatDate, numberWords, eq (e.g. {{#if (eq Severity \"High\")}})", "Helpers"),
+        new("{{asset \"logo.png\"}}", "Built-in images: logo.png, cover.jpg", "Helpers"),
+        new("{{Custom.yourKey}}", "Your dynamic fields (defined on this template, filled at export), inline and escaped. Multiline fields: {{{text Custom.yourKey}}}", "Custom fields"),
+    ];
+
+    public static IReadOnlyList<ReportTemplateVariable> VariablesFor(ReportTemplateKind kind) =>
+        kind == ReportTemplateKind.FindingsSummary ? FindingsSummaryVariables : Variables;
 }

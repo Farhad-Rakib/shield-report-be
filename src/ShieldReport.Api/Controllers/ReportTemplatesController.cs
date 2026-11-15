@@ -6,6 +6,7 @@ using ShieldReport.Api.Common;
 using ShieldReport.Application.ReportTemplates;
 using ShieldReport.Application.ReportTemplates.Dtos;
 using ShieldReport.Application.Security;
+using ShieldReport.Domain.Enums;
 
 namespace ShieldReport.Api.Controllers;
 
@@ -62,15 +63,6 @@ public sealed class ReportTemplatesController : ControllerBase
         await using var stream = file.OpenReadStream();
         var template = await _reportTemplateService.UploadDocxTemplateAsync(id, stream, file.FileName, cancellationToken);
         return Ok(ApiResponse<ReportTemplateDto>.SuccessResponse(template, "Template document uploaded successfully"));
-    }
-
-    [HttpPost("{id:long}/set-default")]
-    [Authorize(Policy = Permissions.ReportTemplatesUpdate)]
-    [ProducesResponseType(typeof(ApiResponse<ReportTemplateDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> SetDefault(long id, CancellationToken cancellationToken)
-    {
-        var template = await _reportTemplateService.SetDefaultAsync(id, cancellationToken);
-        return Ok(ApiResponse<ReportTemplateDto>.SuccessResponse(template, "Default report template updated"));
     }
 
     [HttpDelete("{id:long}/docx-template")]
@@ -139,8 +131,8 @@ public sealed class ReportTemplatesController : ControllerBase
 
     [HttpGet("variables")]
     [Authorize(Policy = Permissions.ReportTemplatesRead)]
-    public IActionResult Variables() =>
-        Ok(ApiResponse<IReadOnlyList<ReportTemplateVariable>>.SuccessResponse(ReportTemplateFields.Variables, "Template variables"));
+    public IActionResult Variables([FromQuery] ReportTemplateKind kind = ReportTemplateKind.Engagement) =>
+        Ok(ApiResponse<IReadOnlyList<ReportTemplateVariable>>.SuccessResponse(ReportTemplateFields.VariablesFor(kind), "Template variables"));
 
     [HttpDelete("{id:long}/html")]
     [Authorize(Policy = Permissions.ReportTemplatesUpdate)]

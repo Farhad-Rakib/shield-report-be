@@ -34,7 +34,7 @@ public sealed record ReportDto(
     IReadOnlyDictionary<string, string>? CustomFieldValues = null
 );
 
-public sealed record ReportPreviewRequestDto(long? TemplateId = null, ShieldReport.Domain.Enums.TestingType? TestingType = null, bool ShowToolNames = false);
+public sealed record ReportPreviewRequestDto(long? TemplateId = null, ShieldReport.Domain.Enums.TestingType? TestingType = null, bool ShowToolNames = false, Dictionary<string, string>? CustomFieldValues = null);
 
 // Per-report editable sections beyond the three narrative fields (see ReportSectionDefaults).
 public sealed record UpdateReportSectionsRequestDto(
@@ -45,4 +45,5 @@ public sealed record UpdateReportSectionsRequestDto(
     Dictionary<string, string>? CustomFieldValues = null);
 
 // Engine: "Html" (preview available) or "Word" (legacy uploaded .docx, no preview).
-public sealed record ReportTemplateOptionDto(long Id, string Name, bool IsDefault, string Engine, bool IsCustomHtml, ShieldReport.Domain.Enums.TestingType? BuiltInTestingType = null);
+// CustomFields: the template's dynamic fields, filled in the Generate dialog.
+public sealed record ReportTemplateOptionDto(long Id, string Name, string Engine, bool IsCustomHtml, ShieldReport.Domain.Enums.TestingType? BuiltInTestingType, IReadOnlyList<ShieldReport.Application.ReportTemplates.ReportTemplateField> CustomFields);

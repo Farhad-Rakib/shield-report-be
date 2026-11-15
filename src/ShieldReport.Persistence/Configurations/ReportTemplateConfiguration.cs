@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ShieldReport.Domain.Entities;
+using ShieldReport.Domain.Enums;
 
 namespace ShieldReport.Persistence.Configurations;
 
@@ -16,5 +17,6 @@ public sealed class ReportTemplateConfiguration : IEntityTypeConfiguration<Repor
         builder.Property(x => x.DocxTemplatePath).HasMaxLength(500);
         builder.Property(x => x.DocxTemplateFileName).HasMaxLength(300);
         builder.Property(x => x.BuiltInTestingType).HasConversion<byte?>();
+        builder.Property(x => x.Kind).HasConversion<byte>().HasDefaultValue(ReportTemplateKind.Engagement);
     }
 }

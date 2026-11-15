@@ -1347,8 +1347,10 @@ namespace ShieldReport.Persistence.Migrations
                     b.Property<string>("HtmlContent")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDefault")
-                        .HasColumnType("bit");
+                    b.Property<byte>("Kind")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
 
                     b.Property<string>("Name")
                         .IsRequired()

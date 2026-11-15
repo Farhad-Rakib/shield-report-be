@@ -6,7 +6,7 @@ public sealed record ReportTemplateDto(
     long Id,
     string Name,
     string CompanyDisplayName,
-    bool IsDefault,
+    ReportTemplateKind Kind,
     bool HasCustomDocxTemplate,
     string? DocxTemplateFileName,
     bool HasCustomHtmlTemplate,

@@ -72,7 +72,8 @@ public sealed class ReportService : IReportService
     {
         var engagement = await _engagementRepository.GetByIdWithDetailsAsync(engagementId, cancellationToken)
             ?? throw new AppException("Engagement not found.", 404);
-        var template = await ResolveTemplateAsync(request.TemplateId, request.TestingType ?? engagement.TestingType, cancellationToken);
+        var template = await ResolveTemplateAsync(request.TemplateId, cancellationToken);
+        var customValuesJson = BuildCustomFieldValuesJson(template, request.CustomFieldValues, enforceRequired: true);
 
         if (request.TestingType is { } testingType && testingType != engagement.TestingType)
         {
@@ -93,6 +94,7 @@ public sealed class ReportService : IReportService
             ReportSectionDefaults.Limitations(engagement.TestingType),
             "{}",
             request.ShowToolNames);
+        report.SetCustomFieldValues(customValuesJson);
 
         if (UsesLegacyDocxEngine(template))
         {
@@ -126,7 +128,7 @@ public sealed class ReportService : IReportService
         var engagement = await _engagementRepository.GetByIdWithDetailsAsync(engagementId, cancellationToken)
             ?? throw new AppException("Engagement not found.", 404);
         var testingType = request.TestingType ?? engagement.TestingType;
-        var template = await ResolveTemplateAsync(request.TemplateId, testingType, cancellationToken);
+        var template = await ResolveTemplateAsync(request.TemplateId, cancellationToken);
         if (UsesLegacyDocxEngine(template))
         {
             throw new AppException($"\"{template.Name}\" is a legacy Word template and has no HTML preview. Generate the report and download the Word file instead.", 400);
@@ -143,6 +145,7 @@ public sealed class ReportService : IReportService
             ReportSectionDefaults.Limitations(testingType),
             "{}",
             request.ShowToolNames);
+        report.SetCustomFieldValues(BuildCustomFieldValuesJson(template, request.CustomFieldValues, enforceRequired: false));
 
         var model = await BuildRenderModelAsync(report, engagement, template, includedFindings, cancellationToken, testingType);
         return await _htmlRenderer.RenderHtmlAsync(model, _htmlRenderer.ResolveTemplateHtml(template, testingType), cancellationToken);
@@ -237,29 +240,60 @@ public sealed class ReportService : IReportService
         _ => ex.Message,
     };
 
+    // Engagement-kind templates only (Findings summary templates belong to the Findings Report),
+    // with their dynamic fields so the Generate dialog can ask for the values.
     public async Task<IReadOnlyList<ReportTemplateOptionDto>> GetTemplateOptionsAsync(CancellationToken cancellationToken = default)
     {
         var templates = await _reportTemplateRepository.GetAllAsync(cancellationToken);
         return templates
-            .OrderByDescending(t => t.IsDefault).ThenBy(t => t.Name)
-            .Select(t => new ReportTemplateOptionDto(t.Id, t.Name, t.IsDefault, UsesLegacyDocxEngine(t) ? "Word" : "Html", !string.IsNullOrWhiteSpace(t.HtmlContent), t.BuiltInTestingType))
+            .Where(t => t.Kind == ReportTemplateKind.Engagement)
+            .OrderBy(t => t.BuiltInTestingType is null).ThenBy(t => t.BuiltInTestingType).ThenBy(t => t.Name)
+            .Select(t => new ReportTemplateOptionDto(
+                t.Id, t.Name, UsesLegacyDocxEngine(t) ? "Word" : "Html", !string.IsNullOrWhiteSpace(t.HtmlContent), t.BuiltInTestingType,
+                ShieldReport.Application.ReportTemplates.ReportTemplateFields.Parse(t.CustomFieldsJson)))
             .ToList();
     }
 
-    // No explicit template: the built-in template of the engagement's testing type, then the
-    // default one (the Generate dialog preselects the same way).
-    private async Task<ReportTemplate> ResolveTemplateAsync(long? templateId, TestingType testingType, CancellationToken cancellationToken)
+    // There is no default template: the caller must name an Engagement-kind template.
+    private async Task<ReportTemplate> ResolveTemplateAsync(long? templateId, CancellationToken cancellationToken)
     {
-        if (templateId is { } id)
+        if (templateId is not { } id)
         {
-            return await _reportTemplateRepository.GetByIdAsync(id, cancellationToken)
-                ?? throw new AppException("Report template not found.", 404);
+            throw new AppException("Choose a report template.", 400);
         }
 
-        var templates = await _reportTemplateRepository.GetAllAsync(cancellationToken);
-        return templates.Where(t => t.BuiltInTestingType == testingType).OrderBy(t => t.Id).FirstOrDefault()
-            ?? templates.FirstOrDefault(t => t.IsDefault)
-            ?? throw new AppException("No report template is configured.", 400);
+        var template = await _reportTemplateRepository.GetByIdAsync(id, cancellationToken)
+            ?? throw new AppException("Report template not found.", 404);
+        if (template.Kind != ReportTemplateKind.Engagement)
+        {
+            throw new AppException($"\"{template.Name}\" is a Findings summary template. Use it from Reporting -> Findings Report.", 400);
+        }
+
+        return template;
+    }
+
+    // Keeps only the template's own field keys (10,000 chars max each). With enforceRequired, a
+    // required field with neither a value nor a default is rejected.
+    private static string BuildCustomFieldValuesJson(ReportTemplate template, IReadOnlyDictionary<string, string>? values, bool enforceRequired)
+    {
+        var fields = ShieldReport.Application.ReportTemplates.ReportTemplateFields.Parse(template.CustomFieldsJson);
+        var clean = fields
+            .Where(f => values is not null && values.TryGetValue(f.Key, out var v) && !string.IsNullOrWhiteSpace(v))
+            .ToDictionary(f => f.Key, f => values![f.Key].Length > 10_000 ? values[f.Key][..10_000] : values[f.Key]);
+
+        if (enforceRequired)
+        {
+            var missing = fields
+                .Where(f => f.Required && !clean.ContainsKey(f.Key) && string.IsNullOrWhiteSpace(f.DefaultValue))
+                .Select(f => f.Label)
+                .ToList();
+            if (missing.Count > 0)
+            {
+                throw new AppException($"Fill in the required field(s): {string.Join(", ", missing)}.", 400);
+            }
+        }
+
+        return JsonSerializer.Serialize(clean);
     }
 
     public async Task<ReportDto> RegenerateAsync(long id, CancellationToken cancellationToken = default)

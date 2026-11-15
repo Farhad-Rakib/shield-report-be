@@ -39,6 +39,8 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
     private static readonly Lazy<string> WhiteTemplate = new(() => ReadText("white-box-report.hbs"));
     private static readonly Lazy<string> GrayTemplate = new(() => ReadText("gray-box-report.hbs"));
     private static readonly Lazy<string> BlackTemplate = new(() => ReadText("black-box-report.hbs"));
+    // Built-in "Findings summary" template (Findings Report export).
+    private static readonly Lazy<string> FindingsSummaryTemplate = new(() => ReadText("findings-summary-report.hbs"));
     private static readonly Lazy<string> PagedJs = new(() => ReadText("paged.polyfill.js"));
     private static readonly Dictionary<string, string> AssetCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly string[] NumberWords =
@@ -60,6 +62,38 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
         TestingType.Black => BlackTemplate.Value,
         _ => WhiteTemplate.Value,
     };
+
+    public string GetBuiltInTemplate(ReportTemplateKind kind, TestingType testingType) => kind switch
+    {
+        ReportTemplateKind.FindingsSummary => FindingsSummaryTemplate.Value,
+        _ => GetBuiltInTemplate(testingType),
+    };
+
+    public async Task<string> RenderFindingsSummaryHtmlAsync(FindingsSummaryRenderModel model, string? customTemplate, CancellationToken cancellationToken = default)
+    {
+        var chart = await RenderSeverityChartAsync(model.Counts, cancellationToken);
+        var template = _handlebars.Compile(string.IsNullOrWhiteSpace(customTemplate) ? FindingsSummaryTemplate.Value : customTemplate);
+        return template(model with { SeverityChart = chart });
+    }
+
+    public Task<string?> ValidateFindingsSummaryTemplateAsync(string template, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // With and without findings, so both branches of {{#each}}/{{else}} are checked.
+            var compiled = _handlebars.Compile(template);
+            compiled(SampleFindingsSummaryModel(withFindings: true));
+            compiled(SampleFindingsSummaryModel(withFindings: false));
+            return Task.FromResult<string?>(null);
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult<string?>(ex.Message);
+        }
+    }
+
+    public Task<string> RenderFindingsSummarySampleAsync(string? template, IReadOnlyDictionary<string, string> custom, CancellationToken cancellationToken = default) =>
+        RenderFindingsSummaryHtmlAsync(SampleFindingsSummaryModel(withFindings: true) with { Custom = custom }, template, cancellationToken);
 
     public async Task<string> RenderHtmlAsync(ReportRenderModel model, string? customTemplate, CancellationToken cancellationToken = default)
     {
@@ -409,6 +443,48 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
         new ReportRenderCounts(0, 1, 0, 0, 0),
         [new ReportRenderFinding("VULN-001", "vuln-001", "Sample finding", "High", "7.5", null, "https://example.com", "/login", "Vulnerability Scanning", [], "Description", null, "Fix it", null, null, null, "Not Fixed", 1, [])],
         string.Empty);
+
+    private static FindingsSummaryRenderModel SampleFindingsSummaryModel(bool withFindings)
+    {
+        var now = DateTime.UtcNow;
+        static FindingsSummaryVulnerability V(int id, string title, string severity, string? cvss, string status, string endpoint, int daysAgo) =>
+            new($"VULN-{id:000}", title, severity, cvss, status, endpoint, "Q3 Web Application Assessment", DateTime.UtcNow.AddDays(-daysAgo), status == "Patched" ? DateTime.UtcNow.AddDays(-1) : null);
+
+        IReadOnlyList<FindingsSummaryClient> clients = withFindings
+            ?
+            [
+                new("Sample Client AG", "client-1", 2, 4, new ReportRenderCounts(1, 2, 1, 1, 0),
+                [
+                    new("Customer Portal", "client-1-asset-1", "https://portal.example.com", "Web URL", now.AddDays(-2), 3, 3, new ReportRenderCounts(1, 1, 1, 0, 0),
+                    [
+                        V(101, "SQL injection in search parameter", "Critical", "9.8", "Open", "https://portal.example.com/search?q=", 20),
+                        V(102, "Stored cross-site scripting in profile name", "High", "7.4", "In progress", "https://portal.example.com/profile", 18),
+                        V(103, "Missing HTTP Strict Transport Security header", "Medium", "5.3", "Open", "https://portal.example.com/", 18),
+                    ]),
+                    new("Public API", "client-1-asset-2", "https://api.example.com", "API", now.AddDays(-5), 1, 1, new ReportRenderCounts(0, 1, 0, 1, 0),
+                    [
+                        V(104, "Broken object level authorization on /orders", "High", "8.1", "Open", "https://api.example.com/v1/orders/{id}", 9),
+                        V(105, "Verbose server banner", "Low", "3.1", "Patched", "https://api.example.com/", 9),
+                    ]),
+                ]),
+                new("Example Bank Ltd", "client-2", 1, 0, new ReportRenderCounts(0, 0, 0, 0, 1),
+                [
+                    new("Corporate network", "client-2-asset-1", "10.0.0.0/24", "IP range", now.AddDays(-12), 2, 0, new ReportRenderCounts(0, 0, 0, 0, 1),
+                    [
+                        V(106, "TLS 1.0 enabled on mail gateway", "Informational", null, "Accepted risk", "10.0.0.25:443", 30),
+                    ]),
+                ]),
+            ]
+            : [];
+
+        var counts = withFindings ? new ReportRenderCounts(1, 2, 1, 1, 1) : new ReportRenderCounts(0, 0, 0, 0, 0);
+        var totals = withFindings ? new FindingsSummaryTotals(2, 3, 6, 4, 2) : new FindingsSummaryTotals(0, 0, 0, 0, 0);
+        var filters = new FindingsSummaryFilters("All clients", "All assets", "Any date", "All severities", "All statuses");
+        return new FindingsSummaryRenderModel(
+            "Selise Digital", now, "analyst@example.com",
+            "All clients · All assets · Any date · All severities · All statuses",
+            filters, totals, counts, clients, false, 5000, string.Empty);
+    }
 
     [GeneratedRegex("<div class=\"running-header\">.*?</div>", RegexOptions.Singleline)]
     private static partial Regex RunningHeaderRegex();

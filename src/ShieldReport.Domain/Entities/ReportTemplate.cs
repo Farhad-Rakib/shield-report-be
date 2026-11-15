@@ -12,7 +12,8 @@ public sealed class ReportTemplate : BaseEntity
 {
     public string Name { get; private set; } = string.Empty;
     public string CompanyDisplayName { get; private set; } = string.Empty;
-    public bool IsDefault { get; private set; }
+    // Engagement report or Findings summary. There is no default template: the user always picks one.
+    public ReportTemplateKind Kind { get; private set; } = ReportTemplateKind.Engagement;
     public string? DocxTemplatePath { get; private set; }
     public string? DocxTemplateFileName { get; private set; }
     // Custom Handlebars HTML template. Null = the built-in default (White/Gray/Black Box) template.
@@ -41,13 +42,13 @@ public sealed class ReportTemplate : BaseEntity
     {
     }
 
-    public ReportTemplate(string name, string companyDisplayName, bool isDefault = false)
+    public ReportTemplate(string name, string companyDisplayName, ReportTemplateKind kind = ReportTemplateKind.Engagement)
     {
         Name = !string.IsNullOrWhiteSpace(name)
             ? name.Trim()
             : throw new ArgumentException("Name is required.", nameof(name));
         CompanyDisplayName = companyDisplayName;
-        IsDefault = isDefault;
+        Kind = kind;
     }
 
     public void UpdateDetails(string name, string companyDisplayName)
@@ -74,7 +75,4 @@ public sealed class ReportTemplate : BaseEntity
         DocxTemplateFileName = null;
     }
 
-    public void MarkAsDefault() => IsDefault = true;
-
-    public void UnmarkAsDefault() => IsDefault = false;
 }

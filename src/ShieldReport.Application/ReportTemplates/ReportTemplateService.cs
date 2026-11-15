@@ -32,7 +32,7 @@ public sealed class ReportTemplateService : IReportTemplateService
 
     public async Task<ReportTemplateDto> CreateAsync(CreateReportTemplateRequestDto request, CancellationToken cancellationToken = default)
     {
-        var template = new ReportTemplate(request.Name, request.CompanyDisplayName);
+        var template = new ReportTemplate(request.Name, request.CompanyDisplayName, request.Kind ?? ReportTemplateKind.Engagement);
         await _repository.AddAsync(template, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return MapToDto(template);
@@ -53,6 +53,11 @@ public sealed class ReportTemplateService : IReportTemplateService
     {
         var template = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new AppException("Report template not found.", 404);
+
+        if (template.Kind == ReportTemplateKind.FindingsSummary)
+        {
+            throw new AppException("Findings summary templates are HTML only; Word template uploads are not supported for them.", 400);
+        }
 
         if (!fileName.EndsWith(".docx", StringComparison.OrdinalIgnoreCase))
         {
@@ -92,28 +97,6 @@ public sealed class ReportTemplateService : IReportTemplateService
         return MapToDto(template);
     }
 
-    public async Task<ReportTemplateDto> SetDefaultAsync(long id, CancellationToken cancellationToken = default)
-    {
-        var template = await _repository.GetByIdAsync(id, cancellationToken)
-            ?? throw new AppException("Report template not found.", 404);
-
-        if (!template.IsDefault)
-        {
-            var currentDefault = await _repository.GetDefaultTrackedAsync(cancellationToken);
-            currentDefault?.UnmarkAsDefault();
-            if (currentDefault is not null)
-            {
-                _repository.Update(currentDefault);
-            }
-
-            template.MarkAsDefault();
-            _repository.Update(template);
-        }
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return MapToDto(template);
-    }
-
     public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         var template = await _repository.GetByIdAsync(id, cancellationToken);
@@ -127,7 +110,7 @@ public sealed class ReportTemplateService : IReportTemplateService
     }
 
     private static ReportTemplateDto MapToDto(ReportTemplate template)
-        => new(template.Id, template.Name, template.CompanyDisplayName, template.IsDefault, template.DocxTemplatePath is not null, template.DocxTemplateFileName, template.HtmlContent is not null, ReportTemplateFields.Parse(template.CustomFieldsJson), template.BuiltInTestingType);
+        => new(template.Id, template.Name, template.CompanyDisplayName, template.Kind, template.DocxTemplatePath is not null, template.DocxTemplateFileName, template.HtmlContent is not null, ReportTemplateFields.Parse(template.CustomFieldsJson), template.BuiltInTestingType);
 
     public async Task<ReportTemplateHtmlDto> GetHtmlAsync(long id, CancellationToken cancellationToken = default)
     {
@@ -147,7 +130,9 @@ public sealed class ReportTemplateService : IReportTemplateService
             throw new AppException("The template must be between 1 character and 2 MB.", 400);
         }
 
-        var error = await _htmlRenderer.ValidateTemplateAsync(htmlContent, cancellationToken);
+        var error = template.Kind == ReportTemplateKind.FindingsSummary
+            ? await _htmlRenderer.ValidateFindingsSummaryTemplateAsync(htmlContent, cancellationToken)
+            : await _htmlRenderer.ValidateTemplateAsync(htmlContent, cancellationToken);
         if (error is not null)
         {
             throw new AppException($"Template error: {error}", 400);
@@ -194,7 +179,9 @@ public sealed class ReportTemplateService : IReportTemplateService
         var sample = effectiveFields.ToDictionary(f => f.Key, f => string.IsNullOrEmpty(f.DefaultValue) ? $"[{f.Label}]" : f.DefaultValue);
         try
         {
-            return await _htmlRenderer.RenderSampleAsync(html, sample, testingType, cancellationToken);
+            return template.Kind == ReportTemplateKind.FindingsSummary
+                ? await _htmlRenderer.RenderFindingsSummarySampleAsync(html, sample, cancellationToken)
+                : await _htmlRenderer.RenderSampleAsync(html, sample, testingType, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

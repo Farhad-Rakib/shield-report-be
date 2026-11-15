@@ -1,3 +1,6 @@
+using ShieldReport.Domain.Enums;
+
 namespace ShieldReport.Application.ReportTemplates.Dtos;
 
-public sealed record CreateReportTemplateRequestDto(string Name, string CompanyDisplayName);
+// Kind: Engagement (default) or FindingsSummary.
+public sealed record CreateReportTemplateRequestDto(string Name, string CompanyDisplayName, ReportTemplateKind? Kind = null);

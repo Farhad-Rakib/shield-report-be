@@ -89,14 +89,30 @@ public interface IHtmlReportRenderer
 
     // The built-in White / Gray / Black Box Handlebars template (converted from the SELISE samples).
     string GetBuiltInTemplate(TestingType testingType);
+
+    // Built-in template of a kind: Engagement → per testing type (as above); FindingsSummary → the
+    // SELISE-styled findings summary (testingType ignored).
+    string GetBuiltInTemplate(ReportTemplateKind kind, TestingType testingType);
+
+    // ---- Findings summary templates (ReportTemplateKind.FindingsSummary) ----
+
+    // customTemplate null = the built-in findings summary template.
+    Task<string> RenderFindingsSummaryHtmlAsync(FindingsSummaryRenderModel model, string? customTemplate, CancellationToken cancellationToken = default);
+
+    // Validates a findings summary template against sample data (with and without findings); returns the error or null.
+    Task<string?> ValidateFindingsSummaryTemplateAsync(string template, CancellationToken cancellationToken = default);
+
+    // Renders a findings summary template (null = built-in) against sample data with the given custom field values.
+    Task<string> RenderFindingsSummarySampleAsync(string? template, IReadOnlyDictionary<string, string> custom, CancellationToken cancellationToken = default);
 }
 
 public static class HtmlReportRendererExtensions
 {
     // The HTML a template row renders with: its own HtmlContent, else the built-in template of its
+    // kind: FindingsSummary → the findings summary built-in; Engagement → the built-in of its
     // BuiltInTestingType, else (user-created rows) the built-in matching the engagement's type.
     public static string ResolveTemplateHtml(this IHtmlReportRenderer renderer, ReportTemplate template, TestingType engagementTestingType) =>
         string.IsNullOrWhiteSpace(template.HtmlContent)
-            ? renderer.GetBuiltInTemplate(template.BuiltInTestingType ?? engagementTestingType)
+            ? renderer.GetBuiltInTemplate(template.Kind, template.BuiltInTestingType ?? engagementTestingType)
             : template.HtmlContent;
 }

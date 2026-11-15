@@ -25,17 +25,6 @@ public sealed class ReportTemplateRepository : IReportTemplateRepository
         return await _dbContext.ReportTemplates.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<ReportTemplate?> GetDefaultAsync(CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(x => x.IsDefault, cancellationToken)
-            ?? await _dbContext.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<ReportTemplate?> GetDefaultTrackedAsync(CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.ReportTemplates.FirstOrDefaultAsync(x => x.IsDefault, cancellationToken);
-    }
-
     public async Task<IReadOnlyList<ReportTemplate>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _dbContext.ReportTemplates.AsNoTracking().OrderBy(x => x.Name).ToListAsync(cancellationToken);

@@ -115,7 +115,10 @@ public sealed class RbacSeeder : IRbacSeeder
             Permissions.VulnerabilityAttachmentsRead, Permissions.VulnerabilityAttachmentsUpload, Permissions.VulnerabilityAttachmentsDelete,
             Permissions.VulnerabilityRemarksRead, Permissions.VulnerabilityRemarksCreate,
             Permissions.RetestRequestsRead, Permissions.RetestRequestsResolve,
-            Permissions.FindingsReportRead
+            Permissions.FindingsReportRead,
+            // Testers create the engagement report themselves (pick a template, fill its dynamic
+            // fields, generate, edit sections, download). Approve/send/delete stay with Admin.
+            Permissions.VulnerabilityReportsRead, Permissions.VulnerabilityReportsGenerate, Permissions.VulnerabilityReportsDownload
         });
 
         // CLIENT_ADMIN — manages their own org's assets, triggers scans on already-authorized

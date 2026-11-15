@@ -9,7 +9,6 @@ public interface IReportTemplateService
     Task<ReportTemplateDto> UpdateAsync(long id, UpdateReportTemplateRequestDto request, CancellationToken cancellationToken = default);
     Task<ReportTemplateDto> UploadDocxTemplateAsync(long id, Stream fileContent, string fileName, CancellationToken cancellationToken = default);
     Task<ReportTemplateDto> ClearDocxTemplateAsync(long id, CancellationToken cancellationToken = default);
-    Task<ReportTemplateDto> SetDefaultAsync(long id, CancellationToken cancellationToken = default);
     Task DeleteAsync(long id, CancellationToken cancellationToken = default);
     Task<ReportTemplateHtmlDto> GetHtmlAsync(long id, CancellationToken cancellationToken = default);
     Task<ReportTemplateHtmlDto> UpdateHtmlAsync(long id, string htmlContent, CancellationToken cancellationToken = default);
