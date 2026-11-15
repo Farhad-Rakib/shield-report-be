@@ -6,6 +6,10 @@ using ShieldReport.Persistence.Context;
 
 namespace ShieldReport.Persistence.Repositories;
 
+// Queries that load whole Report rows run synchronously on purpose: RenderedHtml is a large
+// nvarchar(max) (~0.5 MB per report) and Microsoft.Data.SqlClient 5.x reads large values very
+// slowly in async mode (dotnet/SqlClient#593; ~1.5 s per report here, vs milliseconds sync). See
+// "Avoid async for large text/binary columns" in the EF Core performance docs.
 public sealed class ReportRepository : IReportRepository
 {
     private readonly ApplicationDbContext _dbContext;
@@ -21,9 +25,10 @@ public sealed class ReportRepository : IReportRepository
         return entity;
     }
 
-    public async Task<Report?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public Task<Report?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Reports.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(_dbContext.Reports.FirstOrDefault(x => x.Id == id));
     }
 
     public async Task<(ReportStatus Status, ReportNarrativeStatus NarrativeStatus)?> GetNarrativeStateAsync(long id, CancellationToken cancellationToken = default)
@@ -36,33 +41,54 @@ public sealed class ReportRepository : IReportRepository
         return row is null ? null : (row.Status, row.NarrativeStatus);
     }
 
-    public async Task<Report?> GetByIdWithDetailsAsync(long id, CancellationToken cancellationToken = default)
+    public Task<Report?> GetByIdWithDetailsAsync(long id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Reports
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(_dbContext.Reports
             .Include(x => x.Engagement)
                 .ThenInclude(e => e.ClientOrganization)
             .Include(x => x.ReportTemplate)
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            .FirstOrDefault(x => x.Id == id));
     }
 
-    public async Task<IReadOnlyList<Report>> GetByEngagementIdAsync(long engagementId, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Report>> GetByEngagementIdAsync(long engagementId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Reports
+        cancellationToken.ThrowIfCancellationRequested();
+        IReadOnlyList<Report> reports = _dbContext.Reports
             .AsNoTracking()
             .Include(x => x.ReportTemplate)
             .Where(x => x.EngagementId == engagementId)
             .OrderByDescending(x => x.Version)
-            .ToListAsync(cancellationToken);
+            .ToList();
+        return Task.FromResult(reports);
     }
 
     public async Task<int> GetLatestVersionAsync(long engagementId, CancellationToken cancellationToken = default)
     {
-        var versions = await _dbContext.Reports
+        return await _dbContext.Reports
             .Where(x => x.EngagementId == engagementId)
-            .Select(x => x.Version)
-            .ToListAsync(cancellationToken);
+            .MaxAsync(x => (int?)x.Version, cancellationToken) ?? 0;
+    }
 
-        return versions.Count > 0 ? versions.Max() : 0;
+    public async Task AddWithNextVersionAsync(Report report, CancellationToken cancellationToken = default)
+    {
+        // Serialize version allocation per engagement: lock the engagement row (UPDLOCK, held to
+        // commit) so concurrent generations queue for a few milliseconds instead of racing for
+        // max(Version)+1. The transaction covers only the read + insert, never the rendering.
+        // Joins an ambient transaction if the caller already opened one.
+        var ownsTransaction = _dbContext.Database.CurrentTransaction is null;
+        await using var transaction = ownsTransaction ? await _dbContext.Database.BeginTransactionAsync(cancellationToken) : null;
+
+        await _dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT Id FROM engagements WITH (UPDLOCK, HOLDLOCK) WHERE Id = {report.EngagementId}", cancellationToken);
+        report.AssignVersion(await GetLatestVersionAsync(report.EngagementId, cancellationToken) + 1);
+        await _dbContext.Reports.AddAsync(report, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
     }
 
     public void Update(Report entity)
@@ -75,14 +101,16 @@ public sealed class ReportRepository : IReportRepository
         _dbContext.Reports.Remove(entity);
     }
 
-    public async Task<IReadOnlyList<Report>> GetApprovedByClientOrganizationAsync(long clientOrganizationId, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Report>> GetApprovedByClientOrganizationAsync(long clientOrganizationId, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         // Explicit org + status filter on top of the Engagement tenant query filter (defense in depth).
-        return await _dbContext.Reports
+        IReadOnlyList<Report> reports = _dbContext.Reports
             .AsNoTracking()
             .Include(r => r.Engagement)
             .Where(r => r.Status == ShieldReport.Domain.Enums.ReportStatus.Approved && r.Engagement.ClientOrganizationId == clientOrganizationId)
             .OrderByDescending(r => r.ApprovedAt)
-            .ToListAsync(cancellationToken);
+            .ToList();
+        return Task.FromResult(reports);
     }
 }

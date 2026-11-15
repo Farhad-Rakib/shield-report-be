@@ -18,7 +18,9 @@ public sealed class GeminiLlmClient : ILlmClient
     public async Task<string> CompleteAsync(LlmCompletionRequest request, CancellationToken cancellationToken = default)
     {
         var baseUrl = string.IsNullOrWhiteSpace(request.BaseUrl) ? DefaultBaseUrl : request.BaseUrl.TrimEnd('/');
-        var requestUrl = $"{baseUrl}/models/{request.Model}:generateContent?key={Uri.EscapeDataString(request.ApiKey)}";
+        // The API key goes in the x-goog-api-key header, not the ?key= query string: request URLs
+        // end up in logs (HttpClient logging), headers do not.
+        var requestUrl = $"{baseUrl}/models/{request.Model}:generateContent";
 
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, requestUrl)
         {
@@ -34,6 +36,7 @@ public sealed class GeminiLlmClient : ILlmClient
                 generationConfig = new { temperature = request.Temperature, maxOutputTokens = request.MaxOutputTokens, thinkingConfig = new { thinkingBudget = 0 } }
             })
         };
+        httpRequest.Headers.Add("x-goog-api-key", request.ApiKey);
 
         using var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
         response.EnsureSuccessStatusCode();

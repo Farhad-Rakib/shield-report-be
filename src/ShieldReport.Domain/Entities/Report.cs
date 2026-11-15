@@ -69,6 +69,17 @@ public sealed class Report : BaseEntity
         KeyRecommendations = keyRecommendations;
     }
 
+    // Set by the repository when the row is inserted with the engagement's next free version.
+    public void AssignVersion(int version)
+    {
+        if (version < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(version));
+        }
+
+        Version = version;
+    }
+
     public void MarkDraftGenerated(string draftDocxPath)
     {
         if (Status != ReportStatus.PendingApproval)

@@ -9,6 +9,10 @@ public interface IReportRepository
     Task<Report?> GetByIdWithDetailsAsync(long id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Report>> GetByEngagementIdAsync(long engagementId, CancellationToken cancellationToken = default);
     Task<int> GetLatestVersionAsync(long engagementId, CancellationToken cancellationToken = default);
+    // Inserts the report with its engagement's next free version and saves (this commits the unit
+    // of work's other pending changes too). Allocation is serialized per engagement, so
+    // simultaneous generations get consecutive versions instead of colliding.
+    Task AddWithNextVersionAsync(Report report, CancellationToken cancellationToken = default);
 
     // Client portal: Approved reports of one client organization's engagements, with the engagement.
     Task<IReadOnlyList<Report>> GetApprovedByClientOrganizationAsync(long clientOrganizationId, CancellationToken cancellationToken = default);

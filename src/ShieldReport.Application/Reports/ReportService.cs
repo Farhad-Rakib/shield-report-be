@@ -81,34 +81,46 @@ public sealed class ReportService : IReportService
         }
 
         var includedFindings = await _vulnerabilityRepository.GetReportIncludedByEngagementIdAsync(engagementId, cancellationToken);
-        var nextVersion = await _reportRepository.GetLatestVersionAsync(engagementId, cancellationToken) + 1;
 
         // Never wait on the LLM here (a slow or failing provider used to time the request out):
         // render now with placeholder text and let a background job fill the narrative in.
         var placeholder = _narrativeDraftingService.PlaceholderText;
         var draftWithAi = request.DraftWithAi && await _narrativeDraftingService.IsAvailableAsync(cancellationToken);
 
-        var report = new Report(engagementId, template.Id, nextVersion, currentUserId, placeholder, placeholder, placeholder);
+        // Version is assigned on insert: the row is saved first (claiming the engagement's next
+        // free version even when several users generate at once), then rendered with that version
+        // in its content and file names. A render failure removes the row again.
+        var report = new Report(engagementId, template.Id, 1, currentUserId, placeholder, placeholder, placeholder);
         report.SetSections(
             ReportSectionDefaults.ProjectGoals(engagement.ClientOrganization?.Name ?? "the client"),
             ReportSectionDefaults.Limitations(engagement.TestingType),
             "{}",
             request.ShowToolNames);
         report.SetCustomFieldValues(customValuesJson);
+        await _reportRepository.AddWithNextVersionAsync(report, cancellationToken);
 
-        if (UsesLegacyDocxEngine(template))
+        try
         {
-            var narrative = new ReportNarrative(placeholder, placeholder, placeholder);
-            var docxBytes = _docxTemplateFiller.Fill(engagement, engagement.ClientOrganization, template, includedFindings, narrative, nextVersion);
-            report.MarkDraftGenerated(await SaveFileAsync(engagementId, $"report-v{nextVersion}.docx", docxBytes, cancellationToken));
-        }
-        else
-        {
-            await RenderHtmlEngineAsync(report, engagement, template, includedFindings, cancellationToken);
-        }
+            if (UsesLegacyDocxEngine(template))
+            {
+                var narrative = new ReportNarrative(placeholder, placeholder, placeholder);
+                var docxBytes = _docxTemplateFiller.Fill(engagement, engagement.ClientOrganization, template, includedFindings, narrative, report.Version);
+                report.MarkDraftGenerated(await SaveFileAsync(engagementId, $"report-v{report.Version}.docx", docxBytes, cancellationToken));
+            }
+            else
+            {
+                await RenderHtmlEngineAsync(report, engagement, template, includedFindings, cancellationToken);
+            }
 
-        await _reportRepository.AddAsync(report, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _reportRepository.Update(report);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            _reportRepository.Delete(report);
+            await _unitOfWork.SaveChangesAsync(CancellationToken.None);
+            throw;
+        }
 
         if (draftWithAi)
         {
