@@ -21,12 +21,35 @@ public sealed class ScanToolsController : ControllerBase
     private readonly IScanToolSettingsService _service;
     private readonly ICurrentUserService _currentUserService;
     private readonly IValidator<UpdateScanToolSettingRequestDto> _updateValidator;
+    private readonly IValidator<UpdateScanQueueLimitsRequestDto> _limitsValidator;
 
-    public ScanToolsController(IScanToolSettingsService service, ICurrentUserService currentUserService, IValidator<UpdateScanToolSettingRequestDto> updateValidator)
+    public ScanToolsController(IScanToolSettingsService service, ICurrentUserService currentUserService, IValidator<UpdateScanToolSettingRequestDto> updateValidator, IValidator<UpdateScanQueueLimitsRequestDto> limitsValidator)
     {
         _service = service;
         _currentUserService = currentUserService;
         _updateValidator = updateValidator;
+        _limitsValidator = limitsValidator;
+    }
+
+    // Global limits: active scans per client and the shared custom-tool pool size.
+    [HttpGet("limits")]
+    [Authorize(Policy = Permissions.ScanToolsManage)]
+    [ProducesResponseType(typeof(ApiResponse<ScanQueueLimitsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLimits(CancellationToken cancellationToken)
+    {
+        var limits = await _service.GetLimitsAsync(cancellationToken);
+        return Ok(ApiResponse<ScanQueueLimitsDto>.SuccessResponse(limits, "Scan limits retrieved successfully"));
+    }
+
+    [HttpPut("limits")]
+    [Authorize(Policy = Permissions.ScanToolsManage)]
+    [ProducesResponseType(typeof(ApiResponse<ScanQueueLimitsDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateLimits([FromBody] UpdateScanQueueLimitsRequestDto request, CancellationToken cancellationToken)
+    {
+        await _limitsValidator.ValidateAndThrowAsync(request, cancellationToken);
+        var userId = _currentUserService.UserId ?? throw new AppException("User context is missing.", 401);
+        var limits = await _service.UpdateLimitsAsync(request, userId, cancellationToken);
+        return Ok(ApiResponse<ScanQueueLimitsDto>.SuccessResponse(limits, "Scan limits saved"));
     }
 
     // Enabled tools with their client-safe labels — drives every tool picker (staff and portal).

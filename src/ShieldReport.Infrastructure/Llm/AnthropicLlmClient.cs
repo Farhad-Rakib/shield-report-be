@@ -10,8 +10,8 @@ namespace ShieldReport.Infrastructure.Llm;
 // a client is built per call (calls are rare: one per finding explanation or report draft).
 //
 // Temperature is deliberately not sent: current Claude models reject sampling parameters, and
-// the prompts already pin the output to strict JSON. Depth is governed by the model's default
-// effort. Refusal fallbacks are enabled so a policy decline is re-served by another model inside
+// the prompts already pin the output to strict JSON. Depth is the configuration's Effort
+// (output_config.effort), or the model's default when none is set. Refusal fallbacks are enabled so a policy decline is re-served by another model inside
 // the same call instead of failing the job.
 public sealed class AnthropicLlmClient : ILlmClient
 {
@@ -23,14 +23,21 @@ public sealed class AnthropicLlmClient : ILlmClient
             ? new AnthropicClient { ApiKey = request.ApiKey, Timeout = TimeSpan.FromSeconds(60), MaxRetries = 1 }
             : new AnthropicClient { ApiKey = request.ApiKey, Timeout = TimeSpan.FromSeconds(60), MaxRetries = 1, BaseUrl = request.BaseUrl.TrimEnd('/') };
 
-        var response = await client.Beta.Messages.Create(new MessageCreateParams
+        var parameters = new MessageCreateParams
         {
             Model = string.IsNullOrWhiteSpace(request.Model) ? DefaultModel : request.Model,
             MaxTokens = Math.Max(request.MaxOutputTokens, 1024),
             Betas = [AnthropicBeta.ServerSideFallback2026_07_01],
             Fallbacks = new Default(),
             Messages = [new BetaUserMessageParam { Content = request.Prompt }],
-        }, cancellationToken);
+        };
+        // Only sent when configured, so the model's own default applies otherwise.
+        if (ToOutputConfig(request.Effort) is { } outputConfig)
+        {
+            parameters = parameters with { OutputConfig = outputConfig };
+        }
+
+        var response = await client.Beta.Messages.Create(parameters, cancellationToken);
 
         if (response.StopReason == "refusal")
         {
@@ -53,4 +60,14 @@ public sealed class AnthropicLlmClient : ILlmClient
 
         return text.ToString();
     }
+
+    private static BetaOutputConfig? ToOutputConfig(string? effort) => effort switch
+    {
+        "low" => new BetaOutputConfig { Effort = Effort.Low },
+        "medium" => new BetaOutputConfig { Effort = Effort.Medium },
+        "high" => new BetaOutputConfig { Effort = Effort.High },
+        "xhigh" => new BetaOutputConfig { Effort = Effort.Xhigh },
+        "max" => new BetaOutputConfig { Effort = Effort.Max },
+        _ => null,
+    };
 }

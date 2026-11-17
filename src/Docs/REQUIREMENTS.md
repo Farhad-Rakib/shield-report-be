@@ -226,3 +226,46 @@ Supersedes "HTML Report Generation (planned)" above. Decisions: PDF + Word outpu
 - **Findings Report.** `GET /findings-report` (`findings-report.read`): clients and assets tested in a date range, with vulnerabilities grouped client → asset, filterable by severity and patch status.
 - **LLM Provider List.** `llm_providers` (name, optional model) with CRUD at `/llm-provider-catalog`; a lookup that prefills the LLM configuration form.
 - **User lifecycle.** Users are never deleted, only deactivated/reactivated (`PUT /Users/{id}/status`). There is no anonymous self-registration: staff are created by an admin (`POST /Users`, `users.create`, client roles refused, SuperAdmin only by a SuperAdmin) and client users join through registration invites.
+
+## Load-test follow-ups (planned 2026-11-15, start 2026-11-16)
+
+Found by `shield-report-fe/loadtest/scan-load.mjs` (25 users, 100 scans). Order: 1 and 2 first, because they decide whether 25 testers can work in parallel. Azure sizing is in `../AZURE-DEPLOYMENT-SIZING.md` (workspace root).
+
+### 1. Scans can stall in Running (bug)
+
+- **Seen once.** Scans 70100/70101 stayed Running for 34 minutes (claimed 13:04, finished 13:38) and blocked the client's queue. Not reproduced in two later full runs.
+- **What is known:**
+  - The 60 s lease is taken at claim, but `RenewLeaseUntilCancelledAsync` only starts after `scan.Start()` + SaveChanges, the status/phase pushes and settings resolution (`ScanWorkerBackgroundService.ProcessClaimedScanAsync`). A slow step lets the lease expire and a second worker re-claim the scan. 70101 ended Completed in the database although the log says it timed out, which suggests two workers handled it.
+  - The timeout deadline is `StartedAt + TimeoutMinutes`, but its `CancellationTokenSource` is created after those steps, and `docker run` / `docker inspect` (`DockerScanRunner.RunDockerCommandAsync`) don't take the stop token (they have their own 10 min / 30 s limits).
+- **Fix:**
+  - Start the lease heartbeat immediately after claim, before any other step.
+  - Create the timeout/stop tokens at claim and pass them to SaveChanges, the realtime pushes, and every docker command (`RunDockerCommandAsync` accepts a token and kills the process on cancel).
+  - Add a safety sweep to `ScanContainerJanitorService`: fail any scan Running longer than `TimeoutMinutes` + grace (for example 5 min) whose lease has expired, stop and remove its container, release the lease, and start the next chain step.
+  - Log each stage with its duration (claimed, started, container created, following, finished) so the next stall shows the step that hung.
+
+### 2. Per-client scan cap: queue instead of reject, and make it configurable
+
+- **Now:** `ScanQueueService.MaxConcurrentScansPerClient => 3` (hardcoded) counts queued + running scans, and `ScanService.CreateAsync` rejects anything over it with 409. In the load test about 690 requests were rejected and had to be resent.
+- **Done 2026-11-16:** N is a global setting (`scan_queue_settings.MaxConcurrentScansPerClient`, 1–100, Tool Configuration → Scan limits), `CustomToolMaxParallel` is a setting too, and per-tool parallel goes up to 20. Still open below: queue instead of 409, enforcement in the claim SQL, per-client override, queue position.
+- **Fix:**
+  - Always accept scans as Queued, with a sanity limit per client such as 50 queued, which returns 409 when exceeded.
+  - Enforce the "max N running per client" rule in the claim SQL (`ScanRepository.ClaimSql`): skip a candidate whose client already has N running scans with live leases. Use `sp_getapplock` (or serializable) around the claim so two workers can't both take the last slot.
+  - Make N a global setting (Scan Tools page; `ScanToolSettingsService`), with an optional per-client override on `ClientOrganization`.
+  - Show the queue position in the UI ("Queued, position 4").
+  - Also make `CustomToolMaxParallel` (hardcoded 2) a setting.
+
+### 3. Hide report fields the template doesn't use (UX)
+
+- **Problem:** the edit dialog always offers Project Goals, but the Black Box template (like its SELISE sample) has no such section, so edits there have no effect.
+- **Fix:**
+  - The backend detects which section variables the effective template HTML references (`Report.ProjectGoals`, `Report.Limitations`, scope statuses, narrative fields) and returns them on `ReportDto` / template options as `UsedSections`.
+  - The FE (`EngagementDetailPage` edit dialog) shows only those fields.
+  - This works for custom templates too.
+
+### 4. Report generation throughput (performance)
+
+- **Now:** one generation takes 0.7–1 s (HTML → PDF in the shared Chromium, plus HTML → Word). `ChromiumBrowserProvider` allows only 2 concurrent renders (`_renderSlots = new(2, 2)`), so 25 at once took 18 s for the last.
+- **Fix:**
+  - **Quick:** make the render-slot count configurable (`Reporting:MaxConcurrentRenders`, default = CPU count).
+  - **Better:** run generation as a background job. `POST .../reports` returns at once with status Generating, and SignalR notifies when the report is ready (same pattern as AI narrative drafting).
+  - Produce the Word file lazily on first download instead of at every generate/regenerate, which saves about a third of the work.

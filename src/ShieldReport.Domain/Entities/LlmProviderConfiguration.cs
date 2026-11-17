@@ -37,6 +37,8 @@ public sealed class LlmProviderConfiguration : BaseEntity
     public decimal Temperature { get; private set; } = 0.2m;
     public int MaxOutputTokens { get; private set; } = 1024;
     public string PromptTemplate { get; private set; } = DefaultPromptTemplate;
+    // Anthropic only: output_config.effort (low/medium/high/xhigh/max); null = the model's default.
+    public string? Effort { get; private set; }
     public bool IsActive { get; private set; }
     public long? UpdatedByUserId { get; private set; }
 
@@ -73,6 +75,8 @@ public sealed class LlmProviderConfiguration : BaseEntity
         PromptTemplate = !string.IsNullOrWhiteSpace(promptTemplate) ? promptTemplate : DefaultPromptTemplate;
         UpdatedByUserId = updatedByUserId;
     }
+
+    public void SetEffort(string? effort) => Effort = effort;
 
     public void Activate(long? updatedByUserId)
     {

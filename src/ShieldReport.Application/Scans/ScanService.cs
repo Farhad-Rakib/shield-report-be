@@ -138,13 +138,14 @@ public sealed class ScanService : IScanService
         }
 
         var activeCount = await _scanQueueService.GetActiveCountAsync(asset.ClientOrganizationId, cancellationToken);
-        var freeSlots = _scanQueueService.MaxConcurrentScansPerClient - activeCount;
+        var maxPerClient = await _scanQueueService.GetMaxConcurrentScansPerClientAsync(cancellationToken);
+        var freeSlots = maxPerClient - activeCount;
         var requested = builtInTools.Length + customToolIds.Length;
 
         if (requested > freeSlots)
         {
             throw new AppException(
-                $"Cannot start {requested} scan(s) — only {Math.Max(freeSlots, 0)} concurrent scan slot(s) free for this client (cap: {_scanQueueService.MaxConcurrentScansPerClient}).",
+                $"Cannot start {requested} scan(s) — only {Math.Max(freeSlots, 0)} concurrent scan slot(s) free for this client (cap: {maxPerClient}, set on the Tool Configuration page).",
                 409);
         }
 

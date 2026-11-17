@@ -19,13 +19,7 @@ public static class DefaultSiteSettingsSeeder
             new SiteSetting { Key = "UI.ColorScheme", Value = "light", Description = "App color scheme (light/dark/auto)" },
             // Default palettes
             new SiteSetting { Key = "Palette.Default", Value = "{\"primary\":\"#0d6efd\",\"secondary\":\"#6c757d\",\"background\":\"#ffffff\",\"text\":\"#212529\"}", Description = "Default color palette" },
-            new SiteSetting { Key = "Palette.Dark", Value = "{\"primary\":\"#6610f2\",\"secondary\":\"#6c757d\",\"background\":\"#0d1117\",\"text\":\"#f8f9fa\"}", Description = "Dark color palette" },
-            new SiteSetting { Key = "Smtp.Host", Value = "smtp.example.com", Description = "SMTP server host" },
-            new SiteSetting { Key = "Smtp.Port", Value = "587", Description = "SMTP server port" },
-            new SiteSetting { Key = "Smtp.Username", Value = "user@example.com", Description = "SMTP username" },
-            new SiteSetting { Key = "Smtp.Password", Value = "password", Description = "SMTP password" },
-            new SiteSetting { Key = "Smtp.FromEmail", Value = "noreply@example.com", Description = "SMTP from email address" },
-            new SiteSetting { Key = "Smtp.FromName", Value = "OlympusCore", Description = "SMTP from name" }
+            new SiteSetting { Key = "Palette.Dark", Value = "{\"primary\":\"#6610f2\",\"secondary\":\"#6c757d\",\"background\":\"#0d1117\",\"text\":\"#f8f9fa\"}", Description = "Dark color palette" }
         };
 
         foreach (var setting in settings)
@@ -35,6 +29,12 @@ public static class DefaultSiteSettingsSeeder
                 dbContext.Add(setting);
             }
         }
+        // SMTP used to be seeded here as placeholder site settings. Nothing read them, and site
+        // settings are readable without signing in, so mail settings now live in email_settings
+        // (Administration -> Email Configuration). Remove the old rows.
+        var legacySmtp = await dbContext.Set<SiteSetting>().Where(s => s.Key.StartsWith("Smtp.")).ToListAsync();
+        dbContext.RemoveRange(legacySmtp);
+
         await dbContext.SaveChangesAsync();
     }
 }

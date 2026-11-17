@@ -50,7 +50,7 @@ public static class LlmPromptCatalog
 
         Using ONLY the data above, respond with a single JSON object (no markdown, no prose
         outside the JSON) matching exactly this shape:
-        {"executiveSummary": "<2-4 sentence summary of the overall security posture and engagement objective>", "keyFindings": "<3-6 bullet-style sentences on the recurring themes across findings>", "keyRecommendations": "<3-6 bullet-style sentences on how to remediate the recurring themes>"}
+        {"executiveSummary": "<2-4 sentence summary of the overall security posture and engagement objective>", "keyFindings": "<3-6 points on the recurring themes across findings, one per line, each line starting with \"- \">", "keyRecommendations": "<3-6 points on how to remediate the recurring themes, one per line, each line starting with \"- \">"}
 
         If the findings list is empty or insufficient to draft meaningful narrative, use
         "Insufficient data to generate this section." for each field rather than speculating.

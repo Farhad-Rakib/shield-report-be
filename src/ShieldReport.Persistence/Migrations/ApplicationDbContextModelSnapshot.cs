@@ -392,6 +392,62 @@ namespace ShieldReport.Persistence.Migrations
                     b.ToTable("cvss_severity_bands", (string)null);
                 });
 
+            modelBuilder.Entity("ShieldReport.Domain.Entities.EmailSetting", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FromAddress")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FromName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PasswordEncrypted")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("UseSsl")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("email_settings", (string)null);
+                });
+
             modelBuilder.Entity("ShieldReport.Domain.Entities.Engagement", b =>
                 {
                     b.Property<long>("Id")
@@ -640,6 +696,10 @@ namespace ShieldReport.Persistence.Migrations
 
                     b.Property<long>("CreatedBy")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Effort")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1788,6 +1848,37 @@ namespace ShieldReport.Persistence.Migrations
                     b.HasIndex("ScanId");
 
                     b.ToTable("scan_finding_raws", (string)null);
+                });
+
+            modelBuilder.Entity("ShieldReport.Domain.Entities.ScanQueueSetting", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("CustomToolMaxParallel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxConcurrentScansPerClient")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UpdatedBy")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("scan_queue_settings", (string)null);
                 });
 
             modelBuilder.Entity("ShieldReport.Domain.Entities.ScanToolSetting", b =>

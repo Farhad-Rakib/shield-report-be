@@ -337,7 +337,7 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
 
         var html = new StringBuilder();
         var inList = false;
-        foreach (var raw in text.Replace("\r\n", "\n").Split('\n'))
+        foreach (var raw in SplitInlineBullets(text.Replace("\r\n", "\n")).Split('\n'))
         {
             var line = raw.Trim();
             var bullet = line.StartsWith("- ", StringComparison.Ordinal) || line.StartsWith("* ", StringComparison.Ordinal) || line.StartsWith("• ", StringComparison.Ordinal);
@@ -357,6 +357,27 @@ public sealed partial class HtmlReportRenderer : IHtmlReportRenderer
 
         if (inList) html.Append("</ul>");
         return html.ToString();
+    }
+
+    // "a. • b. • c." on one line (AI drafts and pasted text often look like this) becomes three
+    // bullet lines, including the text before the first "•", so the list renders as bullets
+    // instead of one paragraph. Lines without an inline "•" are left as they are.
+    private static string SplitInlineBullets(string text)
+    {
+        var lines = new List<string>();
+        foreach (var line in text.Split('\n'))
+        {
+            var parts = line.Split('•', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2)
+            {
+                lines.Add(line);
+                continue;
+            }
+
+            lines.AddRange(parts.Select(p => "- " + (p.StartsWith("- ", StringComparison.Ordinal) || p.StartsWith("* ", StringComparison.Ordinal) ? p[2..].Trim() : p)));
+        }
+
+        return string.Join('\n', lines);
     }
 
     private static string ToWords(int n)

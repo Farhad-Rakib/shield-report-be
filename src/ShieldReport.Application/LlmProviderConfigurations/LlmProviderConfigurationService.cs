@@ -52,6 +52,7 @@ public sealed class LlmProviderConfigurationService : ILlmProviderConfigurationS
             request.Temperature,
             request.MaxOutputTokens,
             request.PromptTemplate ?? LlmProviderConfiguration.DefaultPromptTemplate);
+        configuration.SetEffort(NormalizeEffort(request.Provider, request.Effort));
 
         await _repository.AddAsync(configuration, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -69,6 +70,7 @@ public sealed class LlmProviderConfigurationService : ILlmProviderConfigurationS
 
         var encryptedApiKey = string.IsNullOrWhiteSpace(request.ApiKey) ? null : _apiKeyEncryptor.Encrypt(request.ApiKey.Trim());
         configuration.UpdateDetails(name, encryptedApiKey, request.Model.Trim(), NormalizeBaseUrl(request.BaseUrl), request.Temperature, request.MaxOutputTokens, request.PromptTemplate ?? configuration.PromptTemplate, currentUserId);
+        configuration.SetEffort(NormalizeEffort(configuration.Provider, request.Effort));
 
         _repository.Update(configuration);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -132,7 +134,8 @@ public sealed class LlmProviderConfigurationService : ILlmProviderConfigurationS
                 configuration.BaseUrl,
                 configuration.Temperature,
                 Math.Max(configuration.MaxOutputTokens, 64),
-                TestPrompt);
+                TestPrompt,
+                configuration.Effort);
             var reply = await client.CompleteAsync(request, cancellationToken);
             stopwatch.Stop();
             var trimmed = reply.Length > 300 ? reply[..300] + "…" : reply;
@@ -198,6 +201,25 @@ public sealed class LlmProviderConfigurationService : ILlmProviderConfigurationS
         }
     }
 
+    private static readonly string[] EffortLevels = ["low", "medium", "high", "xhigh", "max"];
+
+    // Effort is an Anthropic request option; other engines ignore it, so it is only stored for Anthropic.
+    private static string? NormalizeEffort(LlmProvider provider, string? effort)
+    {
+        if (provider != LlmProvider.Anthropic || string.IsNullOrWhiteSpace(effort))
+        {
+            return null;
+        }
+
+        var value = effort.Trim().ToLowerInvariant();
+        if (!EffortLevels.Contains(value))
+        {
+            throw new AppException("Effort must be one of: low, medium, high, xhigh, max (or empty for the model default).", 400);
+        }
+
+        return value;
+    }
+
     private static string? NormalizeBaseUrl(string? baseUrl) => string.IsNullOrWhiteSpace(baseUrl) ? null : baseUrl.Trim().TrimEnd('/');
 
     private LlmProviderConfigurationDto MapToDto(LlmProviderConfiguration configuration)
@@ -213,6 +235,7 @@ public sealed class LlmProviderConfigurationService : ILlmProviderConfigurationS
             configuration.Temperature,
             configuration.MaxOutputTokens,
             configuration.PromptTemplate,
-            configuration.IsActive);
+            configuration.IsActive,
+            configuration.Effort);
     }
 }

@@ -64,6 +64,7 @@ namespace ShieldReport.Persistence.Seeding
             await UpsertAsync(dbContext, "Role Permissions", "/roles/permissions", "role-permissions", Permissions.RolePermissionsRead, admin, 5);
             await UpsertAsync(dbContext, "Registration Invites", "/registration-invites", "user-plus", Permissions.RegistrationInvitesRead, admin, 6);
             await UpsertAsync(dbContext, "Audit Log", "/audit-logs", "History", Permissions.AuditLogsRead, admin, 7);
+            await UpsertAsync(dbContext, "Email Configuration", "/email-settings", "Mail", Permissions.EmailSettingsManage, admin, 8);
 
             await dbContext.SaveChangesAsync();
         }

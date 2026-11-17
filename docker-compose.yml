@@ -10,8 +10,8 @@
 #   docker compose up -d --build --remove-orphans
 #
 # Only the `proxy` service publishes ports (80/443). SQL Server, the API and the frontend are
-# reachable only on the internal network; Mailhog's UI and a debug API port bind to 127.0.0.1
-# (use an SSH tunnel to reach them on a remote server).
+# reachable only on the internal network; a debug API port binds to 127.0.0.1 (use an SSH
+# tunnel to reach it on a remote server).
 #
 # Images are pinned by digest (see .env.example) so an upstream ":latest" can't silently change
 # behaviour. To upgrade, change the digest in .env, take a backup, then `up -d`.
@@ -82,16 +82,6 @@ services:
       - shieldreport-net
     restart: unless-stopped
 
-  # Dev/demo SMTP sink. For real email set SMTP_* in .env to your provider and stop using this.
-  mailhog:
-    image: ${MAILHOG_IMAGE:-mailhog/mailhog@sha256:8d76a3d4ffa32a3661311944007a415332c4bb855657f4f6c57996405c009bea}
-    container_name: shieldreport-mailhog
-    ports:
-      - "127.0.0.1:8025:8025"
-    networks:
-      - shieldreport-net
-    restart: unless-stopped
-
   api:
     # Longer than Program.cs's HostOptions.ShutdownTimeout (40s). Scans detach on shutdown (their
     # containers keep running and are re-attached on start), so this mostly covers jobs/saves.
@@ -109,13 +99,15 @@ services:
       # Frontend and API share one origin behind the proxy, so CORS is effectively unused.
       Cors__AllowedOrigins__0: ${PUBLIC_URL}
       Frontend__BaseUrl: ${PUBLIC_URL}
-      Smtp__Host: ${SMTP_HOST:-mailhog}
-      Smtp__Port: ${SMTP_PORT:-1025}
-      Smtp__Username: ${SMTP_USERNAME:-demo}
-      Smtp__Password: ${SMTP_PASSWORD:-demo}
-      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-no-reply@shieldreport.local}
+      # Outgoing mail is configured in the app (Administration -> Email Configuration). These
+      # are only a fallback used until that form is saved; leave SMTP_HOST empty to rely on it.
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-}
       Smtp__FromName: ${SMTP_FROM_NAME:-Shield Report}
-      Smtp__UseSsl: ${SMTP_USE_SSL:-false}
+      Smtp__UseSsl: ${SMTP_USE_SSL:-true}
       # true once PUBLIC_URL is https:// — browsers drop Secure cookies on plain-HTTP origins,
       # which silently breaks refresh-token renewal (see RefreshTokenCookie.cs).
       Cookies__RequireSecure: ${COOKIES_REQUIRE_SECURE:-false}

@@ -95,6 +95,9 @@ public static class Permissions
     // host's Docker daemon is root-equivalent, so this is SuperAdmin-only: not granted to Admin.
     public const string CustomScanToolsManage = "custom-scan-tools.manage";
 
+    // Outgoing mail (SMTP) settings: Admin/SuperAdmin. Holds an encrypted SMTP password.
+    public const string EmailSettingsManage = "email-settings.manage";
+
     // Audit trail (data changes + security events): admins only.
     public const string AuditLogsRead = "audit-logs.read";
     public const string ScansRead = "scans.read";
@@ -243,6 +246,7 @@ public static class Permissions
         AuditLogsRead,
         ScanToolsManage,
         CustomScanToolsManage,
+        EmailSettingsManage,
         ScansRead,
         ScansCreate,
         ScansCancel,

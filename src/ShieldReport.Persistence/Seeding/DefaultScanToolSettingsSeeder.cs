@@ -25,6 +25,12 @@ public static class DefaultScanToolSettingsSeeder
             });
         }
 
+        // Global scan limits: one row, defaults match the former hardcoded values.
+        if (!await dbContext.Set<ScanQueueSetting>().AnyAsync())
+        {
+            dbContext.Add(new ScanQueueSetting());
+        }
+
         await dbContext.SaveChangesAsync();
     }
 }

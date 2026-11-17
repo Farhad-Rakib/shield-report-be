@@ -117,7 +117,7 @@ public sealed class LlmPromptService : ILlmPromptService
             var client = _llmClientFactory.GetClient(provider.Provider);
             var reply = await client.CompleteAsync(new LlmCompletionRequest(
                 provider.Provider, _apiKeyEncryptor.Decrypt(provider.ApiKeyEncrypted), provider.Model, provider.BaseUrl,
-                provider.Temperature, Math.Max(provider.MaxOutputTokens, 1024), rendered), cancellationToken);
+                provider.Temperature, Math.Max(provider.MaxOutputTokens, 1024), rendered, provider.Effort), cancellationToken);
             stopwatch.Stop();
             return new LlmPromptTestResultDto(true, stopwatch.ElapsedMilliseconds, rendered, reply, IsJsonWithFields(reply, definition.ExpectedJsonFields), null, provider.Name);
         }

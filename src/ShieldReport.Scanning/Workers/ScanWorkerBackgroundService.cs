@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using ShieldReport.Scanning.Parsing;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,8 +58,11 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
     }
 
     // Upper bound for the Scan Tools page's "max parallel" (UpdateScanToolSettingRequestDtoValidator).
-    private const int MaxLoopsPerTool = 3;
+    private const int MaxLoopsPerTool = ScanLimits.MaxParallelPerTool;
     private static readonly TimeSpan MaxParallelRefresh = TimeSpan.FromSeconds(15);
+
+    // One MaxParallel read per tool per refresh interval, shared by all of that tool's slot loops.
+    private readonly ConcurrentDictionary<ScanTool, (int Value, DateTime ReadAt)> _maxParallelCache = new();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -67,14 +71,25 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         await Task.WhenAll(toolLoops);
     }
 
+    private async Task<int> GetMaxParallelAsync(ScanTool tool, CancellationToken stoppingToken)
+    {
+        if (_maxParallelCache.TryGetValue(tool, out var cached) && DateTime.UtcNow - cached.ReadAt < MaxParallelRefresh)
+        {
+            return cached.Value;
+        }
+
+        using var scope = _scopeFactory.CreateScope();
+        var value = await scope.ServiceProvider.GetRequiredService<IScanToolSettingsService>().GetMaxParallelAsync(tool, stoppingToken);
+        _maxParallelCache[tool] = (value, DateTime.UtcNow);
+        return value;
+    }
+
     // `slot` 0..MaxLoopsPerTool-1: a loop only claims work while slot < the tool's current
     // MaxParallel setting (re-read every MaxParallelRefresh), so parallelism follows the Scan
     // Tools page without a restart. An idle slot just waits.
     private async Task RunToolLoopAsync(ScanTool tool, int slot, CancellationToken stoppingToken)
     {
         var leaseOwner = $"{_workerId}:{tool}:{slot}";
-        var maxParallel = 1;
-        var maxParallelReadAt = DateTime.MinValue;
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -82,13 +97,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
             {
                 if (slot > 0)
                 {
-                    if (DateTime.UtcNow - maxParallelReadAt > MaxParallelRefresh)
-                    {
-                        using var settingsScope = _scopeFactory.CreateScope();
-                        maxParallel = await settingsScope.ServiceProvider.GetRequiredService<IScanToolSettingsService>().GetMaxParallelAsync(tool, stoppingToken);
-                        maxParallelReadAt = DateTime.UtcNow;
-                    }
-
+                    var maxParallel = await GetMaxParallelAsync(tool, stoppingToken);
                     if (slot >= maxParallel)
                     {
                         await Task.Delay(MaxParallelRefresh, stoppingToken);

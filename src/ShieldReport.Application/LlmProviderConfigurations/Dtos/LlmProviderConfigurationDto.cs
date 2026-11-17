@@ -14,7 +14,8 @@ public sealed record LlmProviderConfigurationDto(
     decimal Temperature,
     int MaxOutputTokens,
     string PromptTemplate,
-    bool IsActive
+    bool IsActive,
+    string? Effort = null
 );
 
 // Result of a one-off connection test: never throws for provider errors, so the UI can show them.

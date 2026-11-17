@@ -69,7 +69,7 @@ public sealed class ReportNarrativeDraftingService : IReportNarrativeDraftingSer
 
         // Narrative JSON for many findings needs room; a small per-finding budget would truncate it.
         var maxTokens = Math.Max(activeConfiguration.MaxOutputTokens, 2048);
-        var request = new LlmCompletionRequest(activeConfiguration.Provider, apiKey, activeConfiguration.Model, activeConfiguration.BaseUrl, activeConfiguration.Temperature, maxTokens, prompt);
+        var request = new LlmCompletionRequest(activeConfiguration.Provider, apiKey, activeConfiguration.Model, activeConfiguration.BaseUrl, activeConfiguration.Temperature, maxTokens, prompt, activeConfiguration.Effort);
 
         _logger.LogInformation("Drafting report narrative with {Provider} ({Name}) for {Count} findings.", activeConfiguration.Provider, activeConfiguration.Name, includedFindings.Count);
         var rawContent = await client.CompleteAsync(request, cancellationToken);
@@ -92,6 +92,27 @@ public sealed class ReportNarrativeDraftingService : IReportNarrativeDraftingSer
             ? element.GetString() ?? Placeholder
             : Placeholder;
 
-        return new ReportNarrative(ReadField("executiveSummary"), ReadField("keyFindings"), ReadField("keyRecommendations"));
+        return new ReportNarrative(ReadField("executiveSummary"), ToBulletLines(ReadField("keyFindings")), ToBulletLines(ReadField("keyRecommendations")));
+    }
+
+    // The report renders lines starting with "- " as bullet points. Models often return the
+    // bullets inline ("• a • b") or with other markers, which would render as one paragraph,
+    // so put each point on its own "- " line. Plain prose (a single point) is left as it is.
+    internal static string ToBulletLines(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text) || text == Placeholder)
+        {
+            return text;
+        }
+
+        var points = text
+            .Replace("\r\n", "\n")
+            .Split(['\n', '\u2022'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => p.Trim())
+            .Select(p => p.StartsWith("- ") || p.StartsWith("* ") ? p[2..].Trim() : p)
+            .Where(p => p.Length > 0)
+            .ToList();
+
+        return points.Count > 1 ? string.Join("\n", points.Select(p => $"- {p}")) : text.Trim();
     }
 }

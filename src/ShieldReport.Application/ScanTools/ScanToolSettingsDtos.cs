@@ -37,6 +37,33 @@ public sealed record ReconftwModuleDto(string Key, string Group, string Label, s
 
 public sealed record ScanToolTestResultDto(bool Success, string Image, string Output);
 
+// Upper bounds for the Scan Tools page. The worker starts MaxParallelPerTool loops per tool and
+// only lets as many claim work as the tool's current setting allows.
+public static class ScanLimits
+{
+    public const int MaxParallelPerTool = 20;
+    public const int MaxConcurrentScansPerClient = 100;
+}
+
+// Global limits shown on the Scan Tools page (ScanQueueSetting).
+public sealed record ScanQueueLimitsDto(
+    int MaxConcurrentScansPerClient,
+    int CustomToolMaxParallel,
+    int MaxParallelUpperBound,
+    int MaxConcurrentScansPerClientUpperBound,
+    DateTime? UpdatedAt);
+
+public sealed record UpdateScanQueueLimitsRequestDto(int MaxConcurrentScansPerClient, int CustomToolMaxParallel);
+
+public sealed class UpdateScanQueueLimitsRequestDtoValidator : AbstractValidator<UpdateScanQueueLimitsRequestDto>
+{
+    public UpdateScanQueueLimitsRequestDtoValidator()
+    {
+        RuleFor(x => x.MaxConcurrentScansPerClient).InclusiveBetween(1, ScanLimits.MaxConcurrentScansPerClient);
+        RuleFor(x => x.CustomToolMaxParallel).InclusiveBetween(1, ScanLimits.MaxParallelPerTool);
+    }
+}
+
 public sealed class UpdateScanToolSettingRequestDtoValidator : AbstractValidator<UpdateScanToolSettingRequestDto>
 {
     public UpdateScanToolSettingRequestDtoValidator()
@@ -44,8 +71,8 @@ public sealed class UpdateScanToolSettingRequestDtoValidator : AbstractValidator
         RuleFor(x => x.TimeoutMinutes).InclusiveBetween(1, 1440);
         RuleFor(x => x.MemoryMb).InclusiveBetween(128, 8192);
         RuleFor(x => x.Cpus).InclusiveBetween(0.25, 4);
-        // Per tool; the per-client cap of 3 active scans still applies on top.
-        RuleFor(x => x.MaxParallel).InclusiveBetween(1, 3);
+        // Per tool; the per-client cap (ScanQueueSetting) still applies on top.
+        RuleFor(x => x.MaxParallel).InclusiveBetween(1, ScanLimits.MaxParallelPerTool);
     }
 }
 

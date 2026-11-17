@@ -17,6 +17,7 @@ public sealed class LlmProviderConfigurationConfiguration : IEntityTypeConfigura
         builder.Property(x => x.BaseUrl).HasMaxLength(500);
         builder.Property(x => x.Temperature).HasColumnType("decimal(3,2)");
         builder.Property(x => x.PromptTemplate).IsRequired();
+        builder.Property(x => x.Effort).HasMaxLength(10);
 
         builder.Property(x => x.Name).HasMaxLength(100).IsRequired();
 

@@ -48,6 +48,7 @@ public static class DependencyInjection
         services.AddScoped<ShieldReport.Application.Audit.IAuditLogger, ShieldReport.Application.Audit.AuditLogger>();
         services.AddScoped<ShieldReport.Application.ScanAuthorizations.IScanAuthorizationService, ShieldReport.Application.ScanAuthorizations.ScanAuthorizationService>();
         services.AddScoped<ShieldReport.Application.ScanTools.IScanToolSettingsService, ShieldReport.Application.ScanTools.ScanToolSettingsService>();
+        services.AddScoped<ShieldReport.Application.EmailSettings.IEmailSettingsService, ShieldReport.Application.EmailSettings.EmailSettingsService>();
         services.AddScoped<ShieldReport.Application.Reports.Delivery.IReportDeliveryService, ShieldReport.Application.Reports.Delivery.ReportDeliveryService>();
         services.AddScoped<IBackgroundJobHandler, ShieldReport.Application.Reports.Delivery.ReportEmailJobHandler>();
         services.AddScoped<IBackgroundJobHandler, LlmExplanationJobHandler>();

@@ -45,7 +45,7 @@ dotnet ef database update --project ShieldReport.Persistence --startup-project S
 | `ConnectionStrings:SqlServerConnection` | SQL Server connection string |
 | `Jwt:SecretKey` | JWT signing key — change in production |
 | `Jwt:Issuer` / `Jwt:Audience` | Token issuer/audience validation |
-| `Smtp:*` | SMTP email for password reset emails |
+| `Smtp:*` | Fallback SMTP settings only. Mail is configured in the app (Administration → Email Configuration, `email_settings` table); `Smtp:*` is used until that is saved |
 | `Serilog:*` | Structured logging (console + file + optional Seq, disabled by default) |
 | `Cors` (`AllowFrontend` policy in `Program.cs`) | Allowed frontend origins |
 | `Caching:*TtlMinutes` | TTLs for the permission/menu/role caches (always in-memory — see below) |

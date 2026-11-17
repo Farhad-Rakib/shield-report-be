@@ -4,7 +4,8 @@ namespace ShieldReport.Application.Scans;
 
 public interface IScanQueueService
 {
-    int MaxConcurrentScansPerClient { get; }
+    // Admin-set on the Scan Tools page (ScanQueueSetting); counts queued + running scans.
+    Task<int> GetMaxConcurrentScansPerClientAsync(CancellationToken cancellationToken = default);
 
     Task<int> GetActiveCountAsync(long clientOrganizationId, CancellationToken cancellationToken = default);
 

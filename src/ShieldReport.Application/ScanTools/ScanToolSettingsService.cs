@@ -16,6 +16,9 @@ public interface IScanToolSettingsService
     Task<ScanToolRuntimeSettings> ResolveForScanAsync(ScanTool tool, CancellationToken cancellationToken = default);
 
     Task<int> GetMaxParallelAsync(ScanTool tool, CancellationToken cancellationToken = default);
+
+    Task<ScanQueueLimitsDto> GetLimitsAsync(CancellationToken cancellationToken = default);
+    Task<ScanQueueLimitsDto> UpdateLimitsAsync(UpdateScanQueueLimitsRequestDto request, long updatedByUserId, CancellationToken cancellationToken = default);
     Task<ScanToolTestResultDto> TestAsync(ScanTool tool, CancellationToken cancellationToken = default);
 }
 
@@ -26,13 +29,12 @@ public sealed class ScanToolSettingsService : IScanToolSettingsService
     private readonly IScanToolDiagnostics _diagnostics;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IRepository<Domain.Entities.CustomScanTool> _customTools;
+    private readonly IRepository<ScanQueueSetting> _queueSettings;
 
-    // Custom tools share one worker pool of this size.
-    public const int CustomToolMaxParallel = 2;
-
-    public ScanToolSettingsService(IScanToolSettingRepository repository, IScanToolDeploymentSettings deployment, IScanToolDiagnostics diagnostics, IUnitOfWork unitOfWork, IRepository<Domain.Entities.CustomScanTool> customTools)
+    public ScanToolSettingsService(IScanToolSettingRepository repository, IScanToolDeploymentSettings deployment, IScanToolDiagnostics diagnostics, IUnitOfWork unitOfWork, IRepository<Domain.Entities.CustomScanTool> customTools, IRepository<ScanQueueSetting> queueSettings)
     {
         _customTools = customTools;
+        _queueSettings = queueSettings;
         _repository = repository;
         _deployment = deployment;
         _diagnostics = diagnostics;
@@ -108,12 +110,42 @@ public sealed class ScanToolSettingsService : IScanToolSettingsService
     {
         if (tool == ScanTool.Custom)
         {
-            return CustomToolMaxParallel;
+            var queue = await GetQueueSettingAsync(cancellationToken);
+            return queue?.CustomToolMaxParallel ?? ScanQueueSetting.DefaultCustomToolMaxParallel;
         }
 
         var setting = await _repository.GetByToolAsync(tool, cancellationToken);
         return setting?.MaxParallel ?? 1;
     }
+
+    public async Task<ScanQueueLimitsDto> GetLimitsAsync(CancellationToken cancellationToken = default) =>
+        ToLimitsDto(await GetQueueSettingAsync(cancellationToken) ?? new ScanQueueSetting());
+
+    public async Task<ScanQueueLimitsDto> UpdateLimitsAsync(UpdateScanQueueLimitsRequestDto request, long updatedByUserId, CancellationToken cancellationToken = default)
+    {
+        var setting = await GetQueueSettingAsync(cancellationToken);
+        if (setting is null)
+        {
+            setting = new ScanQueueSetting();
+            await _queueSettings.AddAsync(setting, cancellationToken);
+        }
+        else
+        {
+            _queueSettings.Update(setting);
+        }
+
+        setting.Update(request.MaxConcurrentScansPerClient, request.CustomToolMaxParallel, updatedByUserId);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return ToLimitsDto(setting);
+    }
+
+    private async Task<ScanQueueSetting?> GetQueueSettingAsync(CancellationToken cancellationToken) =>
+        (await _queueSettings.GetAllAsync(cancellationToken)).OrderBy(s => s.Id).FirstOrDefault();
+
+    private static ScanQueueLimitsDto ToLimitsDto(ScanQueueSetting s) => new(
+        s.MaxConcurrentScansPerClient, s.CustomToolMaxParallel,
+        ScanLimits.MaxParallelPerTool, ScanLimits.MaxConcurrentScansPerClient,
+        s.UpdatedAt == default ? null : s.UpdatedAt);
 
     public Task<ScanToolTestResultDto> TestAsync(ScanTool tool, CancellationToken cancellationToken = default) =>
         _diagnostics.TestAsync(tool, _deployment.GetImage(tool), cancellationToken);

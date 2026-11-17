@@ -10,5 +10,6 @@ public sealed record CreateLlmProviderConfigurationRequestDto(
     string? BaseUrl,
     decimal Temperature,
     int MaxOutputTokens,
-    string? PromptTemplate
+    string? PromptTemplate,
+    string? Effort = null
 );

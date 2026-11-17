@@ -51,6 +51,8 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<BackgroundJob> BackgroundJobs => Set<BackgroundJob>();
     public DbSet<ScanAuthorization> ScanAuthorizations => Set<ScanAuthorization>();
     public DbSet<ScanToolSetting> ScanToolSettings => Set<ScanToolSetting>();
+    public DbSet<ScanQueueSetting> ScanQueueSettings => Set<ScanQueueSetting>();
+    public DbSet<EmailSetting> EmailSettings => Set<EmailSetting>();
     public DbSet<CustomScanTool> CustomScanTools => Set<CustomScanTool>();
     public DbSet<LlmPrompt> LlmPrompts => Set<LlmPrompt>();
     public DbSet<ReportDelivery> ReportDeliveries => Set<ReportDelivery>();

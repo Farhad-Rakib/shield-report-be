@@ -5,7 +5,7 @@ namespace ShieldReport.Application.Common.Interfaces.Services;
 // Provider is included so a client shared across vendors (OpenAiCompatibleLlmClient serves both
 // OpenAi and OpenRouter) can pick the right default BaseUrl when the admin leaves it blank —
 // without it, a blank BaseUrl has no way to distinguish which vendor's default applies.
-public sealed record LlmCompletionRequest(LlmProvider Provider, string ApiKey, string Model, string? BaseUrl, decimal Temperature, int MaxOutputTokens, string Prompt);
+public sealed record LlmCompletionRequest(LlmProvider Provider, string ApiKey, string Model, string? BaseUrl, decimal Temperature, int MaxOutputTokens, string Prompt, string? Effort = null);
 
 // Used by VulnerabilityAiExplanationService after it parses the raw completion text — kept here
 // alongside the other LLM contracts even though ILlmClient itself no longer produces it directly.
