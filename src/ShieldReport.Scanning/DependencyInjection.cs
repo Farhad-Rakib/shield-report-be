@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddSingleton<ScanQueueSignal>();
         services.AddSingleton<IScanCancellationRegistry, ScanCancellationRegistry>();
         services.AddScoped<IScanRunner, DockerScanRunner>();
+        services.AddSingleton<ShieldReport.Scanning.Runners.DockerHealthGate>();
         services.AddScoped<IScanDispatcher, DatabaseScanDispatcher>();
         services.AddScoped<IScanOutputParser, NaabuOutputParser>();
         services.AddScoped<IScanOutputParser, NucleiOutputParser>();

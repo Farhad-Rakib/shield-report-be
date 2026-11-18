@@ -1,3 +1,4 @@
+using ShieldReport.Scanning.Runners;
 using System.Collections.Concurrent;
 using ShieldReport.Scanning.Parsing;
 using System.Text.Json;
@@ -40,6 +41,7 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
     private readonly IScanRealtimeNotifier _realtimeNotifier;
     private readonly IScanCancellationRegistry _cancellationRegistry;
     private readonly ScanQueueSignal _signal;
+    private readonly DockerHealthGate _dockerHealth;
     private readonly ILogger<ScanWorkerBackgroundService> _logger;
     private readonly string _workerId = $"{Environment.MachineName}:{Environment.ProcessId}:{Guid.NewGuid():N}"[..^24];
 
@@ -48,12 +50,14 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
         IScanRealtimeNotifier realtimeNotifier,
         IScanCancellationRegistry cancellationRegistry,
         ScanQueueSignal signal,
+        DockerHealthGate dockerHealth,
         ILogger<ScanWorkerBackgroundService> logger)
     {
         _scopeFactory = scopeFactory;
         _realtimeNotifier = realtimeNotifier;
         _cancellationRegistry = cancellationRegistry;
         _signal = signal;
+        _dockerHealth = dockerHealth;
         _logger = logger;
     }
 
@@ -103,6 +107,13 @@ public sealed class ScanWorkerBackgroundService : BackgroundService
                         await Task.Delay(MaxParallelRefresh, stoppingToken);
                         continue;
                     }
+                }
+
+                // Don't add containers while Docker is struggling; queued scans wait instead.
+                if (!await _dockerHealth.CanStartScansAsync(stoppingToken))
+                {
+                    await Task.Delay(MaxParallelRefresh, stoppingToken);
+                    continue;
                 }
 
                 long? scanId;

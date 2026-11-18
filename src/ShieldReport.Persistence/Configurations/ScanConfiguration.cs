@@ -15,7 +15,7 @@ public sealed class ScanConfiguration : IEntityTypeConfiguration<Scan>
         builder.Property(x => x.Status).IsRequired().HasConversion<byte>();
         builder.Property(x => x.QueuedAt).IsRequired();
         builder.Property(x => x.RawLogBlobKey).HasMaxLength(500);
-        builder.Property(x => x.ErrorMessage).HasMaxLength(1000);
+        builder.Property(x => x.ErrorMessage).HasMaxLength(Scan.ErrorMessageMaxLength);
         builder.Property(x => x.LeaseOwner).HasMaxLength(200);
         builder.HasOne<ScanAuthorization>()
             .WithMany()

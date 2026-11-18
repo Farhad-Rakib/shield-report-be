@@ -17,6 +17,8 @@ namespace ShieldReport.Scanning.Workers;
 public sealed class ScanContainerJanitorService : BackgroundService
 {
     private static readonly TimeSpan SweepInterval = TimeSpan.FromMinutes(5);
+    // After a failed removal (e.g. a stopped scan's container while Docker was hung), try again sooner.
+    private static readonly TimeSpan RetryInterval = TimeSpan.FromMinutes(1);
     private const string ContainerPrefix = "shieldreport-scan-";
 
     private readonly IServiceScopeFactory _scopeFactory;
@@ -34,12 +36,12 @@ public sealed class ScanContainerJanitorService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await SweepContainersAsync(stoppingToken);
+            var allRemoved = await SweepContainersAsync(stoppingToken);
             SweepReconftwOutputFolders();
 
             try
             {
-                await Task.Delay(SweepInterval, stoppingToken);
+                await Task.Delay(allRemoved ? SweepInterval : RetryInterval, stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -48,7 +50,8 @@ public sealed class ScanContainerJanitorService : BackgroundService
         }
     }
 
-    private async Task SweepContainersAsync(CancellationToken cancellationToken)
+    // Returns false when a leftover container could not be listed or removed, so the caller retries soon.
+    private async Task<bool> SweepContainersAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -56,10 +59,11 @@ public sealed class ScanContainerJanitorService : BackgroundService
             if (list.ExitCode != 0)
             {
                 _logger.LogDebug("Janitor: docker ps failed: {Error}", list.StdErr);
-                return;
+                return false;
             }
 
             var removed = 0;
+            var failed = 0;
             foreach (var name in list.StdOut.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 if (!long.TryParse(name[ContainerPrefix.Length..], out var scanId) || await IsRunningAsync(scanId, cancellationToken))
@@ -67,23 +71,44 @@ public sealed class ScanContainerJanitorService : BackgroundService
                     continue;
                 }
 
-                await DockerScanRunner.RunDockerCommandAsync(["rm", "-f", name], TimeSpan.FromSeconds(30));
-                removed++;
+                try
+                {
+                    var rm = await DockerScanRunner.RunDockerCommandAsync(["rm", "-f", name], TimeSpan.FromSeconds(30));
+                    if (rm.ExitCode == 0) removed++; else failed++;
+                }
+                catch (TimeoutException)
+                {
+                    failed++;
+                }
             }
 
             if (removed > 0)
             {
                 _logger.LogInformation("Janitor: removed {Count} leftover scan container(s).", removed);
             }
+
+            if (failed > 0)
+            {
+                _logger.LogWarning("Janitor: could not remove {Count} scan container(s) of stopped scans; retrying in {Minutes} min.", failed, RetryInterval.TotalMinutes);
+            }
+
+            return failed == 0;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // Shutting down.
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            _logger.LogWarning("Janitor: docker ps timed out; retrying in {Minutes} min.", RetryInterval.TotalMinutes);
+            return false;
         }
         catch (Exception ex)
         {
             // Docker CLI unavailable (e.g. local dev without Docker) — nothing to sweep.
             _logger.LogDebug(ex, "Janitor: container sweep skipped.");
+            return true;
         }
     }
 

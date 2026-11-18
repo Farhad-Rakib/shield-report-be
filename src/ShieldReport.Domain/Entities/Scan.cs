@@ -100,9 +100,16 @@ public sealed class Scan : BaseEntity
     {
         Status = ScanStatus.Failed;
         CompletedAt = DateTime.UtcNow;
-        ErrorMessage = errorMessage;
+        // The column holds 1000 characters; tool stderr (e.g. a Python traceback when a container
+        // is killed) can be longer, and an over-long value made the whole save fail, losing the
+        // real error and the raw output. Keep the start (the summary) and mark the cut.
+        ErrorMessage = errorMessage.Length > ErrorMessageMaxLength
+            ? errorMessage[..(ErrorMessageMaxLength - 15)] + " … (truncated)"
+            : errorMessage;
         RawOutput = rawOutput;
     }
+
+    public const int ErrorMessageMaxLength = 1000;
 
     public void Cancel(long cancelledByUserId)
     {

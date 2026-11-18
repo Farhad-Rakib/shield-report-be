@@ -34,6 +34,16 @@ public sealed class ScanToolSettingsProvider : IScanToolDeploymentSettings
 
     public string ReconftwOutputPath => _configuration["Scanning:ReconftwOutputPath"] ?? "/app/scan-output";
 
+    // Total DNS queries/second that all running reconftw scans may send together (puredns public
+    // and trusted resolvers). Each scan gets Total / Reconftw parallel, so 10 parallel scans can't
+    // flood the network stack (10 x 500/s hung Docker Desktop in the 2026-11-16 load test).
+    public int ReconftwDnsBudget => ReadInt("Scanning:Reconftw:DnsBudgetPerSecond", 1500);
+
+    public int ReconftwTrustedDnsBudget => ReadInt("Scanning:Reconftw:TrustedDnsBudgetPerSecond", 400);
+
+    private int ReadInt(string key, int fallback) =>
+        int.TryParse(_configuration[key], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value > 0 ? value : fallback;
+
     public string GetImage(ScanTool tool) =>
         _configuration[$"Scanning:Tools:{tool}:Image"] is { Length: > 0 } image ? image : Defaults[tool].Image;
 

@@ -209,8 +209,22 @@ services:
     user: "1000:1000"
     environment:
       HOME: /tmp
-    entrypoint: ["nuclei"]
-    command: ["-update-templates", "-ud", "/tmp/nuclei-templates"]
+    # nuclei remembers the installed template version in $HOME/.config (this container's own
+    # layer), not in the volume. If the volume ends up empty (an interrupted update clears the old
+    # templates before writing the new ones), "-update-templates" says "No new updates" forever and
+    # every Nuclei scan fails with "no templates provided". So: no templates in the volume → forget
+    # the recorded version and download them all; then fail loudly if there are still none.
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        if [ -z "$$(find /tmp/nuclei-templates -name '*.yaml' -print -quit)" ]; then
+          echo "nuclei-templates volume is empty: forcing a full download"
+          rm -f /tmp/.config/nuclei/.templates-config.json
+        fi
+        nuclei -update-templates -ud /tmp/nuclei-templates
+        count=$$(find /tmp/nuclei-templates -name '*.yaml' | wc -l)
+        echo "nuclei templates in volume: $$count"
+        [ "$$count" -gt 0 ]
     volumes:
       - nuclei-templates:/tmp/nuclei-templates
     depends_on:

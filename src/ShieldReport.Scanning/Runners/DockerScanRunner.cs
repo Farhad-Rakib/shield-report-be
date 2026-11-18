@@ -26,10 +26,12 @@ public sealed partial class DockerScanRunner : IScanRunner
     private const int StderrCapChars = 64_000;
 
     private readonly ScanToolSettingsProvider _settingsProvider;
+    private readonly IScanToolSettingsService _toolSettings;
 
-    public DockerScanRunner(ScanToolSettingsProvider settingsProvider)
+    public DockerScanRunner(ScanToolSettingsProvider settingsProvider, IScanToolSettingsService toolSettings)
     {
         _settingsProvider = settingsProvider;
+        _toolSettings = toolSettings;
     }
 
     public const string ScanContainerLabel = "shieldreport.scan-id";
@@ -64,7 +66,11 @@ public sealed partial class DockerScanRunner : IScanRunner
                     return new ScanRunResult(ScanRunOutcome.ContainerMissing, string.Empty, "Interrupted: the scan container no longer exists (host restart or manual removal). Please run the scan again.");
                 }
 
-                var toolArgs = BuildToolArguments(scan, target, settings);
+                // Reconftw's share of the DNS budget depends on how many may run at once (live setting).
+                var reconftwParallel = scan.Tool == ScanTool.Reconftw
+                    ? Math.Max(1, await _toolSettings.GetMaxParallelAsync(ScanTool.Reconftw, stopToken))
+                    : 1;
+                var toolArgs = BuildToolArguments(scan, target, settings, reconftwParallel);
                 var create = await RunDockerCommandAsync(BuildRunArguments(scan, settings, containerName, settings.Image, toolArgs), TimeSpan.FromMinutes(10));
                 if (create.ExitCode != 0)
                 {
@@ -419,7 +425,7 @@ public sealed partial class DockerScanRunner : IScanRunner
     //            where -update-templates writes); -irr adds request/response for real PoCs; -stats
     //            keeps the console alive on clean targets; -silent keeps stdout = JSONL results.
     //   Reconftw — -d wants a bare domain; -o puts result files on the shared output volume.
-    private IReadOnlyList<string> BuildToolArguments(Scan scan, string target, ScanToolRuntimeSettings settings)
+    private IReadOnlyList<string> BuildToolArguments(Scan scan, string target, ScanToolRuntimeSettings settings, int reconftwParallel = 1)
     {
         var inv = System.Globalization.CultureInfo.InvariantCulture;
         switch (scan.Tool)
@@ -456,7 +462,7 @@ public sealed partial class DockerScanRunner : IScanRunner
                 // -s covers subdomain discovery + web probe/screenshots/takeover; any other module
                 // needs the full recon flow (-r), which still only runs what the config enables.
                 var modeFlag = o.Modules!.All(ReconftwModules.SubdomainModeModules.Contains) ? "-s" : "-r";
-                var configPath = WriteReconftwConfig(scan, o) ?? "/reconftw/reconftw.lean.cfg";
+                var configPath = WriteReconftwConfig(scan, o, reconftwParallel) ?? "/reconftw/reconftw.lean.cfg";
                 return ["-d", ExtractHost(target), modeFlag, "-f", configPath, "-o", $"/scan-output/scan-{scan.Id}"];
             }
 
@@ -487,7 +493,7 @@ public sealed partial class DockerScanRunner : IScanRunner
     // text (module keys are validated against ReconftwModules; flags come from that fixed list).
     // Returns the in-container path, or null when the volume isn't mounted (local dev), in which
     // case the baked lean config is used as-is.
-    private string? WriteReconftwConfig(Scan scan, ReconftwOptions o)
+    private string? WriteReconftwConfig(Scan scan, ReconftwOptions o, int parallel)
     {
         if (!Directory.Exists(_settingsProvider.ReconftwOutputPath))
         {
@@ -516,6 +522,11 @@ public sealed partial class DockerScanRunner : IScanRunner
         content.AppendLine($"HTTPX_UNCOMMONPORTS_THREADS={threads}");
         content.AppendLine($"RESOLVE_DOMAINS_THREADS={threads}");
         content.AppendLine($"DNSTAKE_THREADS={threads}");
+        // This scan's share of the shared DNS budget (never above the lean config's per-scan caps).
+        var publicLimit = Math.Clamp(_settingsProvider.ReconftwDnsBudget / parallel, 50, 500);
+        var trustedLimit = Math.Clamp(_settingsProvider.ReconftwTrustedDnsBudget / parallel, 20, 200);
+        content.AppendLine($"PUREDNS_PUBLIC_LIMIT={publicLimit.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+        content.AppendLine($"PUREDNS_TRUSTED_LIMIT={trustedLimit.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
 
         File.WriteAllText(ReconftwConfigFile(scan), content.ToString());
         return $"/scan-output/scan-{scan.Id}.cfg";
